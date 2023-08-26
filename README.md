@@ -15,8 +15,8 @@ CDNs).
 
 ## Anti-Goals
 
-- No node/npm support IN ANY SHAPE OR FORM
-- No support for `Deno.*` APIs outside of possible shims
+- Node/npm support IN ANY SHAPE OR FORM
+- Support for `Deno.*` APIs outside of possible shims
 
 ## Why not Deno?
 
@@ -29,3 +29,21 @@ away from it's original design goals. Some of the recent decisions have been
 controversial in the community and are some things we'd like to avoid
 implementing e.g.: `npm:`, `node:` specifiers and soon to be `deno:` specifier,
 `package.json` support and more.
+
+## Why not Node?
+
+Node was a great first stab at running real JS applications on the server side
+but it's age really starts to show. It does have the advantage of being focused
+and universal, though both of those are becoming less relevant as time goes on.
+CommonJS continues to drag down the ESM ecosystem in a way that is really
+unfortunate. It's time to let go of Node.
+
+## Why not Bun?
+
+Frick Bun. We'll start to consider Bun as a serious alternative when they:
+
+- Start treating employees better
+- Stop cheating on benchmarks
+- Stick to web standards
+- Abandon CommonJS
+- Stop segfaulting
