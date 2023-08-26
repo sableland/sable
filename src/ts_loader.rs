@@ -29,9 +29,7 @@ impl deno_core::ModuleLoader for TsModuleLoader {
             // extension) and whether transpiling is required.
             let media_type = MediaType::from_path(&path);
             let (module_type, should_transpile) = match MediaType::from_path(&path) {
-                MediaType::JavaScript | MediaType::Mjs | MediaType::Cjs => {
-                    (deno_core::ModuleType::JavaScript, false)
-                }
+                MediaType::JavaScript => (deno_core::ModuleType::JavaScript, false),
                 MediaType::Jsx => (deno_core::ModuleType::JavaScript, true),
                 MediaType::TypeScript | MediaType::Tsx => (deno_core::ModuleType::JavaScript, true),
                 MediaType::Json => (deno_core::ModuleType::Json, false),
