@@ -1,1 +1,2 @@
-delete globalThis.Bueno;
+delete globalThis.Bueno.core;
+delete globalThis.Deno;

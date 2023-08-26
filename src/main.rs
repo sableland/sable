@@ -1,8 +1,10 @@
 use cli::parse_cli;
-use deno_core::error::AnyError;
+use deno_core::{error::AnyError, Snapshot};
 use std::{env, rc::Rc};
 
 mod cli;
+
+static RUNTIME_SNAPSHOT: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/RUNJS_SNAPSHOT.bin"));
 
 pub async fn bueno_run(file_path: &str) -> Result<(), AnyError> {
     deno_core::extension!(
@@ -13,6 +15,14 @@ pub async fn bueno_run(file_path: &str) -> Result<(), AnyError> {
             "bueno.js",
             "console.js",
             "runtime.js",
+         ],
+    );
+
+    deno_core::extension!(
+        bueno_cleanup,
+        esm_entry_point = "ext:bueno_cleanup/cleanup.js",
+        esm = [
+            dir "src/ext",
             "cleanup.js",
          ],
     );
@@ -20,8 +30,9 @@ pub async fn bueno_run(file_path: &str) -> Result<(), AnyError> {
     let main_module = deno_core::resolve_path(file_path, &env::current_dir().unwrap())?;
 
     let mut js_runtime = deno_core::JsRuntime::new(deno_core::RuntimeOptions {
+        startup_snapshot: Some(Snapshot::Static(RUNTIME_SNAPSHOT)),
         module_loader: Some(Rc::new(deno_core::FsModuleLoader)),
-        extensions: vec![bueno::init_ops_and_esm()],
+        extensions: vec![bueno::init_ops(), bueno_cleanup::init_ops_and_esm()],
         ..Default::default()
     });
 

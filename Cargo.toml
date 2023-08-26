@@ -10,4 +10,3 @@ tokio = { version = "1.19.2", features = ["full"]}
 
 [build-dependencies]
 deno_core = "0.205.0"
-
