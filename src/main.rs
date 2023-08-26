@@ -4,21 +4,31 @@ use std::{env, rc::Rc};
 
 mod cli;
 mod ts_loader;
+mod ops;
 
 use ts_loader::TsModuleLoader;
 
-static RUNTIME_SNAPSHOT: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/RUNJS_SNAPSHOT.bin"));
+static RUNTIME_SNAPSHOT: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/BUENO_SNAPSHOT.bin"));
 
 pub async fn bueno_run(file_path: &str) -> Result<(), AnyError> {
     deno_core::extension!(
         bueno,
+        ops = [
+            ops::op_read_file,
+            ops::op_write_file,
+            ops::op_remove_file,
+            ops::op_read_file_sync,
+            ops::op_write_file_sync,
+            ops::op_remove_file_sync,
+        ],
         esm_entry_point = "ext:bueno/runtime.js",
         esm = [
             dir "src/ext",
             "bueno.js",
             "console.js",
+            "fs.js",
             "runtime.js",
-         ],
+        ],
     );
 
     deno_core::extension!(

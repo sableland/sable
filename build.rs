@@ -4,7 +4,7 @@ use std::path::PathBuf;
 fn main() {
     // Build the file path to the snapshot.
     let out = PathBuf::from(env::var_os("OUT_DIR").unwrap());
-    let snapshot_path = out.join("RUNJS_SNAPSHOT.bin");
+    let snapshot_path = out.join("BUENO_SNAPSHOT.bin");
 
     deno_core::extension!(
         bueno,
@@ -13,6 +13,7 @@ fn main() {
             dir "src/ext",
             "bueno.js",
             "console.js",
+            "fs.js",
             "runtime.js",
          ],
     );
