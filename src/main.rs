@@ -3,6 +3,9 @@ use deno_core::{error::AnyError, Snapshot};
 use std::{env, rc::Rc};
 
 mod cli;
+mod ts_loader;
+
+use ts_loader::TsModuleLoader;
 
 static RUNTIME_SNAPSHOT: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/RUNJS_SNAPSHOT.bin"));
 
@@ -31,7 +34,7 @@ pub async fn bueno_run(file_path: &str) -> Result<(), AnyError> {
 
     let mut js_runtime = deno_core::JsRuntime::new(deno_core::RuntimeOptions {
         startup_snapshot: Some(Snapshot::Static(RUNTIME_SNAPSHOT)),
-        module_loader: Some(Rc::new(deno_core::FsModuleLoader)),
+        module_loader: Some(Rc::new(TsModuleLoader)),
         extensions: vec![bueno::init_ops(), bueno_cleanup::init_ops_and_esm()],
         ..Default::default()
     });

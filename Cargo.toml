@@ -4,9 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-clap = { version = "4.4.0", features = ["derive"] }
 deno_core = "0.205.0"
-tokio = { version = "1.19.2", features = ["full"]}
+deno_ast = { version = "0.28.0", features = ["transpiling"] }
+clap = { version = "4.4.0", features = ["derive"] }
+tokio = { version = "1.19.2", features = ["full"] }
 
 [build-dependencies]
 deno_core = "0.205.0"
