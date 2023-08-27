@@ -46,9 +46,9 @@ impl deno_core::ModuleLoader for BuenoModuleLoader {
                 ),
             };
 
-            let code = match module_specifier.scheme() {
+            let (code, requires_caching) = match module_specifier.scheme() {
                 "http" | "https" => match module_cache.get(&module_specifier) {
-                    Ok(code) => code,
+                    Ok(code) => (code, false),
                     Err(_) => {
                         let response = reqwest::get(module_specifier.as_str()).await?;
                         if !response.status().is_success() {
@@ -56,12 +56,13 @@ impl deno_core::ModuleLoader for BuenoModuleLoader {
                         }
 
                         let code = response.text().await?;
-                        module_cache.add(&module_specifier, code.clone())?;
-
-                        code
+                        (code, true)
                     }
                 },
-                "file" => std::fs::read_to_string(&module_specifier.path())?,
+                "file" => {
+                    let code = std::fs::read_to_string(&module_specifier.path())?;
+                    (code, false)
+                }
                 scheme => panic!("Unsupported url scheme {:?}", scheme),
             };
 
@@ -79,6 +80,10 @@ impl deno_core::ModuleLoader for BuenoModuleLoader {
             } else {
                 code
             };
+
+            if requires_caching {
+                module_cache.add(&module_specifier, code.clone())?;
+            }
 
             // Load and return module.
             Ok(deno_core::ModuleSource::new(
