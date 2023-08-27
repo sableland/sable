@@ -3,8 +3,8 @@ use deno_core::{error::AnyError, Snapshot};
 use std::{env, rc::Rc};
 
 mod cli;
-mod ts_loader;
 mod ops;
+mod ts_loader;
 
 use ts_loader::TsModuleLoader;
 
