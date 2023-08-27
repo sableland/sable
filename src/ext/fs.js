@@ -6,7 +6,16 @@ const core = Bueno.core;
  * @returns {Promise<string>}
  */
 function readTextFile(path) {
-  return core.ops.op_read_file(path);
+  return core.ops.op_read_text_file(path);
+}
+
+/**
+ * Reads a text file syncronously
+ * @param {string} path
+ * @returns {string}
+ */
+function readTextFileSync(path) {
+  return core.ops.op_read_text_file_sync(path);
 }
 
 /**
@@ -16,25 +25,7 @@ function readTextFile(path) {
  * @returns {Promise<void>}
  */
 function writeTextFile(path, contents) {
-  core.ops.op_write_file(path, contents);
-}
-
-/**
- * Deletes file asyncronously
- * @param {string} path
- * @returns {Promise<void>}
- */
-function remove(path) {
-  core.ops.op_remove_file(path);
-}
-
-/**
- * Reads a text file syncronously
- * @param {string} path
- * @returns {string}
- */
-function readTextFileSync(path) {
-  return core.ops.op_read_file_sync(path);
+  core.ops.op_write_text_file(path, contents);
 }
 
 /**
@@ -44,7 +35,16 @@ function readTextFileSync(path) {
  * @returns {void}
  */
 function writeTextFileSync(path, contents) {
-  core.ops.op_write_file_sync(path, contents);
+  core.ops.op_write_text_file_sync(path, contents);
+}
+
+/**
+ * Deletes file asyncronously
+ * @param {string} path
+ * @returns {Promise<void>}
+ */
+function remove(path) {
+  core.ops.op_remove_file(path);
 }
 
 /**
