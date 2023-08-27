@@ -1,7 +1,7 @@
 extern crate bueno_ext;
 extern crate deno_core;
 
-use deno_core::{error::AnyError, Snapshot};
+use deno_core::{error::AnyError, url::Url, Snapshot};
 use std::{env, rc::Rc};
 use ts_loader::TsModuleLoader;
 
@@ -16,7 +16,11 @@ static RUNTIME_SNAPSHOT: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/BUENO_RUNTIME_SNAPSHOT.bin"));
 
 pub async fn bueno_run(file_path: &str) -> Result<(), AnyError> {
-    let main_module = deno_core::resolve_path(file_path, &env::current_dir().unwrap())?;
+    let main_module = if let Ok(url) = Url::parse(file_path) {
+        url
+    } else {
+        deno_core::resolve_path(file_path, &env::current_dir().unwrap())?
+    };
 
     let mut js_runtime = deno_core::JsRuntime::new(deno_core::RuntimeOptions {
         startup_snapshot: Some(Snapshot::Static(RUNTIME_SNAPSHOT)),
@@ -26,6 +30,7 @@ pub async fn bueno_run(file_path: &str) -> Result<(), AnyError> {
     });
 
     let mod_id = js_runtime.load_main_module(&main_module, None).await?;
+
     let result = js_runtime.mod_evaluate(mod_id);
 
     js_runtime.run_event_loop(false).await?;

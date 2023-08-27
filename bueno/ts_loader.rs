@@ -23,21 +23,36 @@ impl deno_core::ModuleLoader for TsModuleLoader {
     ) -> std::pin::Pin<Box<deno_core::ModuleSourceFuture>> {
         let module_specifier = module_specifier.clone();
         async move {
-            let path = module_specifier.to_file_path().unwrap();
-
             // Determine what the MediaType is (this is done based on the file
             // extension) and whether transpiling is required.
-            let media_type = MediaType::from_path(&path);
-            let (module_type, should_transpile) = match MediaType::from_path(&path) {
+            let media_type = MediaType::from_specifier(&module_specifier);
+            let (module_type, should_transpile) = match media_type {
                 MediaType::JavaScript => (deno_core::ModuleType::JavaScript, false),
                 MediaType::Jsx => (deno_core::ModuleType::JavaScript, true),
                 MediaType::TypeScript | MediaType::Tsx => (deno_core::ModuleType::JavaScript, true),
                 MediaType::Json => (deno_core::ModuleType::Json, false),
-                _ => panic!("Unknown extension {:?}", path.extension()),
+                _ => panic!(
+                    "Unsupported extension {:?}",
+                    module_specifier
+                        .to_file_path()
+                        .expect("Failed extracting file extension")
+                        .extension()
+                ),
             };
 
-            // Read the file, transpile if necessary.
-            let code = std::fs::read_to_string(&path)?;
+            let code = match module_specifier.scheme() {
+                "http" | "https" => {
+                    let response = reqwest::get(module_specifier.as_str()).await?;
+                    if !response.status().is_success() {
+                        panic!("// TODO: error here // ");
+                    }
+                    response.text().await?
+                }
+                "file" => std::fs::read_to_string(&module_specifier.path())?,
+                scheme => panic!("Unsupported url scheme {:?}", scheme),
+            };
+
+            // Transpile if necessary.
             let code = if should_transpile {
                 let parsed = deno_ast::parse_module(ParseParams {
                     specifier: module_specifier.to_string(),
