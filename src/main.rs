@@ -7,14 +7,15 @@ mod ts_loader;
 
 use ts_loader::TsModuleLoader;
 
-static RUNTIME_SNAPSHOT: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/RUNJS_SNAPSHOT.bin"));
+static RUNTIME_SNAPSHOT: &[u8] =
+    include_bytes!(concat!(env!("OUT_DIR"), "/BUENO_RUNTIME_SNAPSHOT.bin"));
 
 pub async fn bueno_run(file_path: &str) -> Result<(), AnyError> {
     deno_core::extension!(
         bueno,
         esm_entry_point = "ext:bueno/runtime.js",
         esm = [
-            dir "src/ext",
+            dir "ext",
             "bueno.js",
             "console.js",
             "runtime.js",
@@ -25,7 +26,7 @@ pub async fn bueno_run(file_path: &str) -> Result<(), AnyError> {
         bueno_cleanup,
         esm_entry_point = "ext:bueno_cleanup/cleanup.js",
         esm = [
-            dir "src/ext",
+            dir "ext",
             "cleanup.js",
          ],
     );
