@@ -10,7 +10,7 @@ mod ts_loader;
 
 use cli::parse_cli;
 
-use bueno_ext::extensions::*;
+use bueno_ext::extensions::{bueno, bueno_cleanup};
 
 static RUNTIME_SNAPSHOT: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/BUENO_RUNTIME_SNAPSHOT.bin"));
