@@ -17,7 +17,12 @@ use bueno_ext::extensions::{bueno, bueno_cleanup};
 static RUNTIME_SNAPSHOT: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/BUENO_RUNTIME_SNAPSHOT.bin"));
 
-pub async fn bueno_run(file_path: &str) -> Result<(), AnyError> {
+pub struct BuenoOptions {
+    clean_cache: bool,
+    reload_cache: bool,
+}
+
+pub async fn bueno_run(file_path: &str, options: BuenoOptions) -> Result<(), AnyError> {
     let main_module = if let Ok(url) = Url::parse(file_path) {
         url
     } else {
@@ -28,9 +33,16 @@ pub async fn bueno_run(file_path: &str) -> Result<(), AnyError> {
         cache_location: PathBuf::from(shellexpand::full("~/.cache/bueno/modules")?.to_string()),
     });
 
+    if options.clean_cache {
+        module_cache.clear()?;
+    }
+
     let mut js_runtime = deno_core::JsRuntime::new(deno_core::RuntimeOptions {
         startup_snapshot: Some(Snapshot::Static(RUNTIME_SNAPSHOT)),
-        module_loader: Some(Rc::new(BuenoModuleLoader { module_cache })),
+        module_loader: Some(Rc::new(BuenoModuleLoader {
+            module_cache,
+            options,
+        })),
         extensions: vec![bueno::init_ops(), bueno_cleanup::init_ops_and_esm()],
         ..Default::default()
     });

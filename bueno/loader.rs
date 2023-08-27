@@ -3,10 +3,11 @@ use std::sync::Arc;
 use deno_ast::{MediaType, ParseParams, SourceTextInfo};
 use deno_core::{anyhow::bail, futures::FutureExt, ModuleSpecifier};
 
-use crate::module_cache::ModuleCache;
+use crate::{module_cache::ModuleCache, BuenoOptions};
 
 pub struct BuenoModuleLoader {
     pub module_cache: Arc<ModuleCache>,
+    pub options: BuenoOptions,
 }
 
 impl deno_core::ModuleLoader for BuenoModuleLoader {
@@ -27,6 +28,7 @@ impl deno_core::ModuleLoader for BuenoModuleLoader {
     ) -> std::pin::Pin<Box<deno_core::ModuleSourceFuture>> {
         let module_specifier = module_specifier.clone();
         let module_cache = self.module_cache.clone();
+        let reload_cache = self.options.reload_cache;
 
         async move {
             // Determine what the MediaType is (this is done based on the file
@@ -48,8 +50,8 @@ impl deno_core::ModuleLoader for BuenoModuleLoader {
 
             let (code, requires_caching) = match module_specifier.scheme() {
                 "http" | "https" => match module_cache.get(&module_specifier) {
-                    Ok(code) => (code, false),
-                    Err(_) => {
+                    Ok(code) if !reload_cache => (code, false),
+                    Err(_) | Ok(_) => {
                         let response = reqwest::get(module_specifier.as_str()).await?;
                         if !response.status().is_success() {
                             bail!("Failed fetching {}", module_specifier);

@@ -1,8 +1,10 @@
 extern crate clap;
 
-use self::clap::{arg, Command};
+use clap::ArgAction;
 
-use crate::bueno_run;
+use self::clap::{arg, Arg, Command};
+
+use crate::{bueno_run, BuenoOptions};
 
 pub fn cli() -> Command {
     Command::new("buenojs")
@@ -13,7 +15,22 @@ pub fn cli() -> Command {
             Command::new("run")
                 .about("Run module at specified path")
                 .arg(arg!(<MODULE_PATH> "Module path to run"))
-                .arg_required_else_help(true),
+                .arg_required_else_help(true)
+                .arg(
+                    Arg::new("reload-cache")
+                        .long("reload-cache")
+                        .short('r')
+                        .action(ArgAction::SetTrue)
+                        .help("Reload cache of the ran module")
+                        .conflicts_with("clean-cache"),
+                )
+                .arg(
+                    Arg::new("clean-cache")
+                        .long("clean-cache")
+                        .action(ArgAction::SetTrue)
+                        .help("Delete cache of all modules")
+                        .conflicts_with("reload-cache"),
+                ),
         )
 }
 
@@ -31,7 +48,12 @@ pub fn parse_cli() {
                 .get_one::<String>("MODULE_PATH")
                 .expect("Required");
 
-            if let Err(error) = runtime.block_on(bueno_run(&module_path)) {
+            let options = BuenoOptions {
+                reload_cache: sub_matches.get_flag("reload-cache"),
+                clean_cache: sub_matches.get_flag("clean-cache"),
+            };
+
+            if let Err(error) = runtime.block_on(bueno_run(&module_path, options)) {
                 // TODO: better looking errors
                 eprintln!("error: {}", error);
             }

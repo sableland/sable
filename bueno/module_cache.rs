@@ -52,4 +52,15 @@ impl ModuleCache {
         let code = std::fs::read_to_string(cache_path)?;
         Ok(code)
     }
+
+    pub fn clear(&self) -> Result<(), AnyError> {
+        let cache_path = self.cache_location.clone();
+
+        if !cache_path.exists() {
+            return Ok(());
+        }
+
+        std::fs::remove_dir_all(cache_path)?;
+        Ok(())
+    }
 }
