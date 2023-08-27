@@ -161,9 +161,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "buenojs"
-version = "0.1.0"
+name = "bueno_ext"
+version = "0.0.1"
 dependencies = [
+ "deno_core",
+]
+
+[[package]]
+name = "bueno_runtime"
+version = "0.0.1"
+dependencies = [
+ "bueno_ext",
  "clap",
  "deno_ast",
  "deno_core",
@@ -204,8 +212,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1d5f1946157a96594eb2d2c10eb7ad9a2b27518cb3000209dec700c35df9197d"
 dependencies = [
  "clap_builder",
- "clap_derive",
- "once_cell",
 ]
 
 [[package]]
@@ -218,18 +224,6 @@ dependencies = [
  "anstyle",
  "clap_lex",
  "strsim",
-]
-
-[[package]]
-name = "clap_derive"
-version = "4.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9fd1a5729c4548118d7d70ff234a44868d00489a4b6597b0b020918a0e91a1a"
-dependencies = [
- "heck",
- "proc-macro2",
- "quote",
- "syn 2.0.29",
 ]
 
 [[package]]

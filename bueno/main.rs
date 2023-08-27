@@ -1,36 +1,21 @@
-use cli::parse_cli;
+extern crate bueno_ext;
+extern crate deno_core;
+
 use deno_core::{error::AnyError, Snapshot};
 use std::{env, rc::Rc};
+use ts_loader::TsModuleLoader;
 
 mod cli;
 mod ts_loader;
 
-use ts_loader::TsModuleLoader;
+use cli::parse_cli;
+
+use bueno_ext::extensions::*;
 
 static RUNTIME_SNAPSHOT: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/BUENO_RUNTIME_SNAPSHOT.bin"));
 
 pub async fn bueno_run(file_path: &str) -> Result<(), AnyError> {
-    deno_core::extension!(
-        bueno,
-        esm_entry_point = "ext:bueno/runtime.js",
-        esm = [
-            dir "ext",
-            "bueno.js",
-            "console.js",
-            "runtime.js",
-         ],
-    );
-
-    deno_core::extension!(
-        bueno_cleanup,
-        esm_entry_point = "ext:bueno_cleanup/cleanup.js",
-        esm = [
-            dir "ext",
-            "cleanup.js",
-         ],
-    );
-
     let main_module = deno_core::resolve_path(file_path, &env::current_dir().unwrap())?;
 
     let mut js_runtime = deno_core::JsRuntime::new(deno_core::RuntimeOptions {

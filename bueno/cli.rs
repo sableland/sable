@@ -1,4 +1,6 @@
-use clap::{arg, Command};
+extern crate clap;
+
+use self::clap::{arg, Command};
 
 use crate::bueno_run;
 

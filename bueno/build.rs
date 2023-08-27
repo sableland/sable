@@ -10,11 +10,14 @@ fn main() {
         bueno,
         esm_entry_point = "ext:bueno/runtime.js",
         esm = [
-            dir "ext",
+            dir "../ext",
+
             "bueno.js",
             "console.js",
             "runtime.js",
-         ],
+            "io/mod.js",
+            "io/stdio.js",
+        ],
     );
 
     // Create the snapshot.
