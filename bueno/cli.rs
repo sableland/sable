@@ -32,11 +32,10 @@ pub fn parse_cli() {
                 .expect("Required");
 
             if let Err(error) = runtime.block_on(bueno_run(&module_path)) {
+                // TODO: better looking errors
                 eprintln!("error: {}", error);
             }
         }
-        _ => {
-            unreachable!();
-        }
+        _ => unreachable!(),
     }
 }
