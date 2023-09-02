@@ -11,7 +11,7 @@ resolver = "2"
 members = ["ext", "bueno"]
 
 [workspace.dependencies]
-deno_core = "0.205.0"
+deno_core = "0.208.0"
 deno_ast = { version = "0.28.0", features = ["transpiling"] }
 tokio = { version = "1.19.2", features = ["full"] }
 

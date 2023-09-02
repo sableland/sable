@@ -1,4 +1,4 @@
-use deno_core::{error::AnyError, op, op2};
+use deno_core::{error::AnyError, op2};
 
 // Read files
 #[op2(async)]
@@ -15,9 +15,9 @@ pub fn op_read_file_sync(#[string] path: String) -> Result<Vec<u8>, AnyError> {
     Ok(contents)
 }
 
-// TODO: Convert it to op2
-#[op]
-pub async fn op_read_text_file(path: String) -> Result<String, AnyError> {
+#[op2(async)]
+#[string]
+pub async fn op_read_text_file(#[string] path: String) -> Result<String, AnyError> {
     let contents = tokio::fs::read_to_string(path).await?;
     Ok(contents)
 }
