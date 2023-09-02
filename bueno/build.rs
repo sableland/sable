@@ -1,24 +1,12 @@
 use std::env;
 use std::path::PathBuf;
 
+use bueno_ext::extensions::bueno;
+
 fn main() {
     // Build the file path to the snapshot.
     let out = PathBuf::from(env::var_os("OUT_DIR").unwrap());
     let snapshot_path = out.join("BUENO_RUNTIME_SNAPSHOT.bin");
-
-    deno_core::extension!(
-        bueno,
-        esm_entry_point = "ext:bueno/runtime.js",
-        esm = [
-            dir "../ext",
-
-            "bueno.js",
-            "console.js",
-            "runtime.js",
-            "io/mod.js",
-            "io/stdio.js",
-        ],
-    );
 
     // Create the snapshot.
     let output = deno_core::snapshot_util::create_snapshot(
