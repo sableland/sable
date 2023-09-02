@@ -120,6 +120,13 @@ console.log("deep obj:", {
   booltrue: true,
   typedArr,
   promise: new Promise((x) => {}),
+  resolvedPromise: new Promise<string>((res) => {
+    res("RESOLVED!");
+  }),
+  rejectedPromise: new Promise<void>((_, rej) => {
+    rej("REJECTED!");
+  }),
+  proxy: new Proxy({ hello: 123 }, {}),
 });
 
 console.error("Hello bueno");

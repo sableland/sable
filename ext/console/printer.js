@@ -1,6 +1,5 @@
 const core = Bueno.core;
 
-// TODO: TypedArrays, Promises,
 // TODO: Limit depth
 // FIXME: Handle circular objects
 
@@ -23,6 +22,11 @@ const colors = {
   lightWhite: "\x1b[97m",
   reset: "\x1b[0m",
 };
+
+const TypedArray = Object.getPrototypeOf(Int8Array);
+function isTypedArray(obj) {
+  return Object.getPrototypeOf(obj.constructor) === TypedArray;
+}
 
 function colorize(str, color) {
   return colors[color] + str + colors.reset;
@@ -59,6 +63,13 @@ function styleBoolean(bool) {
 
 function styleSymbol(num) {
   return colorize(num.toString(), "lightYellow");
+}
+
+function styleTypedArray(typedarr, indent) {
+  return `${typedarr.constructor.name}(${typedarr.length}) [ ${styleIterable(
+    typedarr,
+    indent
+  )}  ]`;
 }
 
 function styleArray(arr, indent) {
@@ -111,6 +122,36 @@ function styleIterable(iter, indent, short = true) {
   return string;
 }
 
+function stylePromise(promise, indent) {
+  let info = colorize("unknown", "yellow");
+
+  try {
+    const details = core.getPromiseDetails(promise);
+    const state = details[0];
+    const result = details[1];
+
+    switch (state) {
+      case 0:
+        info = colorize("pending", "lightCyan");
+        break;
+      case 1:
+        info = `${colorize("fulfilled", "lightGreen")} => ${styleByType(
+          result,
+          indent
+        )}`;
+        break;
+      case 2:
+        info = `${colorize("rejected", "lightRed")} => ${styleByType(
+          result,
+          indent
+        )}`;
+        break;
+    }
+  } catch {}
+
+  return `Promise { ${info} }`;
+}
+
 function styleWeakMap() {
   return `WeakMap { ${colorize("items unknown", "lightRed")} }`;
 }
@@ -148,13 +189,13 @@ function styleMap(map, indent, short = true) {
   return str;
 }
 
-function styleRecord(obj, indent, short = true) {
+function styleRecord(obj, indent, short = true, depth) {
   indent += 2;
   let str = "";
 
   if (obj.constructor !== Object) {
     // Object is a class
-    str += colorize(obj.constructor.name, "lightMagenta") + " ";
+    str += obj.constructor.name + " ";
   }
 
   str += short ? "{ " : "{";
@@ -198,6 +239,10 @@ function styleObject(obj, indent = 0) {
     return styleSet(obj, indent);
   } else if (obj instanceof WeakMap) {
     return styleWeakMap();
+  } else if (obj instanceof Promise) {
+    return stylePromise(obj, indent);
+  } else if (isTypedArray(obj)) {
+    return styleTypedArray(obj, indent);
   } else {
     return styleRecord(obj, indent);
   }
