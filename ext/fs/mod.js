@@ -1,7 +1,7 @@
 const core = Bueno.core;
 
 /**
- * Reads a file asyncronously
+ * Reads a file asynchronously
  * @param {string} path
  * @returns {Promise<Uint8Array>}
  */
@@ -10,7 +10,7 @@ function readFile(path) {
 }
 
 /**
- * Reads a file syncronously
+ * Reads a file synchronously
  * @param {string} path
  * @returns {Uint8Array}
  */
@@ -19,7 +19,7 @@ function readFileSync(path) {
 }
 
 /**
- * Reads a text file asyncronously
+ * Reads a text file synchronously
  * @param {string} path
  * @returns {Promise<string>}
  */
@@ -28,7 +28,7 @@ function readTextFile(path) {
 }
 
 /**
- * Reads a text file syncronously
+ * Reads a text file synchronously
  * @param {string} path
  * @returns {string}
  */
@@ -37,7 +37,7 @@ function readTextFileSync(path) {
 }
 
 /**
- * Writes a file asyncronously
+ * Writes a file asynchronously
  * @param {string} path
  * @param {Uint8Array} contents
  * @returns {Promise<void>}
@@ -47,7 +47,7 @@ function writeFile(path, contents) {
 }
 
 /**
- * Writes a file syncronously
+ * Writes a file synchronously
  * @param {string} path
  * @param {Uint8Array} contents
  * @returns {void}
@@ -57,7 +57,7 @@ function writeFileSync(path, contents) {
 }
 
 /**
- * Writes a text file asyncronously
+ * Writes a text file asynchronously
  * @param {string} path
  * @param {string} contents
  * @returns {Promise<void>}
@@ -67,7 +67,7 @@ function writeTextFile(path, contents) {
 }
 
 /**
- * Writes a text file syncronously
+ * Writes a text file synchronously
  * @param {string} path
  * @param {string} contents
  * @returns {void}
@@ -77,21 +77,41 @@ function writeTextFileSync(path, contents) {
 }
 
 /**
- * Deletes file asyncronously
+ * Deletes file asynchronously
  * @param {string} path
  * @returns {Promise<void>}
  */
-function remove(path) {
+function removeFile(path) {
   core.ops.op_remove_file(path);
 }
 
 /**
- * Deletes file syncronously
+ * Deletes file synchronously
  * @param {string} path
  * @returns {void}
  */
-function removeSync(path) {
+function removeFileSync(path) {
   core.ops.op_remove_file_sync(path);
+}
+
+/**
+ * Deletes directory asynchronously
+ * @param {string} path
+ * @param {boolean} recursive
+ * @returns {Promise<void>}
+ */
+function removeDirectory(path, recursive) {
+  core.ops.op_remove_dir(path, recursive);
+}
+
+/**
+ * Deletes directory synchronously
+ * @param {string} path
+ * @param {boolean} recursive
+ * @returns {void}
+ */
+function removeDirectorySync(path, recursive) {
+  core.ops.op_remove_dir_sync(path, recursive);
 }
 
 Bueno.fs = {
@@ -103,6 +123,8 @@ Bueno.fs = {
   writeFileSync,
   writeTextFile,
   writeTextFileSync,
-  remove,
-  removeSync,
+  removeFile,
+  removeFileSync,
+  removeDirectory,
+  removeDirectorySync,
 };
