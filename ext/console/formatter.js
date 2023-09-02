@@ -66,7 +66,7 @@ export function format(args) {
           arg = arg.replace(specifier, JSON.stringify(current));
           break;
         case "%c":
-          // TODO: styling
+          // TODO: CSS Styling
           arg = arg.replace("%c", "");
           break;
         default:
