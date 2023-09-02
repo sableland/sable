@@ -1,6 +1,6 @@
 [package]
-name = "bueno_ext"
-description = "Bueno runtime extensions"
+name = "bueno_ext_fs"
+description = "Bueno file system extension"
 edition.workspace = true
 version.workspace = true
 authors.workspace = true
@@ -12,4 +12,4 @@ path = "lib.rs"
 
 [dependencies]
 deno_core.workspace = true
-bueno_ext_fs = { path = "./fs/" }
+tokio.workspace = true

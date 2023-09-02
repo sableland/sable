@@ -13,5 +13,6 @@ members = ["ext", "bueno"]
 [workspace.dependencies]
 deno_core = "0.205.0"
 deno_ast = { version = "0.28.0", features = ["transpiling"] }
-clap = { version = "4.4.0", features = ["derive"] }
 tokio = { version = "1.19.2", features = ["full"] }
+
+bueno_ext = { path = "./ext/" }
