@@ -31,33 +31,69 @@ impl deno_core::ModuleLoader for BuenoModuleLoader {
         let reload_cache = self.options.reload_cache;
 
         async move {
+            let scheme = module_specifier.scheme().clone();
+            let mut response: Option<reqwest::Response> = None;
+
             // Determine what the MediaType is (this is done based on the file
             // extension) and whether transpiling is required.
-            let media_type = MediaType::from_specifier(&module_specifier);
+            let mut media_type = MediaType::from_specifier(&module_specifier);
+
+            // If MediaType is unknown and it's an URL then check the
+            // MediaType from Content-Type header of the response
+            if media_type == MediaType::Unknown && scheme != "file" {
+                println!("getting MediaType from URL");
+                response = Some(reqwest::get(module_specifier.as_str()).await?);
+
+                media_type = MediaType::from_content_type(
+                    &module_specifier,
+                    &response
+                        .as_ref()
+                        .unwrap()
+                        .headers()
+                        .get(reqwest::header::CONTENT_TYPE)
+                        .unwrap()
+                        .to_str()
+                        .unwrap(),
+                );
+
+                println!("got mediatype: {}", media_type.to_string());
+            }
+
             let (module_type, should_transpile) = match media_type {
-                MediaType::JavaScript => (deno_core::ModuleType::JavaScript, false),
+                MediaType::Mjs | MediaType::JavaScript => {
+                    (deno_core::ModuleType::JavaScript, false)
+                }
                 MediaType::Jsx => (deno_core::ModuleType::JavaScript, true),
-                MediaType::TypeScript | MediaType::Tsx => (deno_core::ModuleType::JavaScript, true),
+                MediaType::Dmts | MediaType::Dts | MediaType::TypeScript | MediaType::Tsx => {
+                    (deno_core::ModuleType::JavaScript, true)
+                }
                 MediaType::Json => (deno_core::ModuleType::Json, false),
-                _ => panic!(
-                    "Unsupported extension {:?}",
-                    module_specifier
-                        .to_file_path()
-                        .expect("Failed extracting file extension")
-                        .extension()
-                ),
+                mt => {
+                    // TODO: Better errors
+                    let path = module_specifier.to_file_path();
+                    if let Ok(path) = path {
+                        panic!("Unsupported extension {:?}", path.extension())
+                    } else {
+                        panic!("Unsupported MimeType {mt}")
+                    }
+                }
             };
 
-            let (code, requires_caching) = match module_specifier.scheme() {
+            let (code, requires_caching) = match scheme {
                 "http" | "https" => match module_cache.get(&module_specifier) {
                     Ok(code) if !reload_cache => (code, false),
                     Err(_) | Ok(_) => {
-                        let response = reqwest::get(module_specifier.as_str()).await?;
-                        if !response.status().is_success() {
+                        if response.is_none() {
+                            response = Some(reqwest::get(module_specifier.as_str()).await?);
+                        }
+
+                        let unwrapped = response.unwrap();
+
+                        if !unwrapped.status().is_success() {
                             bail!("Failed fetching {}", module_specifier);
                         }
 
-                        let code = response.text().await?;
+                        let code = unwrapped.text().await?;
                         (code, true)
                     }
                 },
