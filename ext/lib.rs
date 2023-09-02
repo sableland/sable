@@ -1,4 +1,5 @@
 pub mod extensions {
+    use bueno_ext_fetch as fetch;
     use bueno_ext_fs as fs;
 
     deno_core::extension!(
@@ -16,16 +17,20 @@ pub mod extensions {
             fs::op_write_text_file_sync,
             // remove
             fs::op_remove_file,
-            fs::op_remove_file_sync
+            fs::op_remove_file_sync,
+            // fetch
+            fetch::op_fetch,
         ],
         esm_entry_point = "ext:bueno/runtime.js",
         esm = [
             "bueno.js",
             "console.js",
+            "fetch.js",
             "runtime.js",
             "io/mod.js",
             "io/stdio.js",
-            "fs/mod.js"
+            "fs/mod.js",
+            "fetch/mod.js",
         ],
     );
 
