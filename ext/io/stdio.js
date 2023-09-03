@@ -1,14 +1,14 @@
 class SharedStdio {
   write(data) {
-    return write(this.rid, data);
+    return Bueno.io.write(this.rid, data);
   }
 
   read(buffer) {
-    return read(this.rid, buffer);
+    return Bueno.io.read(this.rid, buffer);
   }
 
   close() {
-    close(this.rid);
+    Bueno.io.close(this.rid);
   }
 }
 
