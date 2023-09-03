@@ -6,17 +6,13 @@ pub mod extensions {
         ops = [
             // read
             fs::op_read_file,
-            fs::op_read_file_sync,
             fs::op_read_text_file,
-            fs::op_read_text_file_sync,
             // write
             fs::op_write_file,
-            fs::op_write_file_sync,
             fs::op_write_text_file,
-            fs::op_write_text_file_sync,
             // remove
             fs::op_remove_file,
-            fs::op_remove_file_sync
+            fs::op_remove_dir,
         ],
         esm_entry_point = "ext:bueno/runtime.js",
         esm = [

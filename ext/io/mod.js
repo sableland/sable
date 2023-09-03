@@ -15,18 +15,6 @@ async function read(rid, buffer) {
 }
 
 /**
- * Read resource id synchronously
- * @param {number} rid resource id
- * @param {Uint8Array} buffer buffer to read to
- * @returns number of bytes that has been read or `null` (EOF)
- */
-function readSync(rid, buffer) {
-  // Can't read into nothing
-  if (buffer.length === 0) return 0;
-  return core.readSync(rid) || null;
-}
-
-/**
  * Write data to resource id asynchronously
  * @param {number} rid resource id
  * @param {Uint8Array} data buffer to write
@@ -34,16 +22,6 @@ function readSync(rid, buffer) {
  */
 function write(rid, data) {
   return core.write(rid, data);
-}
-
-/**
- * Write data to resource id synchronously
- * @param {number} rid resource id
- * @param {Uint8Array} data buffer to write
- * @returns number of bytes that has been written
- */
-function writeSync(rid, data) {
-  return core.writeSync(rid, data);
 }
 
 /**
@@ -56,9 +34,7 @@ function close(rid) {
 
 Bueno.io = {
   read,
-  readSync,
   write,
-  writeSync,
   close,
 
   stdin: new Stdin(),
