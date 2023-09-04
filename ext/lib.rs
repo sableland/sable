@@ -1,9 +1,12 @@
 pub mod extensions {
+    use bueno_ext_battery as battery;
     use bueno_ext_fs as fs;
 
     deno_core::extension!(
         bueno,
         ops = [
+            battery::op_battery_charging,
+            battery::op_battery_level,
             // read
             fs::op_read_file,
             fs::op_read_text_file,
@@ -21,7 +24,10 @@ pub mod extensions {
             "runtime.js",
             "io/mod.js",
             "io/stdio.js",
-            "fs/mod.js"
+            "fs/mod.js",
+            "battery/mod.js",
+            "web/mod.js",
+            "web/events.js",
         ],
     );
 
