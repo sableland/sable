@@ -47,6 +47,9 @@ export const LogLevel = {
   dirxml: "stdout",
   count: "stdout",
   countReset: "stdout",
+  time: "stdout",
+  timeLog: "stdout",
+  timeEnd: "stdout",
 
   error: "stderr",
   assert: "stderr",

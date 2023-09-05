@@ -120,9 +120,48 @@ export class Console {
   //#endregion
 
   //#region Timing
-  time() {}
-  timeLog() {}
-  timeEnd() {}
+  #timerTable = {};
+
+  #timePrinter = new Printer(LogLevel.time, genericFormattingConfig);
+  time(label) {
+    label = label ? String(label) : "default";
+
+    if (label in this.#timerTable) {
+      this.#timePrinter.print([`Timer '${label}' already exists`]);
+    } else {
+      this.#timerTable[label] = Date.now();
+    }
+  }
+
+  #timeLogPrinter = new Printer(LogLevel.timeLog, defaultPrinterConfig);
+  timeLog(label, ...args) {
+    label = label ? String(label) : "default";
+
+    const printer = this.#timeLogPrinter;
+
+    if (label in this.#timerTable) {
+      const duration = Date.now() - this.#timerTable[label];
+      args.unshift(`${label}:`, duration, "ms");
+      printer.print(args);
+    } else {
+      printer.print([`Timer '${label}' doesn't exist`]);
+    }
+  }
+
+  #timeEndPrinter = new Printer(LogLevel.timeEnd, genericFormattingConfig);
+  timeEnd(label) {
+    label = label ? String(label) : "default";
+
+    const printer = this.#timeEndPrinter;
+
+    if (label in this.#timerTable) {
+      const duration = Date.now() - this.#timerTable[label];
+      printer.print([`${label}:`, duration, "ms"]);
+      delete this.#timerTable[label];
+    } else {
+      printer.print([`Timer '${label}' doesn't exist`]);
+    }
+  }
   //#endregion
 }
 
