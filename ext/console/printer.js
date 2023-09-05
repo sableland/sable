@@ -1,7 +1,7 @@
 const core = Bueno.core;
 
-// TODO: Limit depth
-// FIXME: Handle circular objects
+// TODO(Im-Beast): Limit depth
+// FIXME(Im-Beast): Handle circular objects
 
 const colors = {
   black: "\x1b[30m",
@@ -32,255 +32,276 @@ function colorize(str, color) {
   return colors[color] + str + colors.reset;
 }
 
-function styleFunction(fn) {
-  const stringified = fn.toString();
+export const LogLevel = {
+  log: "stdout",
+  info: "stdout",
+  debug: "stdout",
+  warn: "stdout",
+  dir: "stdout",
+  dirxml: "stdout",
+  trace: "stdout",
 
-  const stringTag = fn[Symbol.toStringTag];
-  const constructorName =
-    stringTag ?? (stringified.startsWith("class") ? "Class" : "Function");
+  error: "stderr",
+  assert: "stderr",
+};
 
-  return colorize(
-    `[${constructorName}: ${fn.name || "( anonymous )"}]`,
-    "magenta"
-  );
-}
-
-function styleString(str, indent) {
-  return indent !== undefined ? colorize(`"${str}"`, "yellow") : str;
-}
-
-function styleBigInt(bigint) {
-  return colorize(bigint + "n", "lightBlue");
-}
-
-function styleNumber(num) {
-  return colorize(num, "lightBlue");
-}
-
-function styleBoolean(bool) {
-  return colorize(bool, "blue");
-}
-
-function styleSymbol(num) {
-  return colorize(num.toString(), "lightYellow");
-}
-
-function styleTypedArray(typedarr, indent) {
-  return `${typedarr.constructor.name}(${typedarr.length}) [ ${styleIterable(
-    typedarr,
-    indent
-  )}  ]`;
-}
-
-function styleArray(arr, indent) {
-  return `Array(${arr.length}) [ ${styleIterable(arr, indent)}  ]`;
-}
-
-function styleSet(set, indent) {
-  return `Set(${set.size}) [ ${styleIterable(set, indent)}  ]`;
-}
-
-function styleIterable(iter, indent, short = true) {
-  indent += 2;
-
-  const wraps = (iter?.length ?? iter?.size) > 5;
-  let string = wraps ? "\n" : " ";
-
-  if (short && wraps) {
-    string += " ".repeat(indent);
+export class Printer {
+  constructor(logLevel, config) {
+    this.logLevel = logLevel;
+    this.indent = config?.indent ?? 2;
+    this.maxDepth = config?.maxDepth ?? 2;
+    this.spottedObjects = new Set();
   }
 
-  let amount = 0;
-  for (const value of iter) {
-    if (amount !== 0 && amount % 5 === 0) {
-      // ellipsis
-      string += "\n";
-      if (short) {
-        string += " ".repeat(indent);
-      }
-    } else if (amount > 0) {
-      string += !short ? ",\n" : ", ";
+  print(args) {
+    let string = "";
+
+    for (let i = 0; i < args.length; ++i) {
+      const arg = args[i];
+      if (i > 0) string += " ";
+      string += this.style(arg);
     }
 
-    if (!short) {
+    string += "\n";
+    return string;
+  }
+
+  style(arg, indent) {
+    switch (typeof arg) {
+      // primitives
+      case "string":
+        return this.#styleString(arg, indent);
+      case "number":
+        return this.#styleNumber(arg);
+      case "bigint":
+        return this.#styleBigInt(arg);
+      case "boolean":
+        return this.#styleBoolean(arg);
+      case "symbol":
+        return this.#styleSymbol(arg);
+
+      // non-primitives
+      case "function":
+        return this.#styleFunction(arg);
+      case "object":
+        return this.#styleObject(arg, indent);
+      default:
+        return arg;
+    }
+  }
+
+  #styleObject(obj, indent = 0) {
+    if (Array.isArray(obj)) {
+      return this.#styleArray(obj, indent);
+    } else if (obj instanceof Map) {
+      return this.#styleMap(obj, indent);
+    } else if (obj instanceof Set) {
+      return this.#styleSet(obj, indent);
+    } else if (obj instanceof WeakMap) {
+      return this.#styleWeakMap();
+    } else if (obj instanceof Promise) {
+      return this.#stylePromise(obj, indent);
+    } else if (isTypedArray(obj)) {
+      return this.#styleTypedArray(obj, indent);
+    } else {
+      return this.#styleRecord(obj, indent);
+    }
+  }
+
+  #styleFunction(fn) {
+    const stringified = fn.toString();
+
+    const stringTag = fn[Symbol.toStringTag];
+    const constructorName =
+      stringTag ?? (stringified.startsWith("class") ? "Class" : "Function");
+
+    return colorize(
+      `[${constructorName}: ${fn.name || "( anonymous )"}]`,
+      "magenta"
+    );
+  }
+
+  #styleString(str, indent) {
+    return indent !== undefined ? colorize(`"${str}"`, "yellow") : str;
+  }
+
+  #styleBigInt(bigint) {
+    return colorize(bigint + "n", "lightBlue");
+  }
+
+  #styleNumber(num) {
+    return colorize(num, "lightBlue");
+  }
+
+  #styleBoolean(bool) {
+    return colorize(bool, "blue");
+  }
+
+  #styleSymbol(num) {
+    return colorize(num.toString(), "lightYellow");
+  }
+
+  #styleTypedArray(typedarr, indent) {
+    return `${typedarr.constructor.name}(${
+      typedarr.length
+    }) [ ${this.#styleIterable(typedarr, indent)}  ]`;
+  }
+
+  #styleArray(arr, indent) {
+    return `Array(${arr.length}) [ ${this.#styleIterable(arr, indent)}  ]`;
+  }
+
+  #styleSet(set, indent) {
+    return `Set(${set.size}) [ ${this.#styleIterable(set, indent)}  ]`;
+  }
+
+  #styleIterable(iter, indent, short = true) {
+    indent += this.indent;
+
+    const wraps = (iter?.length ?? iter?.size) > 5;
+    let string = wraps ? "\n" : " ";
+
+    if (short && wraps) {
       string += " ".repeat(indent);
     }
 
-    const styled = styleByType(value, indent);
-    if (short && styled.includes("\n")) {
-      return styleIterable(iter, indent - 2, false);
-    }
-    string += styled;
-
-    ++amount;
-  }
-
-  if (wraps) {
-    string += "\n" + " ".repeat(indent - 2);
-  }
-
-  return string;
-}
-
-function stylePromise(promise, indent) {
-  let info = colorize("unknown", "yellow");
-
-  try {
-    const details = core.getPromiseDetails(promise);
-    const state = details[0];
-    const result = details[1];
-
-    switch (state) {
-      case 0:
-        info = colorize("pending", "lightCyan");
-        break;
-      case 1:
-        info = `${colorize("fulfilled", "lightGreen")} => ${styleByType(
-          result,
-          indent
-        )}`;
-        break;
-      case 2:
-        info = `${colorize("rejected", "lightRed")} => ${styleByType(
-          result,
-          indent
-        )}`;
-        break;
-    }
-  } catch {}
-
-  return `Promise { ${info} }`;
-}
-
-function styleWeakMap() {
-  return `WeakMap { ${colorize("items unknown", "lightRed")} }`;
-}
-
-function styleMap(map, indent, short = true) {
-  indent += 2;
-  let str = "";
-
-  str += `Map(${map.size})`;
-  str += short ? "{ " : "{";
-
-  let amount = 0;
-  for (const [key, value] of map.entries()) {
-    if (short) {
-      if (amount > 0) str += ", ";
-      str += `${key} => ${styleByType(value, indent)}`;
-
-      if (amount > 5 || str.length > 120) {
-        return styleMap(map, indent - 2, false);
+    let amount = 0;
+    for (const value of iter) {
+      if (amount !== 0 && amount % 5 === 0) {
+        // ellipsis
+        string += "\n";
+        if (short) {
+          string += " ".repeat(indent);
+        }
+      } else if (amount > 0) {
+        string += !short ? ",\n" : ", ";
       }
-    } else {
-      str += `\n${" ".repeat(indent)}${key} => ${styleByType(value, indent)},`;
-    }
 
-    ++amount;
-  }
-
-  if (!short) {
-    str += "\n";
-    str += " ".repeat(indent - 2) + "}";
-  } else {
-    str += " }";
-  }
-
-  return str;
-}
-
-function styleRecord(obj, indent, short = true, depth) {
-  indent += 2;
-  let str = "";
-
-  if (obj.constructor !== Object) {
-    // Object is a class
-    str += obj.constructor.name + " ";
-  }
-
-  str += short ? "{ " : "{";
-
-  let amount = 0;
-  for (const key in obj) {
-    const value = obj[key];
-
-    if (short) {
-      if (amount > 0) str += ", ";
-      str += `${key}: ${styleByType(value, indent)}`;
-
-      if (amount > 5 || str.length > 120) {
-        return styleRecord(obj, indent - 2, false);
+      if (!short) {
+        string += " ".repeat(indent);
       }
-    } else {
-      str += `\n${" ".repeat(indent)}${key}: ${styleByType(value, indent)},`;
+
+      const styled = this.style(value, indent);
+      if (short && styled.includes("\n")) {
+        return this.#styleIterable(iter, indent - this.indent, false);
+      }
+      string += styled;
+
+      ++amount;
     }
 
-    ++amount;
+    if (wraps) {
+      string += "\n" + " ".repeat(indent - this.indent);
+    }
+
+    return string;
   }
 
-  if (amount === 0) return "{}";
+  #stylePromise(promise, indent) {
+    let info = colorize("unknown", "yellow");
 
-  if (!short) {
-    str += "\n";
-    str += " ".repeat(indent - 2) + "}";
-  } else {
-    str += " }";
+    try {
+      const details = core.getPromiseDetails(promise);
+      const state = details[0];
+      const result = details[1];
+
+      switch (state) {
+        case 0:
+          info = colorize("pending", "lightCyan");
+          break;
+        case 1:
+          info = `${colorize("fulfilled", "lightGreen")} => ${this.style(
+            result,
+            indent
+          )}`;
+          break;
+        case 2:
+          info = `${colorize("rejected", "lightRed")} => ${this.style(
+            result,
+            indent
+          )}`;
+          break;
+      }
+    } catch {}
+
+    return `Promise { ${info} }`;
   }
 
-  return str;
-}
-
-function styleObject(obj, indent = 0) {
-  if (Array.isArray(obj)) {
-    return styleArray(obj, indent);
-  } else if (obj instanceof Map) {
-    return styleMap(obj, indent);
-  } else if (obj instanceof Set) {
-    return styleSet(obj, indent);
-  } else if (obj instanceof WeakMap) {
-    return styleWeakMap();
-  } else if (obj instanceof Promise) {
-    return stylePromise(obj, indent);
-  } else if (isTypedArray(obj)) {
-    return styleTypedArray(obj, indent);
-  } else {
-    return styleRecord(obj, indent);
-  }
-}
-
-function styleByType(arg, indent) {
-  switch (typeof arg) {
-    // primitives
-    case "string":
-      return styleString(arg, indent);
-    case "number":
-      return styleNumber(arg);
-    case "bigint":
-      return styleBigInt(arg);
-    case "boolean":
-      return styleBoolean(arg);
-    case "symbol":
-      return styleSymbol(arg);
-
-    // non-primitives
-    case "function":
-      return styleFunction(arg);
-    case "object":
-      return styleObject(arg, indent);
-    default:
-      return arg;
-  }
-}
-
-export function print(args) {
-  let string = "";
-
-  for (let i = 0; i < args.length; ++i) {
-    const arg = args[i];
-    if (i > 0) string += " ";
-    string += styleByType(arg);
+  #styleWeakMap() {
+    return `WeakMap { ${colorize("items unknown", "lightRed")} }`;
   }
 
-  string += "\n";
-  return string;
+  #styleMap(map, indent, short = true) {
+    indent += this.indent;
+    let str = "";
+
+    str += `Map(${map.size})`;
+    str += short ? "{ " : "{";
+
+    let amount = 0;
+    for (const [key, value] of map.entries()) {
+      if (short) {
+        if (amount > 0) str += ", ";
+        str += `${key} => ${this.style(value, indent)}`;
+
+        if (amount > 5 || str.length > 120) {
+          return this.#styleMap(map, indent - this.indent, false);
+        }
+      } else {
+        str += `\n${" ".repeat(indent)}${key} => ${this.style(value, indent)},`;
+      }
+
+      ++amount;
+    }
+
+    if (!short) {
+      str += "\n";
+      str += " ".repeat(indent - this.indent) + "}";
+    } else {
+      str += " }";
+    }
+
+    return str;
+  }
+
+  #styleRecord(obj, indent, short = true, depth) {
+    indent += this.indent;
+    let str = "";
+
+    if (obj.constructor !== Object) {
+      // Object is a class
+      str += obj.constructor.name + " ";
+    }
+
+    str += short ? "{ " : "{";
+
+    let amount = 0;
+    for (const key in obj) {
+      const value = obj[key];
+
+      if (short) {
+        if (amount > 0) str += ", ";
+        str += `${key}: ${this.style(value, indent)}`;
+
+        if (amount > 5 || str.length > 120) {
+          return this.#styleRecord(obj, indent - this.indent, false);
+        }
+      } else {
+        str += `\n${" ".repeat(indent)}${key}: ${this.style(value, indent)},`;
+      }
+
+      ++amount;
+    }
+
+    if (amount === 0) return "{}";
+
+    if (!short) {
+      str += "\n";
+      str += " ".repeat(indent - this.indent) + "}";
+    } else {
+      str += " }";
+    }
+
+    return str;
+  }
 }

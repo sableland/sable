@@ -129,6 +129,10 @@ console.log("deep obj:", {
   proxy: new Proxy({ hello: 123 }, {}),
 });
 
+console.log("pretty object: %o", {
+  hello: "world",
+});
+
 console.error("Hello bueno");
 
 console.error("is a even?", isOdd(a));

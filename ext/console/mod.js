@@ -1,19 +1,27 @@
-import { format } from "ext:bueno/console/formatter.js";
-import { print } from "ext:bueno/console/printer.js";
+import { Formatter } from "ext:bueno/console/formatter.js";
+import { Printer, LogLevel } from "ext:bueno/console/printer.js";
 
 const core = Bueno.core;
 
+const defaultPrinterConfig = { indent: 2, maxDepth: 4 };
+
 export class Console {
+  #formatter = new Formatter();
+  #logPrinter = new Printer(LogLevel.log, defaultPrinterConfig);
+  #errorPrinter = new Printer(LogLevel.error, defaultPrinterConfig);
+
   log(...args) {
-    const formatted = format(args);
-    const output = print(formatted);
+    const printer = this.#logPrinter;
+
+    const formatted = this.#formatter.format(args, printer);
+    const output = printer.print(formatted);
     core.print(output, false);
   }
 
   error(...args) {
-    const formatted = format(args);
-    const output = print(formatted);
-    core.print(output, true);
+    const formatted = this.#formatter.format(args);
+    const output = this.#errorPrinter.print(formatted);
+    core.print(output, false);
   }
 }
 
