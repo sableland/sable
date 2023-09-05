@@ -3,7 +3,12 @@ import { Printer, LogLevel } from "ext:bueno/console/printer.js";
 
 const core = Bueno.core;
 
-const defaultPrinterConfig = { indent: 2, maxDepth: 4 };
+const defaultPrinterConfig = {
+  indent: 2,
+  maxDepth: 4,
+  maxLineWidth: 80,
+  maxItemsPerLine: 5,
+};
 
 export class Console {
   #formatter = new Formatter();

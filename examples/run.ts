@@ -133,6 +133,19 @@ console.log("pretty object: %o", {
   hello: "world",
 });
 
+const circular = {};
+
+circular.ref = circular;
+
+console.log(circular);
+
+const map2 = new Map();
+map2.set("x", map2);
+console.log(map2);
+
+console.log(undefined);
+console.log(null);
+
 console.error("Hello bueno");
 
 console.error("is a even?", isOdd(a));

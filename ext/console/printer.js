@@ -1,9 +1,7 @@
 const core = Bueno.core;
 
-// TODO(Im-Beast): Limit depth
-// FIXME(Im-Beast): Handle circular objects
-
-const colors = {
+const ansiStyles = {
+  // colors
   black: "\x1b[30m",
   red: "\x1b[31m",
   green: "\x1b[32m",
@@ -20,6 +18,12 @@ const colors = {
   lightMagenta: "\x1b[95m",
   lightCyan: "\x1b[96m",
   lightWhite: "\x1b[97m",
+
+  // styles
+  bold: "\x1b[1m",
+  itallic: "\x1b[3m",
+
+  // reset
   reset: "\x1b[0m",
 };
 
@@ -28,8 +32,8 @@ function isTypedArray(obj) {
   return Object.getPrototypeOf(obj.constructor) === TypedArray;
 }
 
-function colorize(str, color) {
-  return colors[color] + str + colors.reset;
+function stylizeText(str, style) {
+  return ansiStyles[style] + str + ansiStyles.reset;
 }
 
 export const LogLevel = {
@@ -48,8 +52,14 @@ export const LogLevel = {
 export class Printer {
   constructor(logLevel, config) {
     this.logLevel = logLevel;
+
     this.indent = config?.indent ?? 2;
-    this.maxDepth = config?.maxDepth ?? 2;
+    this.maxDepth = config?.maxDepth ?? 4;
+    this.maxLineWidth = config?.maxLineWidth ?? 80;
+    this.maxItemsPerLine = config?.maxIterableLengthPerLine ?? 5;
+
+    this.currentDepth = 0;
+    this.objectId = 1;
     this.spottedObjects = new Set();
   }
 
@@ -60,17 +70,19 @@ export class Printer {
       const arg = args[i];
       if (i > 0) string += " ";
       string += this.style(arg);
+      this.spottedObjects.clear();
     }
 
     string += "\n";
     return string;
   }
 
-  style(arg, indent) {
+  style(arg, depth) {
     switch (typeof arg) {
       // primitives
       case "string":
-        return this.#styleString(arg, indent);
+        // depth here is passed just to check whether it should style it
+        return this.#styleString(arg, depth);
       case "number":
         return this.#styleNumber(arg);
       case "bigint":
@@ -84,27 +96,41 @@ export class Printer {
       case "function":
         return this.#styleFunction(arg);
       case "object":
-        return this.#styleObject(arg, indent);
+        if (depth > this.maxDepth) return arg.toString();
+        return this.#styleObject(arg, depth);
+
+      case "undefined":
+        return this.#styleUndefined();
+
       default:
-        return arg;
+        return arg?.toString() ?? arg;
     }
   }
 
-  #styleObject(obj, indent = 0) {
+  #styleObject(obj, depth = 0) {
+    if (obj === null) return this.#styleNull(depth);
+
+    if (this.spottedObjects.has(obj)) {
+      // TODO(Im-Beast): add support for pointing object reference of the Circular
+      return stylizeText(stylizeText("Circular", "red"), "bold");
+    } else {
+      this.spottedObjects.add(obj);
+    }
+
     if (Array.isArray(obj)) {
-      return this.#styleArray(obj, indent);
+      return this.#styleArray(obj, depth);
     } else if (obj instanceof Map) {
-      return this.#styleMap(obj, indent);
+      return this.#styleMap(obj, depth);
     } else if (obj instanceof Set) {
-      return this.#styleSet(obj, indent);
+      return this.#styleSet(obj, depth);
     } else if (obj instanceof WeakMap) {
       return this.#styleWeakMap();
     } else if (obj instanceof Promise) {
-      return this.#stylePromise(obj, indent);
+      return this.#stylePromise(obj, depth);
     } else if (isTypedArray(obj)) {
-      return this.#styleTypedArray(obj, indent);
+      return this.#styleTypedArray(obj, depth);
     } else {
-      return this.#styleRecord(obj, indent);
+      return this.#styleRecord(obj, depth);
     }
   }
 
@@ -115,51 +141,65 @@ export class Printer {
     const constructorName =
       stringTag ?? (stringified.startsWith("class") ? "Class" : "Function");
 
-    return colorize(
+    return stylizeText(
       `[${constructorName}: ${fn.name || "( anonymous )"}]`,
-      "magenta"
+      "lightMagenta"
     );
   }
 
-  #styleString(str, indent) {
-    return indent !== undefined ? colorize(`"${str}"`, "yellow") : str;
+  // TODO(Im-Beast): Add support for unescaping ANSI sequences
+  #styleString(str, depth) {
+    return depth !== undefined ? stylizeText(`"${str}"`, "yellow") : str;
   }
 
   #styleBigInt(bigint) {
-    return colorize(bigint + "n", "lightBlue");
+    return stylizeText(bigint + "n", "lightBlue");
   }
 
   #styleNumber(num) {
-    return colorize(num, "lightBlue");
+    return stylizeText(num, "lightBlue");
   }
 
   #styleBoolean(bool) {
-    return colorize(bool, "blue");
+    return stylizeText(bool, "blue");
   }
 
   #styleSymbol(num) {
-    return colorize(num.toString(), "lightYellow");
+    return stylizeText(num.toString(), "lightYellow");
   }
 
-  #styleTypedArray(typedarr, indent) {
+  #styleUndefined() {
+    return stylizeText("undefined", "lightBlack");
+  }
+
+  #styleNull() {
+    return stylizeText("null", "lightBlack");
+  }
+
+  #styleTypedArray(typedarr, depth) {
     return `${typedarr.constructor.name}(${
       typedarr.length
-    }) [ ${this.#styleIterable(typedarr, indent)}  ]`;
+    }) [ ${this.#styleIterable(typedarr, depth)} ]`;
   }
 
-  #styleArray(arr, indent) {
-    return `Array(${arr.length}) [ ${this.#styleIterable(arr, indent)}  ]`;
+  #styleArray(arr, depth) {
+    return `Array(${arr.length}) [ ${this.#styleIterable(arr, depth)} ]`;
   }
 
-  #styleSet(set, indent) {
-    return `Set(${set.size}) [ ${this.#styleIterable(set, indent)}  ]`;
+  #styleSet(set, depth) {
+    return `Set(${set.size}) [ ${this.#styleIterable(set, depth)} ]`;
   }
 
-  #styleIterable(iter, indent, short = true) {
-    indent += this.indent;
+  #styleWeakMap() {
+    return `WeakMap { ${stylizeText("items unknown", "lightRed")} }`;
+  }
 
-    const wraps = (iter?.length ?? iter?.size) > 5;
-    let string = wraps ? "\n" : " ";
+  #styleIterable(iter, depth, short = true) {
+    depth += 1;
+    const indent = depth * this.indent;
+
+    const wraps = (iter?.length ?? iter?.size) > this.maxItemsPerLine;
+    let string = wraps ? "\n" : "";
 
     if (short && wraps) {
       string += " ".repeat(indent);
@@ -167,8 +207,7 @@ export class Printer {
 
     let amount = 0;
     for (const value of iter) {
-      if (amount !== 0 && amount % 5 === 0) {
-        // ellipsis
+      if (amount !== 0 && amount % this.maxItemsPerLine === 0) {
         string += "\n";
         if (short) {
           string += " ".repeat(indent);
@@ -181,9 +220,9 @@ export class Printer {
         string += " ".repeat(indent);
       }
 
-      const styled = this.style(value, indent);
+      const styled = this.style(value, depth);
       if (short && styled.includes("\n")) {
-        return this.#styleIterable(iter, indent - this.indent, false);
+        return this.#styleIterable(iter, depth - 1, false);
       }
       string += styled;
 
@@ -191,14 +230,14 @@ export class Printer {
     }
 
     if (wraps) {
-      string += "\n" + " ".repeat(indent - this.indent);
+      string += "\n" + " ".repeat(depth - 1);
     }
 
     return string;
   }
 
-  #stylePromise(promise, indent) {
-    let info = colorize("unknown", "yellow");
+  #stylePromise(promise, depth) {
+    let info = stylizeText("unknown", "yellow");
 
     try {
       const details = core.getPromiseDetails(promise);
@@ -207,18 +246,18 @@ export class Printer {
 
       switch (state) {
         case 0:
-          info = colorize("pending", "lightCyan");
+          info = stylizeText("pending", "lightCyan");
           break;
         case 1:
-          info = `${colorize("fulfilled", "lightGreen")} => ${this.style(
+          info = `${stylizeText("fulfilled", "lightGreen")} => ${this.style(
             result,
-            indent
+            depth
           )}`;
           break;
         case 2:
-          info = `${colorize("rejected", "lightRed")} => ${this.style(
+          info = `${stylizeText("rejected", "lightRed")} => ${this.style(
             result,
-            indent
+            depth
           )}`;
           break;
       }
@@ -227,28 +266,26 @@ export class Printer {
     return `Promise { ${info} }`;
   }
 
-  #styleWeakMap() {
-    return `WeakMap { ${colorize("items unknown", "lightRed")} }`;
-  }
-
-  #styleMap(map, indent, short = true) {
-    indent += this.indent;
+  #styleMap(map, depth, short = true) {
+    depth += 1;
+    const indent = depth * this.indent;
     let str = "";
 
-    str += `Map(${map.size})`;
+    str += `Map(${map.size}) `;
     str += short ? "{ " : "{";
 
     let amount = 0;
     for (const [key, value] of map.entries()) {
       if (short) {
         if (amount > 0) str += ", ";
-        str += `${key} => ${this.style(value, indent)}`;
+        str += `${key} => ${this.style(value, depth)}`;
 
-        if (amount > 5 || str.length > 120) {
-          return this.#styleMap(map, indent - this.indent, false);
+        // FIXME(Im-Beast): str.length can actually include styles, so it invalidly checks maxLineWidth
+        if (amount > this.maxItemsPerLine || str.length > this.maxLineWidth) {
+          return this.#styleMap(map, depth - 1, false);
         }
       } else {
-        str += `\n${" ".repeat(indent)}${key} => ${this.style(value, indent)},`;
+        str += `\n${" ".repeat(indent)}${key} => ${this.style(value, depth)},`;
       }
 
       ++amount;
@@ -264,8 +301,9 @@ export class Printer {
     return str;
   }
 
-  #styleRecord(obj, indent, short = true, depth) {
-    indent += this.indent;
+  #styleRecord(obj, depth, short = true) {
+    depth += 1;
+    const indent = depth * this.indent;
     let str = "";
 
     if (obj.constructor !== Object) {
@@ -281,13 +319,14 @@ export class Printer {
 
       if (short) {
         if (amount > 0) str += ", ";
-        str += `${key}: ${this.style(value, indent)}`;
+        str += `${key}: ${this.style(value, depth)}`;
 
-        if (amount > 5 || str.length > 120) {
-          return this.#styleRecord(obj, indent - this.indent, false);
+        // FIXME(Im-Beast): str.length can actually include styles, so it invalidately checks maxLineWidth
+        if (amount > this.maxItemsPerLine || str.length > this.maxLineWidth) {
+          return this.#styleRecord(obj, depth - 1, false);
         }
       } else {
-        str += `\n${" ".repeat(indent)}${key}: ${this.style(value, indent)},`;
+        str += `\n${" ".repeat(indent)}${key}: ${this.style(value, depth)},`;
       }
 
       ++amount;
