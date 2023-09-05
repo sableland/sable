@@ -125,7 +125,7 @@ console.log("deep obj:", {
   }),
   rejectedPromise: new Promise<void>((_, rej) => {
     rej("REJECTED!");
-  }),
+  }).catch(() => "rejected"),
   proxy: new Proxy({ hello: 123 }, {}),
 });
 
@@ -149,3 +149,5 @@ console.log(null);
 console.error("Hello bueno");
 
 console.error("is a even?", isOdd(a));
+console.trace("test %o", { hello: "world" });
+console.assert(false, "dog");
