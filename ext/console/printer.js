@@ -80,11 +80,7 @@ export class Printer {
 
       string += this.usefulFormatting
         ? this.style(arg)
-        : // TODO(Im-Beast): create actual genericStyle function
-          // if stringify returns undefined then arg couldn't be parsed
-          // so at least say what type it is
-          // the most likely circumstance is that it's a function
-          JSON.stringify(arg) ?? typeof arg;
+        : this.genericStyle(arg);
 
       this.spottedObjects.clear();
     }
@@ -132,6 +128,33 @@ export class Printer {
       case "undefined":
         return this.#styleUndefined();
 
+      default:
+        return arg?.toString() ?? arg;
+    }
+  }
+
+  genericStyle(arg) {
+    switch (typeof arg) {
+      // primitives
+      case "string":
+        return arg;
+      case "bigint":
+        return arg.toString() + "n";
+
+      // non-primitives
+      case "function": {
+        const stringified = fn.toString();
+
+        const stringTag = fn[Symbol.toStringTag];
+        const constructorName =
+          stringTag ?? (stringified.startsWith("class") ? "Class" : "Function");
+
+        return `${constructorName} (${fn.name || "anonymous"})`;
+      }
+      case "object":
+        return JSON.stringify(arg, null, " ");
+
+      // anything that can just be .toString() and looks alright
       default:
         return arg?.toString() ?? arg;
     }
@@ -194,8 +217,8 @@ export class Printer {
     return stylizeText(bool, "blue");
   }
 
-  #styleSymbol(num) {
-    return stylizeText(num.toString(), "lightYellow");
+  #styleSymbol(sym) {
+    return stylizeText(sym.toString(), "lightYellow");
   }
 
   #styleUndefined() {
