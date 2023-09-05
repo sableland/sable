@@ -22,43 +22,43 @@ export class Console {
   #logPrinter = new Printer(LogLevel.log, defaultPrinterConfig);
   log(...args) {
     const printer = this.#logPrinter;
-    printer.print(this.#formatter.format(args, printer), this.groupStackSize);
+    printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
   #infoPrinter = new Printer(LogLevel.info, defaultPrinterConfig);
   info(...args) {
     const printer = this.#infoPrinter;
-    printer.print(this.#formatter.format(args, printer), this.groupStackSize);
+    printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
   #debugPrinter = new Printer(LogLevel.debug, defaultPrinterConfig);
   debug(...args) {
     const printer = this.#debugPrinter;
-    printer.print(this.#formatter.format(args, printer), this.groupStackSize);
+    printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
   #warnPrinter = new Printer(LogLevel.warn, defaultPrinterConfig);
   warn(...args) {
     const printer = this.#warnPrinter;
-    printer.print(this.#formatter.format(args, printer), this.groupStackSize);
+    printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
   #dirxmlPrinter = new Printer(LogLevel.dirxml, defaultPrinterConfig);
   dirxml(...args) {
     const printer = this.#dirxmlPrinter;
-    printer.print(this.#formatter.format(args, printer), this.groupStackSize);
+    printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
   #dirPrinter = new Printer(LogLevel.dir, genericFormattingConfig);
   dir(arg, _options) {
     const printer = this.#dirPrinter;
-    printer.print([arg], this.groupStackSize);
+    printer.print([arg], this.#groupStackSize);
   }
 
   #errorPrinter = new Printer(LogLevel.error, defaultPrinterConfig);
   error(...args) {
     const printer = this.#errorPrinter;
-    printer.print(this.#formatter.format(args, printer), this.groupStackSize);
+    printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
   #tracePrinter = new Printer(LogLevel.trace, defaultPrinterConfig);
@@ -73,7 +73,7 @@ export class Console {
     };
     Error.captureStackTrace(error, this.trace);
 
-    printer.print(error.stack, this.groupStackSize);
+    printer.print(error.stack, this.#groupStackSize);
   }
 
   #assertPrinter = new Printer(LogLevel.assert, defaultPrinterConfig);
@@ -81,9 +81,8 @@ export class Console {
     if (condition) return;
     const printer = this.#assertPrinter;
     const formatted = this.#formatter.format(args, printer);
-    // Prepend "Assertion failed" message
     formatted.unshift("Assertion failed:");
-    printer.print(formatted, this.groupStackSize);
+    printer.print(formatted, this.#groupStackSize);
   }
 
   table() {}
@@ -131,7 +130,7 @@ export class Console {
     if (label in this.#timerTable) {
       this.#timePrinter.print(
         `Timer '${label}' already exists`,
-        this.groupStackSize
+        this.#groupStackSize
       );
     } else {
       this.#timerTable[label] = Date.now();
@@ -147,9 +146,9 @@ export class Console {
     if (label in this.#timerTable) {
       const duration = Date.now() - this.#timerTable[label];
       args.unshift(`${label}: ${duration} ms`);
-      printer.print(args, this.groupStackSize);
+      printer.print(args, this.#groupStackSize);
     } else {
-      printer.print(`Timer '${label}' doesn't exist`, this.groupStackSize);
+      printer.print(`Timer '${label}' doesn't exist`, this.#groupStackSize);
     }
   }
 
@@ -162,16 +161,16 @@ export class Console {
     if (label in this.#timerTable) {
       const duration = Date.now() - this.#timerTable[label];
       delete this.#timerTable[label];
-      printer.print(`${label}: ${duration} ms`, this.groupStackSize);
+      printer.print(`${label}: ${duration} ms`, this.#groupStackSize);
     } else {
-      printer.print(`Timer '${label}' doesn't exist`, this.groupStackSize);
+      printer.print(`Timer '${label}' doesn't exist`, this.#groupStackSize);
     }
   }
   //#endregion
 
   //#region Grouping
-  groupStackSize = 0;
-  groupStack = [];
+  #groupStackSize = 0;
+  #groupStack = [];
 
   #groupPrinter = new Printer(LogLevel.group, defaultPrinterConfig);
   group(...args) {
@@ -185,10 +184,10 @@ export class Console {
       .print(this.#formatter.format(args, printer), 0, false)
       .trim();
 
-    this.groupStack.unshift(groupName);
-    this.groupStackSize += 1;
+    this.#groupStack.unshift(groupName);
+    this.#groupStackSize += 1;
 
-    printer.print(`[ ${groupName} ]`, this.groupStackSize);
+    printer.print(`[ ${groupName} ]`, this.#groupStackSize);
   }
 
   groupCollapsed(...args) {
@@ -196,8 +195,8 @@ export class Console {
   }
 
   groupEnd() {
-    this.groupStack.pop();
-    this.groupStackSize -= 1;
+    this.#groupStack.pop();
+    this.#groupStackSize -= 1;
   }
   //#endregion
 }
