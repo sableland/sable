@@ -85,11 +85,38 @@ export class Console {
   }
 
   table() {}
+
+  clear() {
+    core.print("\x1b[1;1H\x1b[0J", false);
+  }
   //#endregion
 
   //#region Counting
-  count() {}
-  countReset() {}
+  #counters = {};
+
+  #countPrinter = new Printer(LogLevel.count, defaultPrinterConfig);
+  count(label) {
+    label = label ? String(label) : "default";
+
+    this.#counters[label] ??= 0;
+    const value = ++this.#counters[label];
+
+    this.#countPrinter.print([label + ":", value]);
+  }
+
+  #countResetPrinter = new Printer(
+    LogLevel.countReset,
+    genericFormattingConfig
+  );
+  countReset(label) {
+    label = label ? String(label) : "default";
+
+    if (label in this.#counters) {
+      this.#counters[label] &&= 0;
+    } else {
+      this.#countResetPrinter.print([`Count for '${label}' doesn't exist`]);
+    }
+  }
   //#endregion
 
   //#region Timing

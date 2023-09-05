@@ -45,6 +45,8 @@ export const LogLevel = {
   warn: "stdout",
   dir: "stdout",
   dirxml: "stdout",
+  count: "stdout",
+  countReset: "stdout",
 
   error: "stderr",
   assert: "stderr",
@@ -75,7 +77,8 @@ export class Printer {
 
       string += this.usefulFormatting
         ? this.style(arg)
-        : // if stringify returns undefined then arg couldn't be parsed
+        : // TODO(Im-Beast): create actual genericStyle function
+          // if stringify returns undefined then arg couldn't be parsed
           // so at least say what type it is
           // the most likely circumstance is that it's a function
           JSON.stringify(arg) ?? typeof arg;

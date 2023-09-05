@@ -151,3 +151,17 @@ console.error("Hello bueno");
 console.error("is a even?", isOdd(a));
 console.trace("test %o", { hello: "world" });
 console.assert(false, "dog");
+
+for (let i = 0; i < 3; ++i) {
+  console.count();
+  console.count("dog");
+}
+
+console.countReset("dog");
+
+for (let i = 0; i < 3; ++i) {
+  console.count();
+  console.count("dog");
+}
+
+console.countReset("cat");
