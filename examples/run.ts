@@ -142,18 +142,14 @@ console.log(circular);
 const map2 = new Map();
 map2.set("x", map2);
 console.time("console apis");
-for (let i = 0; i < 1000; ++i) {
-  console.log(map2);
+console.log(undefined);
+console.log(null);
 
-  console.log(undefined);
-  console.log(null);
+console.error("Hello bueno");
 
-  console.error("Hello bueno");
-
-  console.error("is a even?", isOdd(a));
-  console.trace("test %o", { hello: "world" });
-  console.assert(false, "dog");
-}
+console.error("is a even?", isOdd(a));
+console.trace("test %o", { hello: "world" });
+console.assert(false, "dog");
 
 console.timeLog("console apis", { test: "obj" });
 
@@ -174,3 +170,14 @@ console.timeEnd("console apis");
 
 console.time("console apis");
 console.timeEnd("console apis");
+
+console.log("This is the outer level");
+console.group();
+console.log("Level 2");
+console.groupCollapsed();
+console.log("Level 3");
+console.warn("More of level 3");
+console.groupEnd();
+console.log("Back to level 2");
+console.groupEnd();
+console.log("Back to the outer level");

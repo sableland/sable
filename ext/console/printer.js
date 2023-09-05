@@ -37,19 +37,19 @@ function stylizeText(str, style) {
 }
 
 export const LogLevel = {
-  trace: "none",
-
   log: "stdout",
   info: "stdout",
   debug: "stdout",
   warn: "stdout",
   dir: "stdout",
   dirxml: "stdout",
+  trace: "stdout",
   count: "stdout",
   countReset: "stdout",
   time: "stdout",
   timeLog: "stdout",
   timeEnd: "stdout",
+  group: "stdout",
 
   error: "stderr",
   assert: "stderr",
@@ -71,34 +71,47 @@ export class Printer {
     this.spottedObjects = new Set();
   }
 
-  print(args) {
+  print(stringOrArgs, groupStackSize, print = true) {
     let string = "";
 
-    for (let i = 0; i < args.length; ++i) {
-      const arg = args[i];
-      if (i > 0) string += " ";
+    if (typeof stringOrArgs === "string") {
+      if (groupStackSize > 0) {
+        string += " ".repeat(groupStackSize * this.indent);
+      }
 
-      string += this.usefulFormatting
-        ? this.style(arg)
-        : this.genericStyle(arg);
+      string += this.style(stringOrArgs);
+    } else {
+      const args = stringOrArgs;
 
-      this.spottedObjects.clear();
+      for (let i = 0; i < args.length; ++i) {
+        const arg = args[i];
+        if (i > 0) string += " ";
+
+        if (groupStackSize > 0) {
+          string += " ".repeat(groupStackSize * this.indent);
+        }
+
+        string += this.usefulFormatting
+          ? this.style(arg)
+          : this.genericStyle(arg);
+
+        this.spottedObjects.clear();
+      }
     }
 
     const output = string + "\n";
 
-    switch (this.logLevel) {
-      case "stdout":
-        core.print(output, false);
-        break;
-      case "stderr":
-        core.print(output, true);
-        break;
-      case "none":
-        break;
-      default:
-        throw new Error("Unknown Printer LogLevel:" + this.logLevel);
-    }
+    if (print)
+      switch (this.logLevel) {
+        case "stdout":
+          core.print(output, false);
+          break;
+        case "stderr":
+          core.print(output, true);
+          break;
+        default:
+          throw new Error("Unknown Printer LogLevel:" + this.logLevel);
+      }
 
     return output;
   }
@@ -202,7 +215,7 @@ export class Printer {
 
   // TODO(Im-Beast): Add support for unescaping ANSI sequences
   #styleString(str, depth) {
-    return depth !== undefined ? stylizeText(`"${str}"`, "yellow") : str;
+    return depth > 0 ? stylizeText(`"${str}"`, "yellow") : str;
   }
 
   #styleBigInt(bigint) {
