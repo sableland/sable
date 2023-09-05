@@ -37,13 +37,14 @@ function stylizeText(str, style) {
 }
 
 export const LogLevel = {
+  trace: "none",
+
   log: "stdout",
   info: "stdout",
   debug: "stdout",
   warn: "stdout",
   dir: "stdout",
   dirxml: "stdout",
-  trace: "stdout",
 
   error: "stderr",
   assert: "stderr",
@@ -52,6 +53,8 @@ export const LogLevel = {
 export class Printer {
   constructor(logLevel, config) {
     this.logLevel = logLevel;
+
+    this.usefulFormatting = config?.usefulFormatting ?? true;
 
     this.indent = config?.indent ?? 2;
     this.maxDepth = config?.maxDepth ?? 4;
@@ -69,12 +72,33 @@ export class Printer {
     for (let i = 0; i < args.length; ++i) {
       const arg = args[i];
       if (i > 0) string += " ";
-      string += this.style(arg);
+
+      string += this.usefulFormatting
+        ? this.style(arg)
+        : // if stringify returns undefined then arg couldn't be parsed
+          // so at least say what type it is
+          // the most likely circumstance is that it's a function
+          JSON.stringify(arg) ?? typeof arg;
+
       this.spottedObjects.clear();
     }
 
-    string += "\n";
-    return string;
+    const output = string + "\n";
+
+    switch (this.logLevel) {
+      case "stdout":
+        core.print(output, false);
+        break;
+      case "stderr":
+        core.print(output, true);
+        break;
+      case "none":
+        break;
+      default:
+        throw new Error("Unknown Printer LogLevel:" + this.logLevel);
+    }
+
+    return output;
   }
 
   style(arg, depth) {
