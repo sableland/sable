@@ -50,6 +50,7 @@ export const LogLevel = {
   timeLog: "stdout",
   timeEnd: "stdout",
   group: "stdout",
+  table: "stdout",
 
   error: "stderr",
   assert: "stderr",
@@ -75,10 +76,7 @@ export class Printer {
     let string = "";
 
     if (typeof stringOrArgs === "string") {
-      if (groupStackSize > 0) {
-        string += " ".repeat(groupStackSize * this.indent);
-      }
-
+      string += " ".repeat(groupStackSize * this.indent);
       string += this.style(stringOrArgs);
     } else {
       const args = stringOrArgs;
@@ -87,10 +85,7 @@ export class Printer {
         const arg = args[i];
         if (i > 0) string += " ";
 
-        if (groupStackSize > 0) {
-          string += " ".repeat(groupStackSize * this.indent);
-        }
-
+        string += " ".repeat(groupStackSize * this.indent);
         string += this.usefulFormatting
           ? this.style(arg)
           : this.genericStyle(arg);

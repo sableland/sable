@@ -27,7 +27,8 @@ pub mod extensions {
             "fs/mod.js",
             "console/mod.js",
             "console/printer.js",
-            "console/formatter.js"
+            "console/formatter.js",
+            "console/table.js"
         ],
     );
 

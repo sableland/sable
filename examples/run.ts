@@ -180,4 +180,32 @@ console.warn("More of level 3");
 console.groupEnd();
 console.log("Back to level 2");
 console.groupEnd();
-console.log("Back to the outer level");
+console.log("Back to the outer level"); 
+
+console.group();
+console.group();
+console.group();
+console.table([
+  ["Tyrone", "Jones"],
+  ["Janet", "Smith"],
+  ["Maria", "Cruz"],
+]);
+console.groupEnd();
+console.groupEnd();
+console.groupEnd();
+
+console.table(["hello", "world"]);
+
+function Person(firstName, lastName) {
+  this.firstName = firstName;
+  this.lastName = lastName;
+}
+
+const tyrone = new Person("Tyrone", "Jones");
+const janet = new Person("Janet", "Smith");
+const maria = new Person("Maria", "Cruz");
+
+console.table([tyrone, janet, maria], ["firstName"]);
+console.table([tyrone, janet, maria], ["lastName"]);
+console.table([tyrone, janet, maria], ["firstName", "lastName"]);
+

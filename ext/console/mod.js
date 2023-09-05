@@ -1,5 +1,6 @@
 import { Formatter } from "ext:bueno/console/formatter.js";
 import { Printer, LogLevel } from "ext:bueno/console/printer.js";
+import { createTable } from "ext:bueno/console/table.js";
 
 const core = Bueno.core;
 
@@ -85,7 +86,16 @@ export class Console {
     printer.print(formatted, this.#groupStackSize);
   }
 
-  table() {}
+  #tablePrinter = new Printer(LogLevel.table, genericFormattingConfig);
+  table(data, columns) {
+    const table = createTable(
+      data,
+      columns,
+      this.#groupStackSize,
+      defaultPrinterConfig
+    );
+    this.#tablePrinter.print(table, 0);
+  }
 
   clear() {
     core.print("\x1b[1;1H\x1b[0J", false);
