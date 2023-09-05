@@ -94,14 +94,14 @@ export class Console {
   //#region Counting
   #counters = {};
 
-  #countPrinter = new Printer(LogLevel.count, defaultPrinterConfig);
+  #countPrinter = new Printer(LogLevel.count, genericFormattingConfig);
   count(label) {
     label = label ? String(label) : "default";
 
     this.#counters[label] ??= 0;
     const value = ++this.#counters[label];
 
-    this.#countPrinter.print([label + ":", value]);
+    this.#countPrinter.print([`${label}: ${value}`]);
   }
 
   #countResetPrinter = new Printer(
@@ -141,7 +141,7 @@ export class Console {
 
     if (label in this.#timerTable) {
       const duration = Date.now() - this.#timerTable[label];
-      args.unshift(`${label}:`, duration, "ms");
+      args.unshift(`${label}: ${duration} ms`);
       printer.print(args);
     } else {
       printer.print([`Timer '${label}' doesn't exist`]);
@@ -156,7 +156,7 @@ export class Console {
 
     if (label in this.#timerTable) {
       const duration = Date.now() - this.#timerTable[label];
-      printer.print([`${label}:`, duration, "ms"]);
+      printer.print([`${label}: ${duration} ms`]);
       delete this.#timerTable[label];
     } else {
       printer.print([`Timer '${label}' doesn't exist`]);
