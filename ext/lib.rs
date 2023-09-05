@@ -17,11 +17,14 @@ pub mod extensions {
         esm_entry_point = "ext:bueno/runtime.js",
         esm = [
             "bueno.js",
-            "console.js",
             "runtime.js",
             "io/mod.js",
             "io/stdio.js",
-            "fs/mod.js"
+            "fs/mod.js",
+            "console/mod.js",
+            "console/printer.js",
+            "console/formatter.js",
+            "console/table.js"
         ],
     );
 
