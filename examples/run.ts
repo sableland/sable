@@ -180,7 +180,7 @@ console.warn("More of level 3");
 console.groupEnd();
 console.log("Back to level 2");
 console.groupEnd();
-console.log("Back to the outer level"); 
+console.log("Back to the outer level");
 
 console.group();
 console.group();
@@ -209,3 +209,22 @@ console.table([tyrone, janet, maria], ["firstName"]);
 console.table([tyrone, janet, maria], ["lastName"]);
 console.table([tyrone, janet, maria], ["firstName", "lastName"]);
 
+const start = performance.now();
+console.log(start);
+
+for (let i = 0; i < 100_000; ++i) {
+  Math.random();
+}
+
+const end = performance.now();
+console.log(end);
+console.log("Elapsed:", end - start);
+
+console.log("ORIGIN:", performance.timeOrigin);
+console.log(
+  "date-performance.timeOrigin vs performance.now",
+  Date.now() - performance.timeOrigin,
+  performance.now(),
+);
+
+console.log(Date.now());

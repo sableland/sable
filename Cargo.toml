@@ -1,6 +1,6 @@
 [workspace.package]
-name = "buenojs"
 version = "0.0.1"
+name = "buenojs"
 edition = "2021"
 license = "MIT"
 authors = ["The Bueno Team"]

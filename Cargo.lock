@@ -171,11 +171,20 @@ name = "bueno_ext"
 version = "0.0.1"
 dependencies = [
  "bueno_ext_fs",
+ "bueno_ext_performance",
  "deno_core",
 ]
 
 [[package]]
 name = "bueno_ext_fs"
+version = "0.0.1"
+dependencies = [
+ "deno_core",
+ "tokio",
+]
+
+[[package]]
+name = "bueno_ext_performance"
 version = "0.0.1"
 dependencies = [
  "deno_core",
