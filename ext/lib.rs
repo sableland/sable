@@ -2,6 +2,7 @@ pub mod extensions {
     use bueno_ext_battery as battery;
     use bueno_ext_fs as fs;
     use bueno_ext_performance as performance;
+    use bueno_ext_testing as testing;
     use bueno_ext_timers as timers;
     use std::time::{Instant, SystemTime};
 
@@ -46,6 +47,7 @@ pub mod extensions {
             "webidl/integers.js",
             "utils/ansi.js",
             "utils/strings.js",
+            "testing/mod.js",
         ],
         state = |state| {
             {
