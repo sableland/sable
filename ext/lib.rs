@@ -31,7 +31,7 @@ pub mod extensions {
         ],
         state = |state| {
             {
-                // bun_ext_perf
+                // bueno_ext_perf
                 state.put(Instant::now());
                 state.put(SystemTime::now());
             };
