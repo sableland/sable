@@ -1,6 +1,6 @@
 [package]
-name = "bueno_ext"
-description = "Bueno runtime extensions"
+name = "bueno_ext_performance"
+description = "Bueno Performance extension"
 edition.workspace = true
 version.workspace = true
 authors.workspace = true
@@ -12,6 +12,4 @@ path = "lib.rs"
 
 [dependencies]
 deno_core.workspace = true
-bueno_ext_battery = { path = "./battery/" }
-bueno_ext_fs = { path = "./fs/" }
-bueno_ext_performance = { path = "./performance/" }
+tokio.workspace = true
