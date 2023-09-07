@@ -1,25 +1,16 @@
 const core = Bueno.core;
 
-// These are the default values for the BatteryManager object.
-// https://w3c.github.io/battery/#internal-slots-0
-const batteryValues = {
-  charging: true,
-  chargingTime: 0,
-  dischargingTime: Infinity,
-  level: 1,
-};
-
 class BatteryManager extends EventTarget {
   get charging() {
     return core.ops.op_battery_charging();
   }
 
   get chargingTime() {
-    return batteryValues.chargingTime;
+    return core.ops.op_battery_charging_time();
   }
 
   get dischargingTime() {
-    return batteryValues.dischargingTime;
+    return core.ops.op_battery_discharging_time();
   }
 
   get level() {

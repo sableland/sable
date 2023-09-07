@@ -8,6 +8,8 @@ pub mod extensions {
         bueno,
         ops = [
             battery::op_battery_charging,
+            battery::op_battery_charging_time,
+            battery::op_battery_discharging_time,
             battery::op_battery_level,
             fs::op_read_file,
             fs::op_read_text_file,

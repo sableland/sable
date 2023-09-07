@@ -53,25 +53,25 @@ export class Formatter {
           case "%i":
             arg = arg.replace(
               specifier,
-              current instanceof Symbol ? "NaN" : parseInt(current)
+              current instanceof Symbol ? "NaN" : parseInt(current),
             );
             break;
           case "%f":
             arg = arg.replace(
               specifier,
-              current instanceof Symbol ? "NaN" : parseFloat(current)
+              current instanceof Symbol ? "NaN" : parseFloat(current),
             );
             break;
           case "%o":
             arg = arg.replace(
               specifier,
-              printer ? printer.style(current) : JSON.stringify(current)
+              printer ? printer.style(current) : JSON.stringify(current),
             );
             break;
           case "%O":
             arg = arg.replace(
               specifier,
-              printer ? printer.genericStyle(current) : JSON.stringify(current)
+              printer ? printer.genericStyle(current) : JSON.stringify(current),
             );
             break;
           case "%c":

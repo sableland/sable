@@ -1,5 +1,5 @@
 import { Formatter } from "ext:bueno/console/formatter.js";
-import { Printer, LogLevel } from "ext:bueno/console/printer.js";
+import { LogLevel, Printer } from "ext:bueno/console/printer.js";
 import { createTable } from "ext:bueno/console/table.js";
 
 const core = Bueno.core;
@@ -92,7 +92,7 @@ export class Console {
       data,
       columns,
       this.#groupStackSize,
-      defaultPrinterConfig
+      defaultPrinterConfig,
     );
     this.#tablePrinter.print(table, 0);
   }
@@ -117,7 +117,7 @@ export class Console {
 
   #countResetPrinter = new Printer(
     LogLevel.countReset,
-    genericFormattingConfig
+    genericFormattingConfig,
   );
   countReset(label) {
     label = label ? String(label) : "default";
@@ -140,7 +140,7 @@ export class Console {
     if (label in this.#timerTable) {
       this.#timePrinter.print(
         `Timer '${label}' already exists`,
-        this.#groupStackSize
+        this.#groupStackSize,
       );
     } else {
       this.#timerTable[label] = Date.now();
