@@ -1,4 +1,4 @@
-import { Stdin, Stdout, Stderr } from "ext:bueno/io/stdio.js";
+import { Stderr, Stdin, Stdout } from "ext:bueno/io/stdio.js";
 
 const core = Bueno.core;
 

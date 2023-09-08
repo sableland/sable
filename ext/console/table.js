@@ -39,7 +39,7 @@ export function createTable(data, columns, groupStackSize, printerConfig) {
 
       maxWidthByColumns[column] = Math.max(
         value.length,
-        maxWidthByColumns[column] ?? 0
+        maxWidthByColumns[column] ?? 0,
       );
 
       ++column;
@@ -67,14 +67,13 @@ export function createTable(data, columns, groupStackSize, printerConfig) {
     for (const value of header) {
       maxWidthByColumns[column] = Math.max(
         value.length,
-        maxWidthByColumns[column] ?? 0
+        maxWidthByColumns[column] ?? 0,
       );
       ++column;
     }
   }
 
-  let string =
-    "\n" +
+  let string = "\n" +
     " ".repeat(groupStackSize * printerConfig.indent) +
     tableCharacters.topLeft;
   for (const [i, width] of maxWidthByColumns.entries()) {
@@ -88,8 +87,7 @@ export function createTable(data, columns, groupStackSize, printerConfig) {
 
   for (const [column, value] of header.entries()) {
     if (column === 0) {
-      string +=
-        " ".repeat(groupStackSize * printerConfig.indent) +
+      string += " ".repeat(groupStackSize * printerConfig.indent) +
         tableCharacters.vertical +
         " ";
     }
@@ -100,8 +98,7 @@ export function createTable(data, columns, groupStackSize, printerConfig) {
     if (column + 1 < header.length) string += " ";
   }
 
-  string +=
-    "\n" +
+  string += "\n" +
     " ".repeat(groupStackSize * printerConfig.indent) +
     tableCharacters.leftHorizontal;
   for (const [i, width] of maxWidthByColumns.entries()) {
@@ -116,8 +113,7 @@ export function createTable(data, columns, groupStackSize, printerConfig) {
   for (const row of rows) {
     for (const [column, value] of row.entries()) {
       if (column === 0) {
-        string +=
-          " ".repeat(groupStackSize * printerConfig.indent) +
+        string += " ".repeat(groupStackSize * printerConfig.indent) +
           `${tableCharacters.vertical} `;
       }
 
@@ -129,8 +125,7 @@ export function createTable(data, columns, groupStackSize, printerConfig) {
     string += "\n";
   }
 
-  string +=
-    " ".repeat(groupStackSize * printerConfig.indent) +
+  string += " ".repeat(groupStackSize * printerConfig.indent) +
     tableCharacters.bottomLeft;
   for (const [i, width] of maxWidthByColumns.entries()) {
     string += tableCharacters.horizontal.repeat(width + 2);
