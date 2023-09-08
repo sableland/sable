@@ -1,0 +1,15 @@
+[package]
+name = "bueno_ext_timers"
+description = "Bueno Timers API extension"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+deno_core.workspace = true
+tokio.workspace = true
