@@ -5,13 +5,17 @@ export const IDL_TYPE = {
   enforceRange: "enforceRange",
 };
 
+/**
+ * https://webidl.spec.whatwg.org/#abstract-opdef-integerpart
+ * @param {*} value
+ * @returns
+ */
 export function toIntegerPart(value) {
   return Math.trunc(value);
 }
 
-// https://webidl.spec.whatwg.org/#abstract-opdef-converttoint
 /**
- *
+ * https://webidl.spec.whatwg.org/#abstract-opdef-converttoint
  * @param {*} value
  * @param {number} bitLength
  * @param {boolean} signed
@@ -66,6 +70,11 @@ export function toInt(value, bitLength, signed = false, idl = undefined) {
   }
 }
 
+/**
+ * https://webidl.spec.whatwg.org/#idl-long
+ * @param {*} value
+ * @returns
+ */
 export function toLong(value) {
   return toInt(value, 32, true);
 }
