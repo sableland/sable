@@ -49,7 +49,7 @@ pub mod extensions {
                 // bueno_ext_timers
                 state.put(timers::TimerInfo {
                     next_id: 0,
-                    timers: vec![],
+                    timer_handles: vec![],
                 });
             };
         }
