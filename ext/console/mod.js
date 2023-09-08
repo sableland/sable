@@ -143,7 +143,7 @@ export class Console {
         this.#groupStackSize,
       );
     } else {
-      this.#timerTable[label] = Date.now();
+      this.#timerTable[label] = performance.now();
     }
   }
 
@@ -154,8 +154,8 @@ export class Console {
     const printer = this.#timeLogPrinter;
 
     if (label in this.#timerTable) {
-      const duration = Date.now() - this.#timerTable[label];
-      args.unshift(`${label}: ${duration} ms`);
+      const duration = performance.now() - this.#timerTable[label];
+      args.unshift(`${label}: ${duration.toFixed(5)} ms`);
       printer.print(args, this.#groupStackSize);
     } else {
       printer.print(`Timer '${label}' doesn't exist`, this.#groupStackSize);
@@ -169,9 +169,12 @@ export class Console {
     const printer = this.#timeEndPrinter;
 
     if (label in this.#timerTable) {
-      const duration = Date.now() - this.#timerTable[label];
+      const duration = performance.now() - this.#timerTable[label];
       delete this.#timerTable[label];
-      printer.print(`${label}: ${duration} ms`, this.#groupStackSize);
+      printer.print(
+        `${label}: ${duration.toFixed(5)} ms`,
+        this.#groupStackSize
+      );
     } else {
       printer.print(`Timer '${label}' doesn't exist`, this.#groupStackSize);
     }
