@@ -18,6 +18,11 @@ class BatteryManager extends EventTarget {
   }
 }
 
+let batteryManager;
+
 globalThis.navigator.getBattery = async () => {
-  return new BatteryManager();
+  if (!batteryManager) {
+    batteryManager = new BatteryManager();
+  }
+  return batteryManager;
 };
