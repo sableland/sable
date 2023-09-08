@@ -96,7 +96,7 @@ export class Printer {
 
     const output = string + "\n";
 
-    if (print)
+    if (print) {
       switch (this.logLevel) {
         case "stdout":
           core.print(output, false);
@@ -107,6 +107,7 @@ export class Printer {
         default:
           throw new Error("Unknown Printer LogLevel:" + this.logLevel);
       }
+    }
 
     return output;
   }
@@ -154,8 +155,8 @@ export class Printer {
         const stringified = fn.toString();
 
         const stringTag = fn[Symbol.toStringTag];
-        const constructorName =
-          stringTag ?? (stringified.startsWith("class") ? "Class" : "Function");
+        const constructorName = stringTag ??
+          (stringified.startsWith("class") ? "Class" : "Function");
 
         return `${constructorName} (${fn.name || "anonymous"})`;
       }
@@ -199,12 +200,12 @@ export class Printer {
     const stringified = fn.toString();
 
     const stringTag = fn[Symbol.toStringTag];
-    const constructorName =
-      stringTag ?? (stringified.startsWith("class") ? "Class" : "Function");
+    const constructorName = stringTag ??
+      (stringified.startsWith("class") ? "Class" : "Function");
 
     return stylizeText(
       `[${constructorName}: ${fn.name || "( anonymous )"}]`,
-      "lightMagenta"
+      "lightMagenta",
     );
   }
 
@@ -238,9 +239,9 @@ export class Printer {
   }
 
   #styleTypedArray(typedarr, depth) {
-    return `${typedarr.constructor.name}(${
-      typedarr.length
-    }) [ ${this.#styleIterable(typedarr, depth)} ]`;
+    return `${typedarr.constructor.name}(${typedarr.length}) [ ${
+      this.#styleIterable(typedarr, depth)
+    } ]`;
   }
 
   #styleArray(arr, depth) {
@@ -310,16 +311,20 @@ export class Printer {
           info = stylizeText("pending", "lightCyan");
           break;
         case 1:
-          info = `${stylizeText("fulfilled", "lightGreen")} => ${this.style(
-            result,
-            depth
-          )}`;
+          info = `${stylizeText("fulfilled", "lightGreen")} => ${
+            this.style(
+              result,
+              depth,
+            )
+          }`;
           break;
         case 2:
-          info = `${stylizeText("rejected", "lightRed")} => ${this.style(
-            result,
-            depth
-          )}`;
+          info = `${stylizeText("rejected", "lightRed")} => ${
+            this.style(
+              result,
+              depth,
+            )
+          }`;
           break;
       }
     } catch {}

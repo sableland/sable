@@ -13,7 +13,7 @@ class UnsupportedSetTimerCodeError extends Error {
    */
   constructor(type) {
     super(
-      `set${type}(code, ...) is not supported.\nIf you can't generate the code statically please consider using new Function() instead`
+      `set${type}(code, ...) is not supported.\nIf you can't generate the code statically please consider using new Function() instead`,
     );
   }
 }
