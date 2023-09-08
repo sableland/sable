@@ -8,7 +8,7 @@ const NS_IN_MS: f64 = 1e+6;
 pub fn op_high_res_time(state: &mut OpState) -> f64 {
     let origin_time = state.borrow::<Instant>();
 
-    let elapsed_ns = origin_time.elapsed().subsec_nanos();
+    let elapsed_ns = origin_time.elapsed().as_nanos();
     // TODO: coarsen time whenever necessary
 
     elapsed_ns as f64 / NS_IN_MS
