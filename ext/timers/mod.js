@@ -66,14 +66,14 @@ function setInterval(callback, interval = 0, ...args) {
   }
 
   const id = core.ops.op_create_timer();
-  runInterval(id, interval, callback, currentNesting);
+  runInterval(id, interval, currentNesting, callback, args);
   return id;
 }
 
-async function runInterval(id, interval, callback, currentNesting) {
+async function runInterval(id, interval, currentNesting, callback, args) {
   while (await queueTimer(id, interval)) {
     nestingLevel = currentNesting;
-    callback();
+    callback.apply(globalThis, args);
     nestingLevel = 0;
   }
 }
