@@ -25,6 +25,7 @@ pub mod extensions {
             timers::op_queue_timer,
             timers::op_queue_timer_deferred,
             timers::op_clear_timer,
+            testing::op_bench_fn
         ],
         esm_entry_point = "ext:bueno/runtime.js",
         esm = [
