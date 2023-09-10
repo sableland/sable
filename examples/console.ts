@@ -183,29 +183,33 @@ console.log("Back to level 2");
 console.groupEnd();
 console.log("Back to the outer level");
 
-console.group();
-console.group();
-console.group();
-console.table([
-  ["Tyrone", "Jones"],
-  ["Janet", "Smith"],
-  ["Maria", "Cruz"],
-]);
-console.groupEnd();
-console.groupEnd();
-console.groupEnd();
-
-console.table(["hello", "world"]);
-
 function Person(firstName, lastName) {
   this.firstName = firstName;
   this.lastName = lastName;
 }
 
-const tyrone = new Person("Tyrone", "Jones");
+const tyrone = new Person("Tyroneａｓｆａｓｆ", "Jones");
 const janet = new Person("Janet", "Smith");
 const maria = new Person("Maria", "Cruz");
 
-console.table([tyrone, janet, maria], ["firstName"]);
-console.table([tyrone, janet, maria], ["lastName"]);
-console.table([tyrone, janet, maria], ["firstName", "lastName"]);
+console.table([tyrone, janet, maria]);
+
+console.group();
+console.log("a");
+console.group();
+console.log("b");
+console.group();
+console.log("c");
+console.table([
+  ["Tyrone", "Jones"],
+  ["Janetａｓｆａｓｆ", "Smith"],
+  ["Maria", "Cruz"],
+  [{
+    obj: true,
+    a: 1,
+    b: 2,
+  }, 123],
+]);
+console.groupEnd();
+console.groupEnd();
+console.groupEnd();

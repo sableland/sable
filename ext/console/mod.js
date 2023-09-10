@@ -13,6 +13,7 @@ const defaultPrinterConfig = {
 };
 
 const genericFormattingConfig = {
+  indent: 2,
   usefulFormatting: false,
 };
 
@@ -92,8 +93,8 @@ export class Console {
     const table = createTable(
       data,
       columns,
+      this.#tablePrinter,
       this.#groupStackSize,
-      defaultPrinterConfig,
     );
     this.#tablePrinter.print(table, 0);
   }

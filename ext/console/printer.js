@@ -27,8 +27,10 @@ export class Printer {
   print(stringOrArgs, groupStackSize, print = true) {
     let string = "";
 
+    const groupIndent = " ".repeat(groupStackSize * this.indent);
+
     if (typeof stringOrArgs === "string") {
-      string += " ".repeat(groupStackSize * this.indent);
+      string += groupIndent;
       string += this.format(stringOrArgs);
     } else {
       const args = stringOrArgs;
@@ -37,7 +39,7 @@ export class Printer {
         const arg = args[i];
         if (i > 0) string += " ";
 
-        string += " ".repeat(groupStackSize * this.indent);
+        string += groupIndent;
         string += this.usefulFormatting
           ? this.format(arg)
           : this.genericFormat(arg);
