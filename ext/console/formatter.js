@@ -65,7 +65,7 @@ export class Formatter {
           case "%o":
             arg = arg.replace(
               specifier,
-              printer ? printer.style(current) : JSON.stringify(current),
+              printer ? printer.format(current) : JSON.stringify(current),
             );
             break;
           case "%O":

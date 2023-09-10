@@ -114,6 +114,7 @@ console.log("deep obj:", {
   set,
   shortArr,
   arr,
+  ["\n\n\n\x1b[32mLOLOL\x1b[0m"]: 123,
   arrWShit,
   str: "HELLO",
   bool: false,

@@ -37,6 +37,8 @@ pub mod extensions {
             "webidl/mod.js",
             "webidl/numbers.js",
             "webidl/integers.js",
+            "utils/ansi.js",
+            "utils/strings.js",
         ],
         state = |state| {
             {
