@@ -25,7 +25,8 @@ pub mod extensions {
             timers::op_queue_timer,
             timers::op_queue_timer_deferred,
             timers::op_clear_timer,
-            testing::op_bench_fn
+            testing::op_bench_fn,
+            testing::op_diff_str,
         ],
         esm_entry_point = "ext:bueno/runtime.js",
         esm = [
@@ -49,6 +50,7 @@ pub mod extensions {
             "utils/ansi.js",
             "utils/strings.js",
             "testing/mod.js",
+            "ansi/mod.js",
         ],
         state = |state| {
             {

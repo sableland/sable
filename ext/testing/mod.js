@@ -1,3 +1,8 @@
+import { ansi, textWidth } from "ext:bueno/ansi/mod.js";
+import { Printer } from "ext:bueno/console/printer.js";
+
+const testingPrinter = new Printer();
+
 const core = Bueno.core;
 
 const comparisons = {
@@ -92,17 +97,54 @@ const comparisons = {
 
 class TestContext {
   #testStep;
+  #indent;
+  #title;
 
-  constructor(testStep) {
+  constructor(testStep, indent = 0) {
     this.#testStep = testStep;
+    this.#indent = indent;
+
+    let title = " ".repeat(indent);
+    if (indent > 0) title += "> ";
+    title += ansi.style(ansi.style(testStep, "cyan"), "bold");
+    this.#title = title;
+    console.log(title);
   }
 
-  fail(message) {
-    console.log(` - failed -> ${message}`);
+  static test(testStep, callback, indent = 0) {
+    callback(new TestContext(testStep, indent));
+  }
+
+  test(testStep, callback) {
+    TestContext.test(testStep, callback, this.#indent + 1);
+  }
+
+  /**
+   * @param {"diff" | ""} type - type of the error message to be displayed
+   * @param {*} a - object a
+   * @param {*} b  - object b (or undefined if unnecessary)
+   */
+  fail(message, type, a, b) {
+    const indent = "  ".repeat(this.#indent);
+    console.log(
+      `${indent} - ${ansi.style("failed", "lightRed")}`,
+    );
+    switch (type) {
+      case "diff":
+        const diffStr = core.ops.op_diff_str(
+          testingPrinter.style(a),
+          testingPrinter.style(b),
+        );
+        console.log(diffStr);
+        break;
+    }
   }
 
   pass() {
-    console.log(` - ok`);
+    const indent = "  ".repeat(this.#indent);
+    console.log(
+      `${indent} - ${ansi.style("ok", "lightGreen")}`,
+    );
   }
 
   assert(a) {
@@ -115,7 +157,7 @@ class TestContext {
 
   equals(a, b) {
     if (!comparisons.equals(a, b)) {
-      this.fail(`${a} doesn't equal ${b}`);
+      this.fail("a doesn't equal b", "diff", a, b);
     } else {
       this.pass();
     }
@@ -131,7 +173,7 @@ class TestContext {
 
   deepEquals(a, b) {
     if (!comparisons.deepEquals(a, b)) {
-      this.fail(`Fail ${a} doesn't deep equal ${b}`);
+      this.fail("a doesn't deep equal b", "diff", a, b);
     } else {
       this.pass();
     }
@@ -178,9 +220,8 @@ class TestContext {
   }
 }
 
-function test(name, callback) {
-  console.log(`[ Testing '${name}' ]`);
-  callback(new TestContext(name));
+function test(testName, callback) {
+  TestContext.test(testName, callback);
 }
 
 function bench(name, callback) {
@@ -188,9 +229,7 @@ function bench(name, callback) {
 
   const time = core.ops.op_bench_fn(callback);
 
-  console.log(
-    `${name} takes ${time}ms`,
-  );
+  console.log(`${name} takes ${time}ms`);
 
   return time;
 }
