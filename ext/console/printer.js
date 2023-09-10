@@ -36,26 +36,6 @@ function stylizeText(str, style) {
   return ansiStyles[style] + str + ansiStyles.reset;
 }
 
-export const LogLevel = {
-  log: "stdout",
-  info: "stdout",
-  debug: "stdout",
-  warn: "stdout",
-  dir: "stdout",
-  dirxml: "stdout",
-  trace: "stdout",
-  count: "stdout",
-  countReset: "stdout",
-  time: "stdout",
-  timeLog: "stdout",
-  timeEnd: "stdout",
-  group: "stdout",
-  table: "stdout",
-
-  error: "stderr",
-  assert: "stderr",
-};
-
 export class Printer {
   constructor(logLevel, config) {
     this.logLevel = logLevel;

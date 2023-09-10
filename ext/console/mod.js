@@ -1,5 +1,5 @@
 import { Formatter } from "ext:bueno/console/formatter.js";
-import { LogLevel, Printer } from "ext:bueno/console/printer.js";
+import { Printer } from "ext:bueno/console/printer.js";
 import { createTable } from "ext:bueno/console/table.js";
 
 const core = Bueno.core;
@@ -20,49 +20,49 @@ export class Console {
   #formatter = new Formatter();
 
   //#region Logging
-  #logPrinter = new Printer(LogLevel.log, defaultPrinterConfig);
+  #logPrinter = new Printer("stdout", defaultPrinterConfig);
   log(...args) {
     const printer = this.#logPrinter;
     printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
-  #infoPrinter = new Printer(LogLevel.info, defaultPrinterConfig);
+  #infoPrinter = new Printer("stdout", defaultPrinterConfig);
   info(...args) {
     const printer = this.#infoPrinter;
     printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
-  #debugPrinter = new Printer(LogLevel.debug, defaultPrinterConfig);
+  #debugPrinter = new Printer("stdout", defaultPrinterConfig);
   debug(...args) {
     const printer = this.#debugPrinter;
     printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
-  #warnPrinter = new Printer(LogLevel.warn, defaultPrinterConfig);
+  #warnPrinter = new Printer("stdout", defaultPrinterConfig);
   warn(...args) {
     const printer = this.#warnPrinter;
     printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
-  #dirxmlPrinter = new Printer(LogLevel.dirxml, defaultPrinterConfig);
+  #dirxmlPrinter = new Printer("stdout", defaultPrinterConfig);
   dirxml(...args) {
     const printer = this.#dirxmlPrinter;
     printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
-  #dirPrinter = new Printer(LogLevel.dir, genericFormattingConfig);
+  #dirPrinter = new Printer("stdout", genericFormattingConfig);
   dir(arg, _options) {
     const printer = this.#dirPrinter;
     printer.print([arg], this.#groupStackSize);
   }
 
-  #errorPrinter = new Printer(LogLevel.error, defaultPrinterConfig);
+  #errorPrinter = new Printer("stderr", defaultPrinterConfig);
   error(...args) {
     const printer = this.#errorPrinter;
     printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
-  #tracePrinter = new Printer(LogLevel.trace, defaultPrinterConfig);
+  #tracePrinter = new Printer("stdout", defaultPrinterConfig);
   trace(...args) {
     const printer = this.#tracePrinter;
 
@@ -77,16 +77,17 @@ export class Console {
     printer.print(error.stack, this.#groupStackSize);
   }
 
-  #assertPrinter = new Printer(LogLevel.assert, defaultPrinterConfig);
+  #assertPrinter = new Printer("stderr", defaultPrinterConfig);
   assert(condition, ...args) {
     if (condition) return;
+
     const printer = this.#assertPrinter;
     const formatted = this.#formatter.format(args, printer);
     formatted.unshift("Assertion failed:");
     printer.print(formatted, this.#groupStackSize);
   }
 
-  #tablePrinter = new Printer(LogLevel.table, genericFormattingConfig);
+  #tablePrinter = new Printer("stdout", genericFormattingConfig);
   table(data, columns) {
     const table = createTable(
       data,
@@ -105,7 +106,7 @@ export class Console {
   //#region Counting
   #countMap = {};
 
-  #countPrinter = new Printer(LogLevel.count, genericFormattingConfig);
+  #countPrinter = new Printer("stdout", genericFormattingConfig);
   count(label) {
     label = label ? String(label) : "default";
 
@@ -115,10 +116,7 @@ export class Console {
     this.#countPrinter.print(`${label}: ${value}`);
   }
 
-  #countResetPrinter = new Printer(
-    LogLevel.countReset,
-    genericFormattingConfig,
-  );
+  #countResetPrinter = new Printer("stdout", genericFormattingConfig);
   countReset(label) {
     label = label ? String(label) : "default";
 
@@ -133,7 +131,7 @@ export class Console {
   //#region Timing
   #timerTable = {};
 
-  #timePrinter = new Printer(LogLevel.time, genericFormattingConfig);
+  #timePrinter = new Printer("stdout", genericFormattingConfig);
   time(label) {
     label = label ? String(label) : "default";
 
@@ -141,13 +139,14 @@ export class Console {
       this.#timePrinter.print(
         `Timer '${label}' already exists`,
         this.#groupStackSize,
+        this.#groupStackSize,
       );
     } else {
       this.#timerTable[label] = performance.now();
     }
   }
 
-  #timeLogPrinter = new Printer(LogLevel.timeLog, defaultPrinterConfig);
+  #timeLogPrinter = new Printer("stdout", defaultPrinterConfig);
   timeLog(label, ...args) {
     label = label ? String(label) : "default";
 
@@ -162,7 +161,7 @@ export class Console {
     }
   }
 
-  #timeEndPrinter = new Printer(LogLevel.timeEnd, genericFormattingConfig);
+  #timeEndPrinter = new Printer("stdout", genericFormattingConfig);
   timeEnd(label) {
     label = label ? String(label) : "default";
 
@@ -173,7 +172,7 @@ export class Console {
       delete this.#timerTable[label];
       printer.print(
         `${label}: ${duration.toFixed(5)} ms`,
-        this.#groupStackSize
+        this.#groupStackSize,
       );
     } else {
       printer.print(`Timer '${label}' doesn't exist`, this.#groupStackSize);
@@ -185,7 +184,7 @@ export class Console {
   #groupStackSize = 0;
   #groupStack = [];
 
-  #groupPrinter = new Printer(LogLevel.group, defaultPrinterConfig);
+  #groupPrinter = new Printer("stdout", defaultPrinterConfig);
   group(...args) {
     if (args.length === 0) {
       args[0] = "\x1b[1mconsole.group\x1b[0m";
