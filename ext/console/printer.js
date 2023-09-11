@@ -1,83 +1,58 @@
+import { styles } from "ext:bueno/utils/ansi.js";
+import { escapeControlCharacters, textWidth } from "ext:bueno/utils/strings.js";
+
+// TODO(Im-Beast): Create a list of "standard" colors used for formatting so they actually mean something
+
 const core = Bueno.core;
 
-const ansiStyles = {
-  // colors
-  black: "\x1b[30m",
-  red: "\x1b[31m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
-  blue: "\x1b[34m",
-  magenta: "\x1b[35m",
-  cyan: "\x1b[36m",
-  white: "\x1b[37m",
-  lightBlack: "\x1b[90m",
-  lightRed: "\x1b[91m",
-  lightGreen: "\x1b[92m",
-  lightYellow: "\x1b[93m",
-  lightBlue: "\x1b[94m",
-  lightMagenta: "\x1b[95m",
-  lightCyan: "\x1b[96m",
-  lightWhite: "\x1b[97m",
-
-  // styles
-  bold: "\x1b[1m",
-  itallic: "\x1b[3m",
-
-  // reset
-  reset: "\x1b[0m",
-};
-
 const TypedArray = Object.getPrototypeOf(Int8Array);
-function isTypedArray(obj) {
-  return Object.getPrototypeOf(obj.constructor) === TypedArray;
-}
 
-function stylizeText(str, style) {
-  return ansiStyles[style] + str + ansiStyles.reset;
-}
-
-export const LogLevel = {
-  log: "stdout",
-  info: "stdout",
-  debug: "stdout",
-  warn: "stdout",
-  dir: "stdout",
-  dirxml: "stdout",
-  trace: "stdout",
-  count: "stdout",
-  countReset: "stdout",
-  time: "stdout",
-  timeLog: "stdout",
-  timeEnd: "stdout",
-  group: "stdout",
-  table: "stdout",
-
-  error: "stderr",
-  assert: "stderr",
-};
-
+/** @see https://console.spec.whatwg.org/#printer */
 export class Printer {
+  #nextRefId;
+
+  /**
+   * @type {Printer}
+   * @param {"stdout" | "stderr"} logLevel Output to use in `print()` method
+   *
+   * @param {object} config Printer configuration
+   * @param {number} [config.indent=2] How many spaces to use as an indent
+   * @param {number} [config.maxDepth=4] Maximum amount of nested objects to traverse in an object before evaluating it using `.toString()`
+   * @param {number} [config.maxLineWidth=80] Maximum amount of text before breaking a line
+   * @param {number} [config.maxIterableLengthPerLine=5] Maximum amount of items per line in an Iterable (e.g. Array, Set)
+   * @param {boolean} [config.evaluateGetters=false] Whether to evaluate values of getters
+   * @param {boolean} [config.usefulFormatting=true] Whether to use "optimally useful formatting" (pretty colors and stuff) {@link https://console.spec.whatwg.org/#optimally-useful-formatting}
+   */
   constructor(logLevel, config) {
     this.logLevel = logLevel;
-
-    this.usefulFormatting = config?.usefulFormatting ?? true;
 
     this.indent = config?.indent ?? 2;
     this.maxDepth = config?.maxDepth ?? 4;
     this.maxLineWidth = config?.maxLineWidth ?? 80;
+    this.evaluateGetters = config?.evaluateGetters ?? false;
+    this.usefulFormatting = config?.usefulFormatting ?? true;
     this.maxItemsPerLine = config?.maxIterableLengthPerLine ?? 5;
 
     this.currentDepth = 0;
-    this.objectId = 1;
-    this.spottedObjects = new Set();
+    this.refMap = new Map();
+    this.spottedObjects = new Map();
+    this.#nextRefId = 1;
   }
 
+  /**
+   * @param {string | any[]} stringOrArgs Item(s) that need to be formatted and printed
+   * @param {number} groupStackSize `console.group` indentation level
+   * @param {boolean} print Whether to print to the output or not
+   * @returns {string} formatted output
+   */
   print(stringOrArgs, groupStackSize, print = true) {
     let string = "";
 
+    const groupIndent = " ".repeat(groupStackSize * this.indent);
+
     if (typeof stringOrArgs === "string") {
-      string += " ".repeat(groupStackSize * this.indent);
-      string += this.style(stringOrArgs);
+      string += groupIndent;
+      string += this.format(stringOrArgs);
     } else {
       const args = stringOrArgs;
 
@@ -85,14 +60,14 @@ export class Printer {
         const arg = args[i];
         if (i > 0) string += " ";
 
-        string += " ".repeat(groupStackSize * this.indent);
+        string += groupIndent;
         string += this.usefulFormatting
-          ? this.style(arg)
-          : this.genericStyle(arg);
-
-        this.spottedObjects.clear();
+          ? this.format(arg)
+          : this.genericFormat(arg);
       }
     }
+
+    this.spottedObjects.clear();
 
     const output = string + "\n";
 
@@ -112,37 +87,57 @@ export class Printer {
     return output;
   }
 
-  style(arg, depth) {
+  /**
+   * Format object using "optimally useful formatting"
+   * @see https://console.spec.whatwg.org/#optimally-useful-formatting
+   *
+   * @param {any} arg Item to format
+   * @param {number} depth Currently traversed depth
+   * @returns {string} Formatted `arg`
+   */
+  format(arg, depth = 0) {
     switch (typeof arg) {
       // primitives
       case "string":
         // depth here is passed just to check whether it should style it
-        return this.#styleString(arg, depth);
+        return this.#formatString(arg, depth);
       case "number":
-        return this.#styleNumber(arg);
+        return this.#formatNumber(arg);
       case "bigint":
-        return this.#styleBigInt(arg);
+        return this.#formatBigInt(arg);
       case "boolean":
-        return this.#styleBoolean(arg);
+        return this.#formatBoolean(arg);
       case "symbol":
-        return this.#styleSymbol(arg);
+        return this.#formatSymbol(arg);
+      case "undefined":
+        return this.#formatUndefined();
 
       // non-primitives
       case "function":
-        return this.#styleFunction(arg);
+        return this.#formatFunction(arg);
       case "object":
-        if (depth > this.maxDepth) return arg.toString();
-        return this.#styleObject(arg, depth);
+        if (depth > this.maxDepth) {
+          return arg.toString();
+        } else if (this.spottedObjects.has(arg) && this.refMap.has(arg)) {
+          return this.#formatCircular(arg);
+        }
 
-      case "undefined":
-        return this.#styleUndefined();
+        return this.#formatObject(arg, depth);
 
       default:
         return arg?.toString() ?? arg;
     }
   }
 
-  genericStyle(arg) {
+  /**
+   * Format object using "generic javascript object formatting"
+   * @see https://console.spec.whatwg.org/#generic-javascript-object-formatting
+   *
+   * @param {any} arg Item to format
+   * @param {number} depth Currently traversed depth
+   * @returns {string} Formatted `arg`
+   */
+  genericFormat(arg) {
     switch (typeof arg) {
       // primitives
       case "string":
@@ -163,100 +158,128 @@ export class Printer {
       case "object":
         return JSON.stringify(arg, null, " ");
 
-      // anything that can just be .toString() and looks alright
+      // anything that can just be `arg.toString()` and looks alright
       default:
         return arg?.toString() ?? arg;
     }
   }
 
-  #styleObject(obj, depth = 0) {
-    if (obj === null) return this.#styleNull(depth);
+  #formatObject(obj, depth = 0, circular = false) {
+    if (obj === null) return this.#formatNull(depth);
 
-    if (this.spottedObjects.has(obj)) {
-      // TODO(Im-Beast): add support for pointing object reference of the Circular
-      return stylizeText(stylizeText("Circular", "red"), "bold");
-    } else {
-      this.spottedObjects.add(obj);
+    let formatted = "";
+    let index = this.spottedObjects.get(obj);
+
+    if (circular) {
+      const refId = this.refMap.get(obj);
+
+      formatted += `${styles.red}<ref *${
+        refId ?? this.#nextRefId
+      }>${styles.reset} `;
+
+      if (!refId) {
+        this.refMap.set(obj, this.#nextRefId++);
+      }
+    } else if (!index) {
+      this.spottedObjects.set(obj, 1);
+      index = 1;
     }
+
+    const spottedAmount = index;
 
     if (Array.isArray(obj)) {
-      return this.#styleArray(obj, depth);
+      formatted += this.#formatArray(obj, depth);
     } else if (obj instanceof Map) {
-      return this.#styleMap(obj, depth);
+      formatted += this.#formatMap(obj, depth);
     } else if (obj instanceof Set) {
-      return this.#styleSet(obj, depth);
+      formatted += this.#formatSet(obj, depth);
     } else if (obj instanceof WeakMap) {
-      return this.#styleWeakMap();
+      formatted += this.#formatWeakMap();
     } else if (obj instanceof Promise) {
-      return this.#stylePromise(obj, depth);
-    } else if (isTypedArray(obj)) {
-      return this.#styleTypedArray(obj, depth);
+      formatted += this.#formatPromise(obj, depth);
+    } else if (Object.getPrototypeOf(obj.constructor) === TypedArray) {
+      formatted += this.#formatTypedArray(obj, depth);
     } else {
-      return this.#styleRecord(obj, depth);
+      formatted += this.#formatRecord(obj, depth);
     }
+    this.spottedObjects.set(obj, this.spottedObjects.get(obj) + 1);
+
+    if (!circular && this.spottedObjects.get(obj) > spottedAmount + 1) {
+      return this.#formatObject(obj, depth, true);
+    }
+
+    return formatted;
   }
 
-  #styleFunction(fn) {
+  #formatCircular(obj) {
+    return `${styles.bold}${styles.red}Circular<*${
+      this.refMap.get(obj)
+    }>${styles.reset}`;
+  }
+
+  #formatFunction(fn) {
     const stringified = fn.toString();
 
     const stringTag = fn[Symbol.toStringTag];
     const constructorName = stringTag ??
       (stringified.startsWith("class") ? "Class" : "Function");
 
-    return stylizeText(
-      `[${constructorName}: ${fn.name || "( anonymous )"}]`,
-      "lightMagenta",
-    );
+    return `${styles.lightMagenta} [${constructorName}: ${
+      fn.name || "( anonymous )"
+    }]${styles.reset}`;
   }
 
-  // TODO(Im-Beast): Add support for unescaping ANSI sequences
-  #styleString(str, depth) {
-    return depth > 0 ? stylizeText(`"${str}"`, "yellow") : str;
+  #formatString(str, depth, escape = false) {
+    if (escape) {
+      str = escapeControlCharacters(str);
+    }
+
+    return depth > 0 ? `${styles.yellow}"${str}"${styles.reset}` : str;
   }
 
-  #styleBigInt(bigint) {
-    return stylizeText(bigint + "n", "lightBlue");
+  #formatBigInt(bigint) {
+    return `${styles.lightBlue}${bigint}n${styles.reset}`;
   }
 
-  #styleNumber(num) {
-    return stylizeText(num, "lightBlue");
+  #formatNumber(num) {
+    return `${styles.lightBlue}${num}${styles.reset}`;
   }
 
-  #styleBoolean(bool) {
-    return stylizeText(bool, "blue");
+  #formatBoolean(bool) {
+    return `${styles.blue}${bool}${styles.reset}`;
   }
 
-  #styleSymbol(sym) {
-    return stylizeText(sym.toString(), "lightYellow");
+  #formatSymbol(sym) {
+    return `${styles.lightYellow}${sym.toString()}${styles.reset}`;
   }
 
-  #styleUndefined() {
-    return stylizeText("undefined", "lightBlack");
+  #formatUndefined() {
+    return `${styles.lightBlack}undefined${styles.reset}`;
   }
 
-  #styleNull() {
-    return stylizeText("null", "lightBlack");
+  #formatNull() {
+    return `${styles.lightBlack}null${styles.reset}`;
   }
 
-  #styleTypedArray(typedarr, depth) {
+  #formatTypedArray(typedarr, depth) {
     return `${typedarr.constructor.name}(${typedarr.length}) [ ${
-      this.#styleIterable(typedarr, depth)
+      this.#formatIterable(typedarr, depth)
     } ]`;
   }
 
-  #styleArray(arr, depth) {
-    return `Array(${arr.length}) [ ${this.#styleIterable(arr, depth)} ]`;
+  #formatArray(arr, depth) {
+    return `Array(${arr.length}) [ ${this.#formatIterable(arr, depth)} ]`;
   }
 
-  #styleSet(set, depth) {
-    return `Set(${set.size}) [ ${this.#styleIterable(set, depth)} ]`;
+  #formatSet(set, depth) {
+    return `Set(${set.size}) [ ${this.#formatIterable(set, depth)} ]`;
   }
 
-  #styleWeakMap() {
-    return `WeakMap { ${stylizeText("items unknown", "lightRed")} }`;
+  #formatWeakMap() {
+    return `WeakMap { ${styles.lightRed}items unknown${styles.reset} }`;
   }
 
-  #styleIterable(iter, depth, short = true) {
+  #formatIterable(iter, depth, short = true) {
     depth += 1;
     const indent = depth * this.indent;
 
@@ -282,9 +305,9 @@ export class Printer {
         string += " ".repeat(indent);
       }
 
-      const styled = this.style(value, depth);
+      const styled = this.format(value, depth);
       if (short && styled.includes("\n")) {
-        return this.#styleIterable(iter, depth - 1, false);
+        return this.#formatIterable(iter, depth - 1, false);
       }
       string += styled;
 
@@ -298,8 +321,8 @@ export class Printer {
     return string;
   }
 
-  #stylePromise(promise, depth) {
-    let info = stylizeText("unknown", "yellow");
+  #formatPromise(promise, depth) {
+    let info = `${styles.yellow}unknown${styles.reset}`;
 
     try {
       const details = core.getPromiseDetails(promise);
@@ -308,19 +331,19 @@ export class Printer {
 
       switch (state) {
         case 0:
-          info = stylizeText("pending", "lightCyan");
+          info = `${styles.lightCyan}pending${styles.reset}`;
           break;
         case 1:
-          info = `${stylizeText("fulfilled", "lightGreen")} => ${
-            this.style(
+          info = `${styles.lightGreen}fulfilled${styles.reset} => ${
+            this.format(
               result,
               depth,
             )
           }`;
           break;
         case 2:
-          info = `${stylizeText("rejected", "lightRed")} => ${
-            this.style(
+          info = `${styles.lightRed}rejected${styles.reset} => ${
+            this.format(
               result,
               depth,
             )
@@ -332,7 +355,7 @@ export class Printer {
     return `Promise { ${info} }`;
   }
 
-  #styleMap(map, depth, short = true) {
+  #formatMap(map, depth, short = true) {
     depth += 1;
     const indent = depth * this.indent;
     let str = "";
@@ -344,14 +367,15 @@ export class Printer {
     for (const [key, value] of map.entries()) {
       if (short) {
         if (amount > 0) str += ", ";
-        str += `${key} => ${this.style(value, depth)}`;
+        str += `${key} => ${this.format(value, depth)}`;
 
-        // FIXME(Im-Beast): str.length can actually include styles, so it invalidly checks maxLineWidth
-        if (amount > this.maxItemsPerLine || str.length > this.maxLineWidth) {
-          return this.#styleMap(map, depth - 1, false);
+        if (
+          amount > this.maxItemsPerLine || textWidth(str) > this.maxLineWidth
+        ) {
+          return this.#formatMap(map, depth - 1, false);
         }
       } else {
-        str += `\n${" ".repeat(indent)}${key} => ${this.style(value, depth)},`;
+        str += `\n${" ".repeat(indent)}${key} => ${this.format(value, depth)},`;
       }
 
       ++amount;
@@ -367,7 +391,7 @@ export class Printer {
     return str;
   }
 
-  #styleRecord(obj, depth, short = true) {
+  #formatRecord(obj, depth, short = true) {
     depth += 1;
     const indent = depth * this.indent;
     let str = "";
@@ -381,24 +405,36 @@ export class Printer {
 
     let amount = 0;
     for (const key in obj) {
-      const value = obj[key];
+      const descriptor = Object.getOwnPropertyDescriptor(obj, key);
+
+      let formattedKey = escapeControlCharacters(key);
+      if (formattedKey !== key) {
+        formattedKey = this.#formatString(formattedKey, depth, false);
+      }
+
+      const formattedValue = this.#formatPropertyDescriptor(descriptor, depth);
 
       if (short) {
         if (amount > 0) str += ", ";
-        str += `${key}: ${this.style(value, depth)}`;
 
-        // FIXME(Im-Beast): str.length can actually include styles, so it invalidately checks maxLineWidth
-        if (amount > this.maxItemsPerLine || str.length > this.maxLineWidth) {
-          return this.#styleRecord(obj, depth - 1, false);
+        str += `${formattedKey}: ${formattedValue}`;
+
+        if (
+          amount > this.maxItemsPerLine ||
+          textWidth(str) > this.maxLineWidth
+        ) {
+          return this.#formatRecord(obj, depth - 1, false);
         }
       } else {
-        str += `\n${" ".repeat(indent)}${key}: ${this.style(value, depth)},`;
+        str += `\n${" ".repeat(indent)}${formattedKey}: ${formattedValue},`;
       }
 
       ++amount;
     }
 
-    if (amount === 0) return "{}";
+    if (amount === 0) {
+      return "{}";
+    }
 
     if (!short) {
       str += "\n";
@@ -408,5 +444,31 @@ export class Printer {
     }
 
     return str;
+  }
+
+  #formatPropertyDescriptor(descriptor, depth) {
+    const get = descriptor.get;
+    const set = descriptor.set;
+
+    if (descriptor.value !== undefined || !(get || set)) {
+      return this.format(descriptor.value, depth);
+    }
+
+    const getterStyle = styles.cyan;
+
+    let formattedGetterValue = "";
+    if (get && this.evaluateGetters) {
+      formattedGetterValue = ` { ${styles.reset}${
+        this.format(get(), depth)
+      }${getterStyle} }`;
+    }
+
+    if (get && set) {
+      return `${getterStyle}<Getter${formattedGetterValue} & Setter>${styles.reset}`;
+    } else if (get && !set) {
+      return `${getterStyle}<Getter${formattedGetterValue}>${styles.reset}`;
+    } else if (!get && set) {
+      return `${getterStyle}<Setter>${styles.reset}`;
+    }
   }
 }

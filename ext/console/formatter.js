@@ -1,5 +1,8 @@
 export class Formatter {
   /**
+   * Return first spotted format specifier
+   * @see https://console.spec.whatwg.org/#formatting-specifiers
+   *
    * @param {string} text
    * @returns {string | undefined} format specifier, if not existent returns undefined
    */
@@ -25,8 +28,9 @@ export class Formatter {
   }
 
   /**
-   * https://console.spec.whatwg.org/#formatter
-   * Format specifiers
+   * Format given specifiers into a string
+   * @see https://console.spec.whatwg.org/#formatter
+   *
    * @param {any[]} args
    * @param {import('./printer').Printer} [printer=undefined]
    * @returns array of formatted args
@@ -65,13 +69,15 @@ export class Formatter {
           case "%o":
             arg = arg.replace(
               specifier,
-              printer ? printer.style(current) : JSON.stringify(current),
+              printer ? printer.format(current) : JSON.stringify(current),
             );
             break;
           case "%O":
             arg = arg.replace(
               specifier,
-              printer ? printer.genericStyle(current) : JSON.stringify(current),
+              printer
+                ? printer.genericFormat(current)
+                : JSON.stringify(current),
             );
             break;
           case "%c":

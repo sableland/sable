@@ -55,6 +55,8 @@ const map = new Map<any, any>([
   ["kj", "v"],
 ]);
 
+map.set("circ", map);
+
 const longmap = new Map<any, any>([
   ["k", "v"],
   ["hdk", "v3"],
@@ -114,6 +116,7 @@ console.log("deep obj:", {
   set,
   shortArr,
   arr,
+  ["\n\n\n\x1b[32mLOLOL\x1b[0m"]: 123,
   arrWShit,
   str: "HELLO",
   bool: false,
@@ -136,8 +139,18 @@ console.log("pretty object: %o", {
 const circular = {};
 
 circular.ref = circular;
+circular.ref2 = circular;
+circular.ref3 = circular;
 
 console.log(circular);
+
+const arreruja = [];
+arreruja[0] = arreruja;
+arreruja[1] = arreruja;
+arreruja[2] = arreruja;
+arreruja[3] = arreruja;
+arreruja[4] = arreruja;
+console.log(arreruja);
 
 const map2 = new Map();
 map2.set("x", map2);
@@ -182,29 +195,124 @@ console.log("Back to level 2");
 console.groupEnd();
 console.log("Back to the outer level");
 
-console.group();
-console.group();
-console.group();
-console.table([
-  ["Tyrone", "Jones"],
-  ["Janet", "Smith"],
-  ["Maria", "Cruz"],
-]);
-console.groupEnd();
-console.groupEnd();
-console.groupEnd();
-
-console.table(["hello", "world"]);
-
 function Person(firstName, lastName) {
   this.firstName = firstName;
   this.lastName = lastName;
 }
 
-const tyrone = new Person("Tyrone", "Jones");
+const tyrone = new Person("Tyroneａｓｆａｓｆ", "Jones");
 const janet = new Person("Janet", "Smith");
 const maria = new Person("Maria", "Cruz");
 
-console.table([tyrone, janet, maria], ["firstName"]);
-console.table([tyrone, janet, maria], ["lastName"]);
-console.table([tyrone, janet, maria], ["firstName", "lastName"]);
+console.table([tyrone, janet, maria]);
+
+console.group();
+console.log("a");
+console.group();
+console.log("b");
+console.group();
+console.log("c");
+console.table([
+  ["Tyrone", "Jones"],
+  ["Janetａｓｆａｓｆ", "Smith"],
+  ["Maria", "Cruz"],
+  [{
+    obj: true,
+    a: 1,
+    b: 2,
+  }, 123],
+]);
+console.groupEnd();
+console.groupEnd();
+console.groupEnd();
+
+const obj = {
+  thisRefs: undefined,
+  thisDoesnt: [1, 2, 3],
+  secondRef: undefined,
+  thirdRef: undefined,
+  noRefAgain: {
+    obj: true,
+    a: {
+      123: 78,
+    },
+  },
+  thisArrRefsItself: [1, 2, 3],
+};
+
+obj.thisRefs = obj;
+obj.secondRef = obj;
+obj.thirdRef = obj;
+
+obj.thisArrRefsItself.push(obj, obj.thisArrRefsItself);
+obj.thisArrRefsItself.push(obj.thisArrRefsItself);
+obj.thisArrRefsItself.push(obj.thisArrRefsItself);
+obj.thisArrRefsItself.push(obj.thisArrRefsItself);
+obj.thisArrRefsItself.push(obj.thisArrRefsItself);
+
+console.log(obj.thisArrRefsItself);
+console.log(obj);
+
+console.log(obj.noRefAgain);
+
+console.log({
+  get hi() {
+    return "this is getter";
+  },
+  set hi(hi) {},
+  set dog(dog) {
+  },
+});
+
+console.log({
+  a: {
+    b: {
+      c: {
+        d: {
+          e: {
+            f: {
+              g: {
+                h: {
+                  i: 1,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+});
+const en = {
+  a: true,
+  get dog() {
+    return "lol";
+  },
+  set dog(dog) {},
+
+  get shortObj() {
+    return {
+      asda: {
+        asgsagags: {
+          fgjklsjglkdsag: {
+            asfasfmjafa: true,
+          },
+        },
+      },
+    };
+  },
+
+  get longObj() {
+    return {
+      asda: {
+        asgsagags: {
+          fgjklsjghasjfaskfhjkasfkashfashfjkhsag: {
+            asfasfmjaasfajfasjfklasjfklasjfklafa: true,
+          },
+        },
+      },
+    };
+  },
+};
+
+console.log(en);
