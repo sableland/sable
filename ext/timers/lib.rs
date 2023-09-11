@@ -55,18 +55,13 @@ pub async fn op_queue_timer_deferred(
     state: Rc<RefCell<OpState>>,
     id: usize,
 ) -> Result<bool, AnyError> {
-    let cancel_handle = {
-        let state = state.borrow();
-        let timer_info = state.borrow::<TimerInfo>();
-
-        if let Some(timer) = timer_info.timer_handles.get(id) {
-            timer.clone()
-        } else {
-            bail!("Tried queueing Timer with id: {id} but it doesn't exist")
-        }
-    };
-
-    Ok(!cancel_handle.is_canceled())
+    let state = state.borrow();
+    let timer_info = state.borrow::<TimerInfo>();
+    if let Some(timer_handle) = timer_info.timer_handles.get(id) {
+        Ok(!timer_handle.is_canceled())
+    } else {
+        bail!("Tried queueing Timer with id: {id} but it doesn't exist")
+    }
 }
 
 // Clears timer with given id by canc
@@ -74,7 +69,7 @@ pub async fn op_queue_timer_deferred(
 pub fn op_clear_timer(state: &mut OpState, #[bigint] id: usize) {
     let timer_info = state.borrow_mut::<TimerInfo>();
 
-    if let Some(timer) = timer_info.timer_handles.get_mut(id) {
-        timer.cancel();
+    if let Some(timer_handle) = timer_info.timer_handles.get_mut(id) {
+        timer_handle.cancel();
     }
 }

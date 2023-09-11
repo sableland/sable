@@ -1,45 +1,58 @@
-// TODO(Im-Beast): Cleanup this code, it's a quick and dirty implementation
-// FIXME(Im-Beast): Currently this implementation doesn't care about characters of variable widths
+import { textWidth } from "ext:bueno/utils/strings.js";
 
 const tableCharacters = {
-  bottomLeft: "\u2514",
-  bottomRight: "\u2518",
+  topLeft: "\u250C",
+  topRight: "\u2510",
+  topVertical: "\u252C",
+
   horizontal: "\u2500",
   leftHorizontal: "\u251C",
   rightHorizontal: "\u2524",
+
+  bottomLeft: "\u2514",
+  bottomRight: "\u2518",
   bottomVertical: "\u2534",
-  topVertical: "\u252C",
-  topLeft: "\u250C",
-  topRight: "\u2510",
+
   vertical: "\u2502",
   cross: "\u253C",
 };
 
-export function createTable(data, columns, groupStackSize, printerConfig) {
-  const header = ["(index)"];
-
+/**
+ * @param {any[] | object} data Data to create table from
+ * @param {(string | number)[]} columns An array which contains indexes of column to include in the table
+ * @param {import("./printer.js").Printer} printer Printer used for formatting cell values
+ * @returns
+ */
+export function createTable(data, columns, printer) {
   if (typeof data[0] !== "object") {
     data = data.map((x) => [x]);
   }
 
-  const rows = [];
-  const maxWidthByColumns = [7];
+  const maxWidth = [7];
+  const tableData = [
+    ["(index)"],
+  ];
 
-  let row = 0;
-  for (const [key, obj] of Object.entries(data)) {
-    rows[row] ??= [];
-    rows[row][0] = key;
+  let string = "";
+
+  let row = 1;
+  for (const key in data) {
+    const obj = data[key];
 
     let column = 1;
-    for (const [key, value] of Object.entries(obj)) {
-      header[column] = key;
+    for (const key in obj) {
+      if (columns && !columns.includes(key)) continue;
+      const value = printer.genericFormat(obj[key]).replaceAll("\n", "");
 
-      rows[row] ??= [];
-      rows[row][column] = value;
+      tableData[0][column] = key;
 
-      maxWidthByColumns[column] = Math.max(
-        value.length,
-        maxWidthByColumns[column] ?? 0,
+      tableData[row] ??= [];
+      tableData[row][0] ??= String(row);
+      tableData[row][column] = value;
+
+      maxWidth[column] = Math.max(
+        textWidth(value),
+        maxWidth[column] ?? textWidth(key),
       );
 
       ++column;
@@ -48,93 +61,45 @@ export function createTable(data, columns, groupStackSize, printerConfig) {
     ++row;
   }
 
-  {
-    let column = 0;
-    for (const value of header) {
-      if (column > 0 && columns && !columns?.includes(value)) {
-        maxWidthByColumns.splice(column, 1);
-        header.splice(column, 1);
+  let topBar = tableCharacters.topLeft;
+  let headerSeparator = tableCharacters.leftHorizontal;
+  let bottomBar = tableCharacters.bottomLeft;
 
-        for (const row of rows) {
-          row.splice(column, 1);
-        }
-      }
+  for (let i = 0; i < maxWidth.length; ++i) {
+    const width = maxWidth[i];
+    const horiz = tableCharacters.horizontal.repeat(width + 2);
 
-      ++column;
+    topBar += horiz;
+    headerSeparator += horiz;
+    bottomBar += horiz;
+    
+    if (i < maxWidth.length - 1) {
+      topBar += tableCharacters.topVertical;
+      headerSeparator += tableCharacters.cross;
+      bottomBar += tableCharacters.bottomVertical;
     }
+  }
 
-    column = 0;
-    for (const value of header) {
-      maxWidthByColumns[column] = Math.max(
-        value.length,
-        maxWidthByColumns[column] ?? 0,
+  topBar += tableCharacters.topRight;
+  headerSeparator += tableCharacters.rightHorizontal;
+  bottomBar += tableCharacters.bottomRight;
+
+  console.log(topBar);
+  for (const [row, rowData] of tableData.entries()) {
+    let string = "";
+    for (const [column, value] of rowData.entries()) {
+      string += tableCharacters.vertical + " " + value + " ".repeat(
+        maxWidth[column] - textWidth(value) + 1,
       );
-      ++column;
+    }
+    string += tableCharacters.vertical;
+    console.log(string);
+
+    if (row === 0) {
+      console.log(headerSeparator);
     }
   }
-
-  let string = "\n" +
-    " ".repeat(groupStackSize * printerConfig.indent) +
-    tableCharacters.topLeft;
-  for (const [i, width] of maxWidthByColumns.entries()) {
-    string += tableCharacters.horizontal.repeat(width + 2);
-
-    if (i + 1 < maxWidthByColumns.length) {
-      string += tableCharacters.topVertical;
-    }
-  }
-  string += tableCharacters.topRight + "\n";
-
-  for (const [column, value] of header.entries()) {
-    if (column === 0) {
-      string += " ".repeat(groupStackSize * printerConfig.indent) +
-        tableCharacters.vertical +
-        " ";
-    }
-
-    string += value + " ".repeat(maxWidthByColumns[column] - value.length);
-
-    string += " " + tableCharacters.vertical;
-    if (column + 1 < header.length) string += " ";
-  }
-
-  string += "\n" +
-    " ".repeat(groupStackSize * printerConfig.indent) +
-    tableCharacters.leftHorizontal;
-  for (const [i, width] of maxWidthByColumns.entries()) {
-    string += tableCharacters.horizontal.repeat(width + 2);
-
-    if (i + 1 < maxWidthByColumns.length) {
-      string += tableCharacters.cross;
-    }
-  }
-  string += tableCharacters.rightHorizontal + "\n";
-
-  for (const row of rows) {
-    for (const [column, value] of row.entries()) {
-      if (column === 0) {
-        string += " ".repeat(groupStackSize * printerConfig.indent) +
-          `${tableCharacters.vertical} `;
-      }
-
-      string += value + " ".repeat(maxWidthByColumns[column] - value.length);
-
-      string += " " + tableCharacters.vertical;
-      if (column + 1 < row.length) string += " ";
-    }
-    string += "\n";
-  }
-
-  string += " ".repeat(groupStackSize * printerConfig.indent) +
-    tableCharacters.bottomLeft;
-  for (const [i, width] of maxWidthByColumns.entries()) {
-    string += tableCharacters.horizontal.repeat(width + 2);
-
-    if (i + 1 < maxWidthByColumns.length) {
-      string += tableCharacters.bottomVertical;
-    }
-  }
-  string += tableCharacters.bottomRight;
+  console.log(bottomBar);
 
   return string;
 }
