@@ -2,6 +2,8 @@ import { Formatter } from "ext:bueno/console/formatter.js";
 import { Printer } from "ext:bueno/console/printer.js";
 import { createTable } from "ext:bueno/console/table.js";
 
+// TODO(Im-Beast): Expose to the users ability to customize Printer config
+
 const core = Bueno.core;
 
 const optimallyUsefulFormattingConfig = {
