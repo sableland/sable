@@ -445,7 +445,10 @@ export class Printer {
   }
 
   #formatPropertyDescriptor(descriptor, depth) {
-    if (descriptor.value) {
+    const get = !!descriptor.get;
+    const set = !!descriptor.set;
+
+    if (descriptor.value !== undefined || !(get || set)) {
       return this.format(descriptor.value, depth);
     }
 
