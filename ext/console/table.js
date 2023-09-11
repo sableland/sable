@@ -72,7 +72,7 @@ export function createTable(data, columns, printer) {
     topBar += horiz;
     headerSeparator += horiz;
     bottomBar += horiz;
-    
+
     if (i < maxWidth.length - 1) {
       topBar += tableCharacters.topVertical;
       headerSeparator += tableCharacters.cross;
@@ -93,6 +93,7 @@ export function createTable(data, columns, printer) {
       );
     }
     string += tableCharacters.vertical;
+
     console.log(string);
 
     if (row === 0) {

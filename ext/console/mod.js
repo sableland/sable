@@ -146,6 +146,7 @@ export class Console {
       this.#timePrinter.print(
         `Timer '${label}' already exists`,
         this.#groupStackSize,
+        this.#groupStackSize,
       );
     } else {
       this.#timerTable[label] = performance.now();
