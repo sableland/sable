@@ -21,7 +21,7 @@ export class Printer {
    * @param {number} [config.maxLineWidth=80] Maximum amount of text before breaking a line
    * @param {number} [config.maxIterableLengthPerLine=5] Maximum amount of items per line in an Iterable (e.g. Array, Set)
    * @param {boolean} [config.evaluateGetters=false] Whether to evaluate values of getters
-   * @param {boolean}[config.usefulFormatting=true] Whether to use "optimally useful formatting" (pretty colors and stuff) {@link https://console.spec.whatwg.org/#optimally-useful-formatting}
+   * @param {boolean} [config.usefulFormatting=true] Whether to use "optimally useful formatting" (pretty colors and stuff) {@link https://console.spec.whatwg.org/#optimally-useful-formatting}
    */
   constructor(logLevel, config) {
     this.logLevel = logLevel;
@@ -29,7 +29,7 @@ export class Printer {
     this.indent = config?.indent ?? 2;
     this.maxDepth = config?.maxDepth ?? 4;
     this.maxLineWidth = config?.maxLineWidth ?? 80;
-    this.evaluateGetters = config?.evaluateGetters ?? true;
+    this.evaluateGetters = config?.evaluateGetters ?? false;
     this.usefulFormatting = config?.usefulFormatting ?? true;
     this.maxItemsPerLine = config?.maxIterableLengthPerLine ?? 5;
 
