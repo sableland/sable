@@ -374,17 +374,19 @@ export class Printer {
 
     let amount = 0;
     for (const key in obj) {
-      const value = obj[key];
+      const descriptor = Object.getOwnPropertyDescriptor(obj, key);
 
       let formattedKey = escapeControlCharacters(key);
       if (formattedKey !== key) {
         formattedKey = this.#formatString(formattedKey, depth, false);
       }
 
+      const formattedValue = this.#formatPropertyDescriptor(descriptor, depth);
+
       if (short) {
         if (amount > 0) str += ", ";
 
-        str += `${formattedKey}: ${this.format(value, depth)}`;
+        str += `${formattedKey}: ${formattedValue}`;
 
         if (
           amount > this.maxItemsPerLine ||
@@ -393,9 +395,7 @@ export class Printer {
           return this.#formatRecord(obj, depth - 1, false);
         }
       } else {
-        str += `\n${" ".repeat(indent)}${formattedKey}: ${
-          this.format(value, depth)
-        },`;
+        str += `\n${" ".repeat(indent)}${formattedKey}: ${formattedValue},`;
       }
 
       ++amount;
@@ -413,5 +413,22 @@ export class Printer {
     }
 
     return str;
+  }
+
+  #formatPropertyDescriptor(descriptor, depth) {
+    if (descriptor.value) {
+      return this.format(descriptor.value, depth);
+    }
+
+    const get = !!descriptor.get;
+    const set = !!descriptor.set;
+
+    if (get && set) {
+      return `${styles.yellow}<Getter & Setter>${styles.reset}`;
+    } else if (get && !set) {
+      return `${styles.yellow}<Getter>${styles.reset}`;
+    } else if (!get && set) {
+      return `${styles.yellow}<Setter>${styles.reset}`;
+    }
   }
 }

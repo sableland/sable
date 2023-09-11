@@ -254,3 +254,12 @@ console.log(obj.thisArrRefsItself);
 console.log(obj);
 
 console.log(obj.noRefAgain);
+
+console.log({
+  get hi() {
+    return "this is getter";
+  },
+  set hi(hi) {},
+  set dog(dog) {
+  },
+});
