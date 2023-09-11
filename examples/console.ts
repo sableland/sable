@@ -283,3 +283,36 @@ console.log({
     },
   },
 });
+const en = {
+  a: true,
+  get dog() {
+    return "lol";
+  },
+  set dog(dog) {},
+
+  get shortObj() {
+    return {
+      asda: {
+        asgsagags: {
+          fgjklsjglkdsag: {
+            asfasfmjafa: true,
+          },
+        },
+      },
+    };
+  },
+
+  get longObj() {
+    return {
+      asda: {
+        asgsagags: {
+          fgjklsjghasjfaskfhjkasfkashfashfjkhsag: {
+            asfasfmjaasfajfasjfklasjfklasjfklafa: true,
+          },
+        },
+      },
+    };
+  },
+};
+
+console.log(en);

@@ -20,6 +20,7 @@ export class Printer {
    * @param {number} [config.maxDepth=4] Maximum amount of nested objects to traverse in an object before evaluating it using `.toString()`
    * @param {number} [config.maxLineWidth=80] Maximum amount of text before breaking a line
    * @param {number} [config.maxIterableLengthPerLine=5] Maximum amount of items per line in an Iterable (e.g. Array, Set)
+   * @param {boolean} [config.evaluateGetters=false] Whether to evaluate values of getters
    * @param {boolean}[config.usefulFormatting=true] Whether to use "optimally useful formatting" (pretty colors and stuff) {@link https://console.spec.whatwg.org/#optimally-useful-formatting}
    */
   constructor(logLevel, config) {
@@ -28,6 +29,7 @@ export class Printer {
     this.indent = config?.indent ?? 2;
     this.maxDepth = config?.maxDepth ?? 4;
     this.maxLineWidth = config?.maxLineWidth ?? 80;
+    this.evaluateGetters = config?.evaluateGetters ?? true;
     this.usefulFormatting = config?.usefulFormatting ?? true;
     this.maxItemsPerLine = config?.maxIterableLengthPerLine ?? 5;
 
@@ -445,22 +447,28 @@ export class Printer {
   }
 
   #formatPropertyDescriptor(descriptor, depth) {
-    const get = !!descriptor.get;
-    const set = !!descriptor.set;
+    const get = descriptor.get;
+    const set = descriptor.set;
 
     if (descriptor.value !== undefined || !(get || set)) {
       return this.format(descriptor.value, depth);
     }
 
-    const get = !!descriptor.get;
-    const set = !!descriptor.set;
+    const getterStyle = styles.cyan;
+
+    let formattedGetterValue = "";
+    if (get && this.evaluateGetters) {
+      formattedGetterValue = ` { ${styles.reset}${
+        this.format(get(), depth)
+      }${getterStyle} }`;
+    }
 
     if (get && set) {
-      return `${styles.yellow}<Getter & Setter>${styles.reset}`;
+      return `${getterStyle}<Getter${formattedGetterValue} & Setter>${styles.reset}`;
     } else if (get && !set) {
-      return `${styles.yellow}<Getter>${styles.reset}`;
+      return `${getterStyle}<Getter${formattedGetterValue}>${styles.reset}`;
     } else if (!get && set) {
-      return `${styles.yellow}<Setter>${styles.reset}`;
+      return `${getterStyle}<Setter>${styles.reset}`;
     }
   }
 }
