@@ -4,7 +4,7 @@ import { createTable } from "ext:bueno/console/table.js";
 
 const core = Bueno.core;
 
-const defaultPrinterConfig = {
+const optimallyUsefulFormattingConfig = {
   indent: 2,
   maxDepth: 4,
   maxLineWidth: 80,
@@ -17,35 +17,39 @@ const genericFormattingConfig = {
   usefulFormatting: false,
 };
 
+/**
+ * Class which creates a `console` namespace
+ * @see https://console.spec.whatwg.org/#console-namespace
+ */
 export class Console {
   #formatter = new Formatter();
 
   //#region Logging
-  #logPrinter = new Printer("stdout", defaultPrinterConfig);
+  #logPrinter = new Printer("stdout", optimallyUsefulFormattingConfig);
   log(...args) {
     const printer = this.#logPrinter;
     printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
-  #infoPrinter = new Printer("stdout", defaultPrinterConfig);
+  #infoPrinter = new Printer("stdout", optimallyUsefulFormattingConfig);
   info(...args) {
     const printer = this.#infoPrinter;
     printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
-  #debugPrinter = new Printer("stdout", defaultPrinterConfig);
+  #debugPrinter = new Printer("stdout", optimallyUsefulFormattingConfig);
   debug(...args) {
     const printer = this.#debugPrinter;
     printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
-  #warnPrinter = new Printer("stdout", defaultPrinterConfig);
+  #warnPrinter = new Printer("stdout", optimallyUsefulFormattingConfig);
   warn(...args) {
     const printer = this.#warnPrinter;
     printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
-  #dirxmlPrinter = new Printer("stdout", defaultPrinterConfig);
+  #dirxmlPrinter = new Printer("stdout", optimallyUsefulFormattingConfig);
   dirxml(...args) {
     const printer = this.#dirxmlPrinter;
     printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
@@ -57,13 +61,13 @@ export class Console {
     printer.print([arg], this.#groupStackSize);
   }
 
-  #errorPrinter = new Printer("stderr", defaultPrinterConfig);
+  #errorPrinter = new Printer("stderr", optimallyUsefulFormattingConfig);
   error(...args) {
     const printer = this.#errorPrinter;
     printer.print(this.#formatter.format(args, printer), this.#groupStackSize);
   }
 
-  #tracePrinter = new Printer("stdout", defaultPrinterConfig);
+  #tracePrinter = new Printer("stdout", optimallyUsefulFormattingConfig);
   trace(...args) {
     const printer = this.#tracePrinter;
 
@@ -78,7 +82,7 @@ export class Console {
     printer.print(error.stack, this.#groupStackSize);
   }
 
-  #assertPrinter = new Printer("stderr", defaultPrinterConfig);
+  #assertPrinter = new Printer("stderr", optimallyUsefulFormattingConfig);
   assert(condition, ...args) {
     if (condition) return;
 
@@ -147,7 +151,7 @@ export class Console {
     }
   }
 
-  #timeLogPrinter = new Printer("stdout", defaultPrinterConfig);
+  #timeLogPrinter = new Printer("stdout", optimallyUsefulFormattingConfig);
   timeLog(label, ...args) {
     label = label ? String(label) : "default";
 
@@ -185,7 +189,7 @@ export class Console {
   #groupStackSize = 0;
   #groupStack = [];
 
-  #groupPrinter = new Printer("stdout", defaultPrinterConfig);
+  #groupPrinter = new Printer("stdout", optimallyUsefulFormattingConfig);
   group(...args) {
     if (args.length === 0) {
       args[0] = "\x1b[1mconsole.group\x1b[0m";

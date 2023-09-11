@@ -17,6 +17,12 @@ const tableCharacters = {
   cross: "\u253C",
 };
 
+/**
+ * @param {any[] | object} data Data to create table from
+ * @param {(string | number)[]} columns An array which contains indexes of column to include in the table
+ * @param {import("./printer.js").Printer} printer Printer used for formatting cell values
+ * @returns
+ */
 export function createTable(data, columns, printer) {
   if (typeof data[0] !== "object") {
     data = data.map((x) => [x]);

@@ -6,22 +6,29 @@ import { escapeControlCharacters, textWidth } from "ext:bueno/utils/strings.js";
 const core = Bueno.core;
 
 const TypedArray = Object.getPrototypeOf(Int8Array);
-function isTypedArray(obj) {
-  return Object.getPrototypeOf(obj.constructor) === TypedArray;
-}
 
-/** https://console.spec.whatwg.org/#printer */
+/** @see https://console.spec.whatwg.org/#printer */
 export class Printer {
   #nextRefId;
 
+  /**
+   * @type {Printer}
+   * @param {"stdout" | "stderr"} logLevel Output to use in `print()` method
+   *
+   * @param {object} config Printer configuration
+   * @param {number} [config.indent=2] How many spaces to use as an indent
+   * @param {number} [config.maxDepth=4] Maximum amount of nested objects to traverse in an object before evaluating it using `.toString()`
+   * @param {number} [config.maxLineWidth=80] Maximum amount of text before breaking a line
+   * @param {number} [config.maxIterableLengthPerLine=5] Maximum amount of items per line in an Iterable (e.g. Array, Set)
+   * @param {boolean}[config.usefulFormatting=true] Whether to use "optimally useful formatting" (pretty colors and stuff) {@link https://console.spec.whatwg.org/#optimally-useful-formatting}
+   */
   constructor(logLevel, config) {
     this.logLevel = logLevel;
-
-    this.usefulFormatting = config?.usefulFormatting ?? true;
 
     this.indent = config?.indent ?? 2;
     this.maxDepth = config?.maxDepth ?? 4;
     this.maxLineWidth = config?.maxLineWidth ?? 80;
+    this.usefulFormatting = config?.usefulFormatting ?? true;
     this.maxItemsPerLine = config?.maxIterableLengthPerLine ?? 5;
 
     this.currentDepth = 0;
@@ -30,6 +37,12 @@ export class Printer {
     this.#nextRefId = 1;
   }
 
+  /**
+   * @param {string | any[]} stringOrArgs Item(s) that need to be formatted and printed
+   * @param {number} groupStackSize `console.group` indentation level
+   * @param {boolean} print Whether to print to the output or not
+   * @returns {string} formatted output
+   */
   print(stringOrArgs, groupStackSize, print = true) {
     let string = "";
 
@@ -72,7 +85,15 @@ export class Printer {
     return output;
   }
 
-  format(arg, depth) {
+  /**
+   * Format object using "optimally useful formatting"
+   * @see https://console.spec.whatwg.org/#optimally-useful-formatting
+   *
+   * @param {any} arg Item to format
+   * @param {number} depth Currently traversed depth
+   * @returns {string} Formatted `arg`
+   */
+  format(arg, depth = 0) {
     switch (typeof arg) {
       // primitives
       case "string":
@@ -106,6 +127,14 @@ export class Printer {
     }
   }
 
+  /**
+   * Format object using "generic javascript object formatting"
+   * @see https://console.spec.whatwg.org/#generic-javascript-object-formatting
+   *
+   * @param {any} arg Item to format
+   * @param {number} depth Currently traversed depth
+   * @returns {string} Formatted `arg`
+   */
   genericFormat(arg) {
     switch (typeof arg) {
       // primitives
@@ -127,7 +156,7 @@ export class Printer {
       case "object":
         return JSON.stringify(arg, null, " ");
 
-      // anything that can just be .toString() and looks alright
+      // anything that can just be `arg.toString()` and looks alright
       default:
         return arg?.toString() ?? arg;
     }
@@ -166,7 +195,7 @@ export class Printer {
       formatted += this.#formatWeakMap();
     } else if (obj instanceof Promise) {
       formatted += this.#formatPromise(obj, depth);
-    } else if (isTypedArray(obj)) {
+    } else if (Object.getPrototypeOf(obj.constructor) === TypedArray) {
       formatted += this.#formatTypedArray(obj, depth);
     } else {
       formatted += this.#formatRecord(obj, depth);

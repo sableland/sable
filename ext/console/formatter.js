@@ -1,6 +1,8 @@
 export class Formatter {
   /**
-   * https://console.spec.whatwg.org/#formatting-specifiers
+   * Return first spotted format specifier
+   * @see https://console.spec.whatwg.org/#formatting-specifiers
+   *
    * @param {string} text
    * @returns {string | undefined} format specifier, if not existent returns undefined
    */
@@ -26,8 +28,9 @@ export class Formatter {
   }
 
   /**
-   * https://console.spec.whatwg.org/#formatter
    * Format given specifiers into a string
+   * @see https://console.spec.whatwg.org/#formatter
+   *
    * @param {any[]} args
    * @param {import('./printer').Printer} [printer=undefined]
    * @returns array of formatted args
