@@ -1,6 +1,8 @@
 import { styles } from "ext:bueno/utils/ansi.js";
 import { escapeControlCharacters, textWidth } from "ext:bueno/utils/strings.js";
 
+// TODO(Im-Beast): Create a list of "standard" colors used for formatting so they actually mean something
+
 const core = Bueno.core;
 
 const TypedArray = Object.getPrototypeOf(Int8Array);
@@ -8,7 +10,10 @@ function isTypedArray(obj) {
   return Object.getPrototypeOf(obj.constructor) === TypedArray;
 }
 
+/** https://console.spec.whatwg.org/#printer */
 export class Printer {
+  #nextRefId;
+
   constructor(logLevel, config) {
     this.logLevel = logLevel;
 
@@ -20,8 +25,9 @@ export class Printer {
     this.maxItemsPerLine = config?.maxIterableLengthPerLine ?? 5;
 
     this.currentDepth = 0;
-    this.objectId = 1;
-    this.spottedObjects = new Set();
+    this.refMap = new Map();
+    this.spottedObjects = new Map();
+    this.#nextRefId = 1;
   }
 
   print(stringOrArgs, groupStackSize, print = true) {
@@ -43,10 +49,10 @@ export class Printer {
         string += this.usefulFormatting
           ? this.format(arg)
           : this.genericFormat(arg);
-
-        this.spottedObjects.clear();
       }
     }
+
+    this.spottedObjects.clear();
 
     const output = string + "\n";
 
@@ -80,16 +86,20 @@ export class Printer {
         return this.#formatBoolean(arg);
       case "symbol":
         return this.#formatSymbol(arg);
+      case "undefined":
+        return this.#formatUndefined();
 
       // non-primitives
       case "function":
         return this.#formatFunction(arg);
       case "object":
-        if (depth > this.maxDepth) return arg.toString();
-        return this.#formatObject(arg, depth);
+        if (depth > this.maxDepth) {
+          return arg.toString();
+        } else if (this.spottedObjects.has(arg) && this.refMap.has(arg)) {
+          return this.#formatCircular(arg);
+        }
 
-      case "undefined":
-        return this.#formatUndefined();
+        return this.#formatObject(arg, depth);
 
       default:
         return arg?.toString() ?? arg;
@@ -123,31 +133,57 @@ export class Printer {
     }
   }
 
-  #formatObject(obj, depth = 0) {
+  #formatObject(obj, depth = 0, circular = false) {
     if (obj === null) return this.#formatNull(depth);
 
-    if (this.spottedObjects.has(obj)) {
-      // TODO(Im-Beast): add support for pointing object reference of the Circular
-      return `${styles.bold}${styles.red}Circular${styles.reset}`;
-    } else {
-      this.spottedObjects.add(obj);
+    let formatted = "";
+    let index = this.spottedObjects.get(obj);
+
+    if (circular) {
+      const refId = this.refMap.get(obj);
+
+      formatted += `${styles.red}<ref *${
+        refId ?? this.#nextRefId
+      }>${styles.reset} `;
+
+      if (!refId) {
+        this.refMap.set(obj, this.#nextRefId++);
+      }
+    } else if (!index) {
+      this.spottedObjects.set(obj, 1);
+      index = 1;
     }
 
+    const spottedAmount = index;
+
     if (Array.isArray(obj)) {
-      return this.#formatArray(obj, depth);
+      formatted += this.#formatArray(obj, depth);
     } else if (obj instanceof Map) {
-      return this.#formatMap(obj, depth);
+      formatted += this.#formatMap(obj, depth);
     } else if (obj instanceof Set) {
-      return this.#formatSet(obj, depth);
+      formatted += this.#formatSet(obj, depth);
     } else if (obj instanceof WeakMap) {
-      return this.#formatWeakMap();
+      formatted += this.#formatWeakMap();
     } else if (obj instanceof Promise) {
-      return this.#formatPromise(obj, depth);
+      formatted += this.#formatPromise(obj, depth);
     } else if (isTypedArray(obj)) {
-      return this.#formatTypedArray(obj, depth);
+      formatted += this.#formatTypedArray(obj, depth);
     } else {
-      return this.#formatRecord(obj, depth);
+      formatted += this.#formatRecord(obj, depth);
     }
+    this.spottedObjects.set(obj, this.spottedObjects.get(obj) + 1);
+
+    if (!circular && this.spottedObjects.get(obj) > spottedAmount + 1) {
+      return this.#formatObject(obj, depth, true);
+    }
+
+    return formatted;
+  }
+
+  #formatCircular(obj) {
+    return `${styles.bold}${styles.red}Circular<*${
+      this.refMap.get(obj)
+    }>${styles.reset}`;
   }
 
   #formatFunction(fn) {
@@ -365,7 +401,9 @@ export class Printer {
       ++amount;
     }
 
-    if (amount === 0) return "{}";
+    if (amount === 0) {
+      return "{}";
+    }
 
     if (!short) {
       str += "\n";

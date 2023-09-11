@@ -55,6 +55,8 @@ const map = new Map<any, any>([
   ["kj", "v"],
 ]);
 
+map.set("circ", map);
+
 const longmap = new Map<any, any>([
   ["k", "v"],
   ["hdk", "v3"],
@@ -137,8 +139,18 @@ console.log("pretty object: %o", {
 const circular = {};
 
 circular.ref = circular;
+circular.ref2 = circular;
+circular.ref3 = circular;
 
 console.log(circular);
+
+const arreruja = [];
+arreruja[0] = arreruja;
+arreruja[1] = arreruja;
+arreruja[2] = arreruja;
+arreruja[3] = arreruja;
+arreruja[4] = arreruja;
+console.log(arreruja);
 
 const map2 = new Map();
 map2.set("x", map2);
@@ -213,3 +225,32 @@ console.table([
 console.groupEnd();
 console.groupEnd();
 console.groupEnd();
+
+const obj = {
+  thisRefs: undefined,
+  thisDoesnt: [1, 2, 3],
+  secondRef: undefined,
+  thirdRef: undefined,
+  noRefAgain: {
+    obj: true,
+    a: {
+      123: 78,
+    },
+  },
+  thisArrRefsItself: [1, 2, 3],
+};
+
+obj.thisRefs = obj;
+obj.secondRef = obj;
+obj.thirdRef = obj;
+
+obj.thisArrRefsItself.push(obj, obj.thisArrRefsItself);
+obj.thisArrRefsItself.push(obj.thisArrRefsItself);
+obj.thisArrRefsItself.push(obj.thisArrRefsItself);
+obj.thisArrRefsItself.push(obj.thisArrRefsItself);
+obj.thisArrRefsItself.push(obj.thisArrRefsItself);
+
+console.log(obj.thisArrRefsItself);
+console.log(obj);
+
+console.log(obj.noRefAgain);
