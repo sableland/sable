@@ -200,7 +200,6 @@ version = "0.0.1"
 dependencies = [
  "battery",
  "deno_core",
- "tokio",
 ]
 
 [[package]]

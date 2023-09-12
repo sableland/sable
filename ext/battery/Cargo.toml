@@ -12,5 +12,4 @@ path = "lib.rs"
 
 [dependencies]
 deno_core.workspace = true
-tokio.workspace = true
 battery = { version = "0.7.8" }

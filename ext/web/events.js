@@ -35,7 +35,15 @@ export class Event {
   CAPTURING_PHASE = 1;
   AT_TARGET = 2;
   BUBBLING_PHASE = 3;
-  eventPhase = 0;
+
+  static NONE = 0;
+  static CAPTURING_PHASE = 1;
+  static AT_TARGET = 2;
+  static BUBBLING_PHASE = 3;
+
+  get eventPhase() {
+    return this.NONE;
+  }
 
   stopPropagation() {}
   cancelBubble() {} // legacy - alias of stopPropagation()
