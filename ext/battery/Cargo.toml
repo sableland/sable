@@ -1,0 +1,15 @@
+[package]
+name = "bueno_ext_battery"
+description = "Bueno battery extension"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+deno_core.workspace = true
+battery = { version = "0.7.8" }

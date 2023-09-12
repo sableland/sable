@@ -1,13 +1,17 @@
 pub mod extensions {
-    use std::time::{Instant, SystemTime};
-
+    use bueno_ext_battery as battery;
     use bueno_ext_fs as fs;
     use bueno_ext_performance as performance;
     use bueno_ext_timers as timers;
+    use std::time::{Instant, SystemTime};
 
     deno_core::extension!(
         bueno,
         ops = [
+            battery::op_battery_charging,
+            battery::op_battery_charging_time,
+            battery::op_battery_discharging_time,
+            battery::op_battery_level,
             fs::op_read_file,
             fs::op_read_text_file,
             fs::op_write_file,
@@ -28,6 +32,9 @@ pub mod extensions {
             "io/mod.js",
             "io/stdio.js",
             "fs/mod.js",
+            "battery/mod.js",
+            "web/mod.js",
+            "web/events.js",
             "console/mod.js",
             "console/printer.js",
             "console/formatter.js",

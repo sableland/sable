@@ -12,6 +12,7 @@ path = "lib.rs"
 
 [dependencies]
 deno_core.workspace = true
+bueno_ext_battery = { path = "./battery/" }
 bueno_ext_fs = { path = "./fs/" }
 bueno_ext_performance = { path = "./performance/" }
 bueno_ext_timers = { path = "./timers/" }
