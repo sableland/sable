@@ -1,18 +1,24 @@
-const { test, bench } = Bueno.testing;
+import {
+  assert,
+  assertEquals,
+  assertNotEquals,
+  assertNotStrictEquals,
+  assertStrictEquals,
+} from "https://deno.land/std/assert/mod.ts";
 
-test("1+1=2", (ctx) => {
-  ctx.equals(1 + 1, 2);
-  ctx.deepEquals(1 + 1, 2);
+Deno.test("1+1=2", () => {
+  assertStrictEquals(1 + 1, 2);
+  assertEquals(1 + 1, 2);
 });
 
-test("objects are different", (ctx) => {
+Deno.test("objects are different", () => {
   const a = { hello: "worl" };
   const b = { hello: { world: true } };
 
-  // ctx.notDeepEquals(a, b);
+  assertNotEquals(a, b);
 });
 
-test("maps are equal", (ctx) => {
+Deno.test("maps are equal", () => {
   const a = new Map([
     ["key", "value"],
     ["k2", "v2"],
@@ -25,11 +31,11 @@ test("maps are equal", (ctx) => {
     ["dog", "cat"],
   ]);
 
-  ctx.notEquals(a, b);
-  ctx.deepEquals(a, b);
+  assertNotStrictEquals(a, b);
+  assertEquals(a, b);
 });
 
-test("maps are not equal", (ctx) => {
+Deno.test("maps are not equal", () => {
   const a = new Map([
     ["key", "alue"],
     ["k2", "k0"],
@@ -42,11 +48,11 @@ test("maps are not equal", (ctx) => {
     ["dog", "wow"],
   ]);
 
-  ctx.notEquals(a, b);
-  ctx.notDeepEquals(a, b);
+  assertNotStrictEquals(a, b);
+  assertNotEquals(a, b);
 });
 
-test("sets are equal", (ctx) => {
+Deno.test("sets are equal", () => {
   const a = new Set([
     "key",
     "value",
@@ -65,11 +71,11 @@ test("sets are equal", (ctx) => {
     "cat",
   ]);
 
-  ctx.notEquals(a, b);
-  ctx.deepEquals(a, b);
+  assertNotStrictEquals(a, b);
+  assertEquals(a, b);
 });
 
-test("sets are not equal", (ctx) => {
+Deno.test("sets are not equal", () => {
   const a = new Set([
     "key",
     "alue",
@@ -88,32 +94,38 @@ test("sets are not equal", (ctx) => {
     "wow",
   ]);
 
-  ctx.notEquals(a, b);
-  ctx.notDeepEquals(a, b);
+  assertNotStrictEquals(a, b);
+  assertNotEquals(a, b);
 });
 
-test("this test fails", (ctx) => {
-  // ctx.assert(false);
+Deno.test("this test fails", () => {
+  // assert(false);
 });
 
-test("this test has sub-tests", (ctx) => {
-  ctx.test("0 = 0", (ctx) => {
-    ctx.equals(0, 0);
+Deno.test("this test has sub-tests", async (t) => {
+  await t.step("0 = 0", () => {
+    assertStrictEquals(0, 0);
   });
 
-  ctx.test("zero?", (ctx) => {
-    ctx.equals(0, 0);
-    ctx.test("actually 1", (ctx) => {
-      ctx.equals(2 ** 0, 1);
+  await t.step("zero?", async (t) => {
+    assertStrictEquals(0, 0);
+    await t.step("actually 1", () => {
+      assertStrictEquals(2 ** 0, 1);
     });
-    ctx.equals(0 + 0, 0);
+    assertStrictEquals(0 + 0, 0);
   });
 });
 
-await test("objects are equal", async (ctx) => {
+Deno.test("objects are equal", () => {
   const a = { hello: "world" };
   const b = { hello: "world" };
-  ctx.notEquals(a, b);
+
+  assertNotStrictEquals(a, b);
+  for (let i = 0; i < 100_000; ++i) {
+    const g = { hello: "world" + i * (1 / 2) ** 2 };
+    const h = { hello: "world" + i * (1 / 2) ** 2 };
+    assertEquals(g, h);
+  }
 
   const c = {
     dsfghsh: 123,
@@ -153,32 +165,6 @@ await test("objects are equal", async (ctx) => {
     g: 5,
   });
 
-  ctx.notEquals(c, d);
-  ctx.deepEquals(c, d);
-
-  await ctx.test("this is async <should leak>", (ctx) => {
-    return new Promise((r) => {
-      const a = {
-        doo: "doo",
-      };
-
-      const b = {
-        rata: "ta",
-      };
-
-      setTimeout(() => {
-        ctx.deepEquals(1, 2);
-        r();
-      }, 1);
-      ctx.deepEquals(a, b);
-    });
-  });
-
-  ctx.test("this should complain, because last step didnt finish yet", (ctx) => {});
-});
-
-test("incorrect usage of context", (ctx) => {
-  ctx.test("im not using my own ctx", () => {
-    ctx.equals(":(", ":(");
-  });
+  assertNotStrictEquals(c, d);
+  assertEquals(c, d);
 });

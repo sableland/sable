@@ -50,7 +50,6 @@ pub mod extensions {
             "utils/ansi.js",
             "utils/strings.js",
             "testing/mod.js",
-            "ansi/mod.js",
         ],
         state = |state| {
             {
