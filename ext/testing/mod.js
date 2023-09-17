@@ -3,6 +3,7 @@ import { textWidth } from "ext:bueno/utils/strings.js";
 import { Printer } from "ext:bueno/console/printer.js";
 
 // TODO(Im-Beast): bueno test and bench subcommands
+// TODO(Im-Beast): op sanitization checks
 
 const ComparisonPass = "pass";
 class ComparisonError extends Error {
