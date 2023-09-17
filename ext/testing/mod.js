@@ -2,6 +2,8 @@ import { styles } from "ext:bueno/utils/ansi.js";
 import { textWidth } from "ext:bueno/utils/strings.js";
 import { Printer } from "ext:bueno/console/printer.js";
 
+// TODO(Im-Beast): bueno test and bench subcommands
+
 const ComparisonPass = "pass";
 class ComparisonError extends Error {
   /**
@@ -15,29 +17,74 @@ class ComparisonError extends Error {
   }
 }
 
-class InvalidTestContextUsageError extends Error {
+class TestContextInvalidUsageError extends Error {
   /**
    * @param {TestContext} testContext
    */
   constructor(testContext) {
+    // TODO(Im-Beast): Replace this with pretty errors after they happen
+
+    const ptd = "-".repeat(textWidth(testContext.title));
+    const ctd = "-".repeat(textWidth(testContext.currentlyTested.title));
+
     super(
       `
 You're using context from different step!
 Please use the step from current callback:
 test('${testContext.title}', (ctx) => {
-------${"^".repeat(textWidth(testContext.title))} you're using this
+----------${ptd}^^^ you're using this
   ...
-  ctx.test('${testContext.currentlyTested.title}', (ctx) => { <--- instead of this
-------------${
-        "^".repeat(textWidth(testContext.currentlyTested.title))
-      } instead of this
-
+  ctx.test('${testContext.currentlyTested.title}', (ctx) => {
+----------------${ctd}^^^ instead of this
+    ...
   });
   ...
 });`,
     );
 
-    this.name = "InvalidTestContextUsageError";
+    this.name = "TestContextInvalidUsageError";
+  }
+}
+
+class TestContextInUseError extends Error {
+  /**
+   * @param {TestContext} testContext
+   * @param {TestContext} tried
+   */
+  constructor(testContext, tried) {
+    const locked = testContext.locked ? "locked" : "unlocked";
+
+    const parentTitle = testContext.title;
+    const currentTitle = testContext.currentlyTested.title;
+    const triedTitle = tried.title;
+
+    const ctd = "-".repeat(textWidth(currentTitle));
+    const cts = " ".repeat(textWidth(currentTitle));
+    const ttd = "-".repeat(textWidth(triedTitle));
+
+    // TODO(Im-Beast): Replace this with pretty errors after they happen
+    super(
+      `
+You started another sub-test when previous one didn't finish! (${parentTitle} is ${locked})
+Please check if you're not awaiting async sub-test:
+test('${parentTitle}', async (ctx) => {
+  ...
+  vvv${ctd}--- you're not awaiting it |
+  ctx.test('${currentTitle}', async (ctx) => { |
+               ${cts}^^^^^------------/
+                          but this is async
+    ...
+  });
+  ...
+      vvvv${ttd}------------- which in turn crashes here
+  ctx.test('${triedTitle}', (ctx) => {
+    ...
+  });
+  ...
+});`,
+    );
+
+    this.name = "TestContextInUseError";
   }
 }
 
@@ -51,8 +98,10 @@ const comparisons = {
       return ComparisonPass;
     }
 
-    // TODO(Im-Beast): do something else than diff if its an object
-    return new ComparisonError("A and B aren't the same", "diff");
+    return new ComparisonError(
+      "A and B aren't the same",
+      typeof a === "object" && typeof b === "object" ? "none" : "diff",
+    );
   },
   deepEquals(a, b) {
     if (a === b) {
@@ -225,11 +274,11 @@ class TestContext {
     if (response instanceof Promise) {
       return response.then(() => {
         testContext.finish();
-        parent?.unlock();
+        parent?.unlock(testContext);
       });
     } else {
       testContext.finish();
-      parent?.unlock();
+      parent?.unlock(testContext);
     }
   }
 
@@ -238,18 +287,18 @@ class TestContext {
   }
 
   lock(testContext) {
-    this.currentlyTested = testContext;
-
     if (this.locked) {
-      throw "Another step is already running!@#!@# <lock>";
+      throw new TestContextInUseError(this, testContext);
     }
+
+    this.currentlyTested = testContext;
 
     this.locked = true;
   }
 
-  unlock() {
+  unlock(testContext) {
     if (!this.locked) {
-      throw "Another step is already running!@#!@# <unlock>";
+      throw new TestContextInUseError(this, testContext);
     }
 
     this.locked = false;
@@ -302,7 +351,7 @@ class TestContext {
 
   assertComparisonError(error, a, b) {
     if (this.locked) {
-      throw new InvalidTestContextUsageError(this);
+      throw new TestContextInvalidUsageError(this);
     }
 
     if (error instanceof ComparisonError) {

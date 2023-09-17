@@ -156,7 +156,7 @@ await test("objects are equal", async (ctx) => {
   ctx.notEquals(c, d);
   ctx.deepEquals(c, d);
 
-  await ctx.test("this is async <should leak>", (ctx) => {
+  ctx.test("this is async <should leak>", (ctx) => {
     return new Promise((r) => {
       const a = {
         doo: "doo",
