@@ -433,6 +433,7 @@ function test(testName, callback) {
   return TestContext.test(testName, callback);
 }
 
+// TODO(Im-Beast): more advanced benchmarking
 function bench(name, callback) {
   console.log(`[ Benching '${name}' ]`);
   const time = core.ops.op_bench_fn(callback);
