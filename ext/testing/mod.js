@@ -430,12 +430,24 @@ class TestContext {
   }
 }
 
+function noop() {}
+
 function test(testName, callback) {
+  if (core.ops.op_runtime_state() !== "test") {
+    Bueno.testing.test = noop;
+    return;
+  }
+
   return TestContext.test(testName, callback);
 }
 
 // TODO(Im-Beast): more advanced benchmarking
 function bench(name, callback) {
+  if (core.ops.op_runtime_state() !== "bench") {
+    Bueno.testing.bench = noop;
+    return;
+  }
+
   console.log(`[ Benching '${name}' ]`);
   const time = core.ops.op_bench_fn(callback);
   console.log(`${name} takes ${time}ms`);

@@ -202,6 +202,7 @@ dependencies = [
  "bueno_ext_battery",
  "bueno_ext_fs",
  "bueno_ext_performance",
+ "bueno_ext_runtime",
  "bueno_ext_testing",
  "bueno_ext_timers",
  "deno_core",
@@ -229,6 +230,14 @@ version = "0.0.1"
 dependencies = [
  "deno_core",
  "tokio",
+]
+
+[[package]]
+name = "bueno_ext_runtime"
+version = "0.0.1"
+dependencies = [
+ "bueno_ext_testing",
+ "deno_core",
 ]
 
 [[package]]

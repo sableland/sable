@@ -182,3 +182,9 @@ test("incorrect usage of context", (ctx) => {
     ctx.equals(":(", ":(");
   });
 });
+
+bench("benchmarked func", () => {
+  for (let i = 0; i < 11; ++i) {
+    Math.random() + Math.random() ** 2;
+  }
+});

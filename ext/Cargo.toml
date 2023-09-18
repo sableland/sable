@@ -17,3 +17,4 @@ bueno_ext_fs = { path = "./fs/" }
 bueno_ext_performance = { path = "./performance/" }
 bueno_ext_timers = { path = "./timers/" }
 bueno_ext_testing = { path = "./testing/" }
+bueno_ext_runtime = { path = "./runtime/" }

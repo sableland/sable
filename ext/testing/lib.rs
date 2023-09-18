@@ -2,6 +2,9 @@ use deno_core::{op2, v8};
 use diff::{PrettyDiffBuilder, PrettyDiffBuilderConfig};
 use std::time::Instant;
 
+pub const TEST_STATE_VALUE: isize = 1;
+pub const BENCH_STATE_VALUE: isize = 2;
+
 mod diff;
 use imara_diff::{diff, intern::InternedInput, Algorithm};
 
