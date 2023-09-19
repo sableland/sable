@@ -104,6 +104,24 @@ const comparisons = {
       typeof a === "object" && typeof b === "object" ? "none" : "diff",
     );
   },
+  almostEquals(a, b, stddev) {
+    if (a === b) {
+      return ComparisonPass;
+    }
+
+    if (typeof a !== "number" || typeof b !== "number") {
+      return new TypeError("`almostEquals` only supports comparing numbers");
+    }
+
+    if (Math.abs(a - b) <= stddev) {
+      return ComparisonPass;
+    }
+
+    return new ComparisonError(
+      `discrepancy between A and B is higher than ${stddev}`,
+      "diff",
+    );
+  },
   deepEquals(a, b) {
     if (a === b) {
       return ComparisonPass;
@@ -224,6 +242,33 @@ const comparisons = {
       "A and B aren't deeply equal (unsure cause)",
       "diff",
     );
+  },
+  satisfies(a, b) {
+    for (const key in b) {
+      if (!(key in a)) {
+        return new ComparisonError(
+          "A is missing propert{y,ies} that B has",
+          "diff",
+        );
+      }
+
+      const aValue = a[key];
+      const bValue = b[key];
+
+      if (comparisons.equals(a, b) === ComparisonPass) {
+        continue;
+      } else if (typeof aValue !== typeof bValue) {
+        return new ComparisonError(
+          `Property ${key} in A has different type than B`,
+          "diff",
+        );
+      } else if (typeof aValue === "object") {
+        const satisfies = comparisons.satisfies(aValue, bValue);
+        if (satisfies !== ComparisonPass) return satisfies;
+      }
+    }
+
+    return ComparisonPass;
   },
   throws(a) {
     try {
@@ -385,23 +430,43 @@ class TestContext {
     if (comparisons.equals(a, b) !== ComparisonPass) {
       this.pass();
     } else {
-      this.fail(new ComparisonError("A equals B", "none"), a, b);
+      this.fail(new ComparisonError("A equals B", "none"));
+    }
+  }
+
+  almostEquals(a, b, stddev) {
+    this.assertComparisonError(comparisons.almostEquals(a, b, stddev), a, b);
+  }
+
+  notAlmostEquals(a, b, stddev) {
+    if (comparisons.almostEquals(a, b, stddev) !== ComparisonPass) {
+      this.pass();
+    } else {
+      this.fail(new ComparisonError("A almost equals B", "none"));
     }
   }
 
   deepEquals(a, b) {
-    this.assertComparisonError(
-      comparisons.deepEquals(a, b),
-      a,
-      b,
-    );
+    this.assertComparisonError(comparisons.deepEquals(a, b), a, b);
   }
 
   notDeepEquals(a, b) {
     if (comparisons.deepEquals(a, b) !== ComparisonPass) {
       this.pass();
     } else {
-      this.fail(new ComparisonError("A deep equals B", "none"), a, b);
+      this.fail(new ComparisonError("A deep equals B", "none"));
+    }
+  }
+
+  satisfies(a, b) {
+    this.assertComparisonError(comparisons.satisfies(a, b), a, b);
+  }
+
+  notSatisfies(a, b) {
+    if (comparisons.satisfies(a, b) !== ComparisonPass) {
+      this.pass();
+    } else {
+      this.fail(new ComparisonError("A satisfies B", "none"));
     }
   }
 
@@ -425,7 +490,7 @@ class TestContext {
     if (await comparisons.rejects(a) !== ComparisonPass) {
       this.pass();
     } else {
-      this.fail(new ComparisonError("A rejects", "none"), a);
+      this.fail(new ComparisonError("A rejects", "none"));
     }
   }
 }

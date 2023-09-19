@@ -110,6 +110,41 @@ test("this test has sub-tests", (ctx) => {
   });
 });
 
+test("satisfies", (ctx) => {
+  ctx.test("objects", (ctx) => {
+    const a = {
+      hello: "world",
+      dog: 123,
+      it: "123",
+      has: "123",
+      more: true,
+
+      deep: {
+        yes: "Sir",
+      },
+
+      PROPERTIAS: true,
+    };
+
+    const b = {
+      hello: "world",
+      dog: 123,
+      deep: {
+        yes: "Sir",
+      },
+    };
+
+    ctx.satisfies(a, b);
+    ctx.notSatisfies(b, a);
+  });
+});
+
+test("almostEquals", (ctx) => {
+  ctx.almostEquals(0.1, 0, 0.1);
+  ctx.almostEquals(0.01, 0, 0.1);
+  ctx.notAlmostEquals(0.2, 0, 0.1);
+});
+
 await test("objects are equal", async (ctx) => {
   const a = { hello: "world" };
   const b = { hello: "world" };
