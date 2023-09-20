@@ -234,6 +234,8 @@ dependencies = [
  "clap",
  "deno_ast",
  "deno_core",
+ "dprint-plugin-json",
+ "dprint-plugin-markdown",
  "dprint-plugin-typescript",
  "glob",
  "reqwest",
@@ -573,6 +575,33 @@ dependencies = [
  "bumpalo",
  "indexmap 1.9.3",
  "rustc-hash",
+ "serde",
+ "unicode-width",
+]
+
+[[package]]
+name = "dprint-plugin-json"
+version = "0.17.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b63039b53a600a7dc078cf9d76d6b5aad9bdb665e5a107ecdb06aef7bcc2e345"
+dependencies = [
+ "anyhow",
+ "dprint-core",
+ "jsonc-parser",
+ "serde",
+ "text_lines",
+]
+
+[[package]]
+name = "dprint-plugin-markdown"
+version = "0.16.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "faf3e228c56be47b43af72309c2b8025491012b41d5397cd7b91172ce1368cf3"
+dependencies = [
+ "anyhow",
+ "dprint-core",
+ "pulldown-cmark",
+ "regex",
  "serde",
  "unicode-width",
 ]
@@ -1014,6 +1043,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "jsonc-parser"
+version = "0.21.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b56a20e76235284255a09fcd1f45cf55d3c524ea657ebd3854735925c57743d"
+
+[[package]]
 name = "lazy-regex"
 version = "3.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1432,6 +1467,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5787f7cda34e3033a72192c018bc5883100330f362ef279a8cbccfce8bb4e874"
 dependencies = [
  "cc",
+]
+
+[[package]]
+name = "pulldown-cmark"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77a1a2f1f0a7ecff9c31abbe177637be0e97a0aef46cf8738ece09327985d998"
+dependencies = [
+ "bitflags 1.3.2",
+ "memchr",
+ "unicase",
 ]
 
 [[package]]
@@ -2515,6 +2561,15 @@ name = "typenum"
 version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "497961ef93d974e23eb6f433eb5fe1b7930b659f06d12dec6fc44a8f554c0bba"
+
+[[package]]
+name = "unicase"
+version = "2.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7d2d4dafb69621809a81864c9c1b864479e1235c0dd4e199924b9742439ed89"
+dependencies = [
+ "version_check",
+]
 
 [[package]]
 name = "unicode-bidi"
