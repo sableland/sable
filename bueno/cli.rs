@@ -1,6 +1,7 @@
 extern crate clap;
 
 use clap::ArgAction;
+use std::process::ExitCode;
 
 use self::clap::{arg, Arg, Command};
 
@@ -39,11 +40,18 @@ pub fn cli() -> Command {
         .subcommand(
             Command::new("fmt")
                 .about("Format files given a global patern")
-                .arg(arg!([glob] "Global pattern to format")),
+                .arg(arg!([glob] "Global pattern to format"))
+                .arg(
+                    Arg::new("check")
+                        .long("check")
+                        .action(ArgAction::SetTrue)
+                        .help("Disables formatting and checks if files are formatted"),
+                ),
         )
 }
 
-pub fn parse_cli() {
+pub fn parse_cli() -> ExitCode {
+    let mut code = ExitCode::SUCCESS;
     let matches = cli().get_matches();
 
     match matches.subcommand() {
@@ -65,16 +73,22 @@ pub fn parse_cli() {
             if let Err(error) = runtime.block_on(bueno_run(&module_path, options)) {
                 // TODO: better looking errors
                 eprintln!("error: {}", error);
+                code = ExitCode::FAILURE;
             }
         }
-        Some(("fmt", _)) => {
-            if let Err(error) = fmt(FormatOptions {
-                check: false,
-                glob: "**/*",
-            }) {
+        Some(("fmt", sub_matches)) => {
+            let check = sub_matches.get_flag("check");
+            let default_glob = "**/*".to_string();
+            let glob = sub_matches
+                .get_one::<String>("glob")
+                .unwrap_or(&default_glob);
+
+            if let Err(error) = fmt(FormatOptions { check, glob }) {
                 eprintln!("error: {}", error);
+                code = ExitCode::FAILURE;
             }
         }
         _ => unreachable!(),
     }
+    code
 }

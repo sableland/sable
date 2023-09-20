@@ -51,28 +51,27 @@ fn format_file(ext: &str, contents: &str) -> Result<Option<String>, AnyError> {
 
 pub struct FormatOptions<'a> {
     pub check: bool,
-    pub glob: &'a str,
+    pub glob: &'a String,
 }
 
 pub fn fmt(options: FormatOptions) -> Result<(), AnyError> {
     for entry in glob(&options.glob)? {
         match entry {
-            Ok(path) => {
-                match path.extension().and_then(OsStr::to_str) {
-                    Some(
-                        ext @ ("js" | "ts" | "jsx" | "tsx" | "json" | "jsonc" | "md" | "markdown"),
-                    ) => {
-                        let contents = std::fs::read_to_string(path.clone())?;
+            Ok(path) => match path.extension().and_then(OsStr::to_str) {
+                Some(
+                    ext @ ("js" | "ts" | "jsx" | "tsx" | "json" | "jsonc" | "md" | "markdown"),
+                ) => {
+                    let contents = std::fs::read_to_string(path.clone())?;
 
-                        if let Some(text) = format_file(ext, &contents)? {
-                            println!("fmt: {}", path.display());
-                            // print out formatted text
+                    if let Some(text) = format_file(ext, &contents)? {
+                        println!("fmt: {}", path.display());
+                        if !options.check {
                             std::fs::write(path, text)?;
                         }
                     }
-                    _ => {}
                 }
-            }
+                _ => {}
+            },
             Err(e) => println!("{:?}", e),
         }
     }
