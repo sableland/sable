@@ -26,7 +26,7 @@ const genericFormattingConfig = {
 export class Console {
   #formatter = new Formatter();
 
-  //#region Logging
+  // #region Logging
   #logPrinter = new Printer("stdout", optimallyUsefulFormattingConfig);
   log(...args) {
     const printer = this.#logPrinter;
@@ -108,9 +108,9 @@ export class Console {
   clear() {
     core.print("\x1b[1;1H\x1b[0J", false);
   }
-  //#endregion
+  // #endregion
 
-  //#region Counting
+  // #region Counting
   #countMap = {};
 
   #countPrinter = new Printer("stdout", genericFormattingConfig);
@@ -133,9 +133,9 @@ export class Console {
       this.#countResetPrinter.print(`Count for '${label}' doesn't exist`);
     }
   }
-  //#endregion
+  // #endregion
 
-  //#region Timing
+  // #region Timing
   #timerTable = {};
 
   #timePrinter = new Printer("stdout", genericFormattingConfig);
@@ -185,9 +185,9 @@ export class Console {
       printer.print(`Timer '${label}' doesn't exist`, this.#groupStackSize);
     }
   }
-  //#endregion
+  // #endregion
 
-  //#region Grouping
+  // #region Grouping
   #groupStackSize = 0;
   #groupStack = [];
 
@@ -217,7 +217,7 @@ export class Console {
     this.#groupStack.pop();
     this.#groupStackSize -= 1;
   }
-  //#endregion
+  // #endregion
 }
 
 globalThis.console = new Console();

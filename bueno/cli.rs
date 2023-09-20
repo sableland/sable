@@ -4,7 +4,11 @@ use clap::ArgAction;
 
 use self::clap::{arg, Arg, Command};
 
-use crate::{bueno_run, BuenoOptions};
+use crate::{
+    bueno_run,
+    fmt::{fmt, FormatOptions},
+    BuenoOptions,
+};
 
 pub fn cli() -> Command {
     Command::new("buenojs")
@@ -32,6 +36,11 @@ pub fn cli() -> Command {
                         .conflicts_with("reload-cache"),
                 ),
         )
+        .subcommand(
+            Command::new("fmt")
+                .about("Format files given a global patern")
+                .arg(arg!([glob] "Global pattern to format")),
+        )
 }
 
 pub fn parse_cli() {
@@ -55,6 +64,14 @@ pub fn parse_cli() {
 
             if let Err(error) = runtime.block_on(bueno_run(&module_path, options)) {
                 // TODO: better looking errors
+                eprintln!("error: {}", error);
+            }
+        }
+        Some(("fmt", _)) => {
+            if let Err(error) = fmt(FormatOptions {
+                check: false,
+                glob: "**/*",
+            }) {
                 eprintln!("error: {}", error);
             }
         }

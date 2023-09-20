@@ -150,8 +150,8 @@ export class Printer {
         const stringified = fn.toString();
 
         const stringTag = fn[Symbol.toStringTag];
-        const constructorName = stringTag ??
-          (stringified.startsWith("class") ? "Class" : "Function");
+        const constructorName = stringTag
+          ?? (stringified.startsWith("class") ? "Class" : "Function");
 
         return `${constructorName} (${fn.name || "anonymous"})`;
       }
@@ -221,8 +221,8 @@ export class Printer {
     const stringified = fn.toString();
 
     const stringTag = fn[Symbol.toStringTag];
-    const constructorName = stringTag ??
-      (stringified.startsWith("class") ? "Class" : "Function");
+    const constructorName = stringTag
+      ?? (stringified.startsWith("class") ? "Class" : "Function");
 
     return `${styles.lightMagenta} [${constructorName}: ${
       fn.name || "( anonymous )"
@@ -420,8 +420,8 @@ export class Printer {
         str += `${formattedKey}: ${formattedValue}`;
 
         if (
-          amount > this.maxItemsPerLine ||
-          textWidth(str) > this.maxLineWidth
+          amount > this.maxItemsPerLine
+          || textWidth(str) > this.maxLineWidth
         ) {
           return this.#formatRecord(obj, depth - 1, false);
         }
