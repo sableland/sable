@@ -6,7 +6,7 @@ const core = Bueno.core;
  * @returns {Promise<Uint8Array>}
  */
 function readFile(path) {
-  return core.ops.op_read_file(path);
+	return core.ops.op_read_file(path);
 }
 
 /**
@@ -15,7 +15,7 @@ function readFile(path) {
  * @returns {Promise<string>}
  */
 function readTextFile(path) {
-  return core.ops.op_read_text_file(path);
+	return core.ops.op_read_text_file(path);
 }
 
 /**
@@ -25,7 +25,7 @@ function readTextFile(path) {
  * @returns {Promise<void>}
  */
 function writeFile(path, contents) {
-  core.ops.op_write_file(path, contents);
+	core.ops.op_write_file(path, contents);
 }
 
 /**
@@ -35,7 +35,7 @@ function writeFile(path, contents) {
  * @returns {Promise<void>}
  */
 function writeTextFile(path, contents) {
-  core.ops.op_write_text_file(path, contents);
+	core.ops.op_write_text_file(path, contents);
 }
 
 /**
@@ -44,7 +44,7 @@ function writeTextFile(path, contents) {
  * @returns {Promise<void>}
  */
 function removeFile(path) {
-  core.ops.op_remove_file(path);
+	core.ops.op_remove_file(path);
 }
 
 /**
@@ -54,14 +54,14 @@ function removeFile(path) {
  * @returns {Promise<void>}
  */
 function removeDirectory(path, recursive) {
-  core.ops.op_remove_dir(path, recursive);
+	core.ops.op_remove_dir(path, recursive);
 }
 
 Bueno.fs = {
-  readFile,
-  readTextFile,
-  writeFile,
-  writeTextFile,
-  removeFile,
-  removeDirectory,
+	readFile,
+	readTextFile,
+	writeFile,
+	writeTextFile,
+	removeFile,
+	removeDirectory,
 };

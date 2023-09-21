@@ -31,7 +31,7 @@ impl deno_core::ModuleLoader for BuenoModuleLoader {
         let reload_cache = self.options.reload_cache;
 
         async move {
-            let scheme = module_specifier.scheme().clone();
+            let scheme = module_specifier.scheme();
             let mut response: Option<reqwest::Response> = None;
 
             // Determine what the MediaType is (this is done based on the file

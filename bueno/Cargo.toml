@@ -20,6 +20,11 @@ bueno_ext.workspace = true
 clap = "4.4.0"
 reqwest = "0.11.20"
 shellexpand = "3.1.0"
+glob = "0.3.1"
+
+dprint-plugin-json = "=0.17.4"
+dprint-plugin-markdown = "=0.16.1"
+dprint-plugin-typescript = "=0.87.1"
 
 
 [build-dependencies]

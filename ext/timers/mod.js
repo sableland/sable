@@ -8,25 +8,25 @@ let nestingLevel = 0;
 // Error which throws when someone tries to use setTimeout(code, ...) or setInterval(code, ...) syntax
 // It's not supported simply because its cursed
 class UnsupportedSetTimerCodeError extends Error {
-  /**
-   * @param {"Timeout" | "Interval"} type
-   */
-  constructor(type) {
-    super(
-      `set${type}(code, ...) is not supported.\nIf you can't generate the code statically please consider using new Function() instead`,
-    );
-  }
+	/**
+	 * @param {"Timeout" | "Interval"} type
+	 */
+	constructor(type) {
+		super(
+			`set${type}(code, ...) is not supported.\nIf you can't generate the code statically please consider using new Function() instead`,
+		);
+	}
 }
 
 // Wrap timer's callback with a function that checks whether value returned by op_queue_timer is true
 function wrapTimerCallback(callback, currentNesting, args) {
-  return (value) => {
-    if (value === true) {
-      nestingLevel = currentNesting;
-      callback.apply(globalThis, args);
-      nestingLevel = 0;
-    }
-  };
+	return (value) => {
+		if (value === true) {
+			nestingLevel = currentNesting;
+			callback.apply(globalThis, args);
+			nestingLevel = 0;
+		}
+	};
 }
 
 /**
@@ -37,11 +37,11 @@ function wrapTimerCallback(callback, currentNesting, args) {
  * @param {number} delay
  */
 function queueTimer(id, delay) {
-  if (delay === 0) {
-    return core.ops.op_queue_timer_deferred(id, delay);
-  } else {
-    return core.ops.op_queue_timer(id, delay);
-  }
+	if (delay === 0) {
+		return core.ops.op_queue_timer_deferred(id, delay);
+	} else {
+		return core.ops.op_queue_timer(id, delay);
+	}
 }
 
 /**
@@ -55,11 +55,11 @@ function queueTimer(id, delay) {
  * @param {...any} args
  */
 async function runInterval(id, interval, currentNesting, callback, args) {
-  while (await queueTimer(id, interval)) {
-    nestingLevel = currentNesting;
-    callback.apply(globalThis, args);
-    nestingLevel = 0;
-  }
+	while (await queueTimer(id, interval)) {
+		nestingLevel = currentNesting;
+		callback.apply(globalThis, args);
+		nestingLevel = 0;
+	}
 }
 
 /**
@@ -69,23 +69,23 @@ async function runInterval(id, interval, currentNesting, callback, args) {
  * @returns timeout id
  */
 function setTimeout(callback, timeout = 0, ...args) {
-  if (typeof callback !== "function") {
-    throw new UnsupportedSetTimerCodeError("Timeout");
-  }
+	if (typeof callback !== "function") {
+		throw new UnsupportedSetTimerCodeError("Timeout");
+	}
 
-  timeout = toLong(timeout);
+	timeout = toLong(timeout);
 
-  const id = core.ops.op_create_timer();
+	const id = core.ops.op_create_timer();
 
-  const currentNesting = nestingLevel + 1;
-  if (currentNesting > 5 && timeout < 4) {
-    timeout = 4;
-  }
+	const currentNesting = nestingLevel + 1;
+	if (currentNesting > 5 && timeout < 4) {
+		timeout = 4;
+	}
 
-  callback = wrapTimerCallback(callback, currentNesting, args);
-  queueTimer(id, timeout).then(callback);
+	callback = wrapTimerCallback(callback, currentNesting, args);
+	queueTimer(id, timeout).then(callback);
 
-  return id;
+	return id;
 }
 
 /**
@@ -95,28 +95,28 @@ function setTimeout(callback, timeout = 0, ...args) {
  * @returns interval id
  */
 function setInterval(callback, interval = 0, ...args) {
-  if (typeof callback !== "function") {
-    throw new UnsupportedSetTimerCodeError("Interval");
-  }
+	if (typeof callback !== "function") {
+		throw new UnsupportedSetTimerCodeError("Interval");
+	}
 
-  interval = toLong(interval);
+	interval = toLong(interval);
 
-  const currentNesting = nestingLevel + 1;
-  if (currentNesting > 5 && interval < 4) {
-    interval = 4;
-  }
+	const currentNesting = nestingLevel + 1;
+	if (currentNesting > 5 && interval < 4) {
+		interval = 4;
+	}
 
-  const id = core.ops.op_create_timer();
-  runInterval(id, interval, currentNesting, callback, args);
-  return id;
+	const id = core.ops.op_create_timer();
+	runInterval(id, interval, currentNesting, callback, args);
+	return id;
 }
 
 function clearTimeout(id) {
-  core.ops.op_clear_timer(id);
+	core.ops.op_clear_timer(id);
 }
 
 function clearInterval(id) {
-  core.ops.op_clear_timer(id);
+	core.ops.op_clear_timer(id);
 }
 
 globalThis.setTimeout = setTimeout;

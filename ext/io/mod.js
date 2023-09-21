@@ -9,9 +9,9 @@ const core = Bueno.core;
  * @returns number of bytes that has been read or `null` (EOF)
  */
 async function read(rid, buffer) {
-  // Can't read into nothing
-  if (buffer.length === 0) return 0;
-  return (await core.read(rid)) || null;
+	// Can't read into nothing
+	if (buffer.length === 0) return 0;
+	return (await core.read(rid)) || null;
 }
 
 /**
@@ -21,7 +21,7 @@ async function read(rid, buffer) {
  * @returns number of bytes that has been written
  */
 function write(rid, data) {
-  return core.write(rid, data);
+	return core.write(rid, data);
 }
 
 /**
@@ -29,15 +29,15 @@ function write(rid, data) {
  * @param {number} rid resource id
  */
 function close(rid) {
-  core.close(rid);
+	core.close(rid);
 }
 
 Bueno.io = {
-  read,
-  write,
-  close,
+	read,
+	write,
+	close,
 
-  stdin: new Stdin(),
-  stdout: new Stdout(),
-  stderr: new Stderr(),
+	stdin: new Stdin(),
+	stdout: new Stdout(),
+	stderr: new Stderr(),
 };
