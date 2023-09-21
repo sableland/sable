@@ -23,33 +23,36 @@ class UnsupportedSetTimerCodeError extends Error {
 }
 
 async function runTimerLoop() {
-  if (isTimerLoopRunning) {
-    throw new Error("WTF");
-  }
-  isTimerLoopRunning = true;
+	if (isTimerLoopRunning) {
+		throw new Error("WTF");
+	}
+	isTimerLoopRunning = true;
 
-  while (true) {
-    const timerId = await core.ops.op_timers_sleep();
-    if (timerId === null) {
-      break;
-    }
+	while (true) {
+		const timerId = await core.ops.op_timers_sleep();
+		if (timerId === null) {
+			break;
+		}
 
-    const timer = activeTimers.get(timerId);
-    nestingLevel = timer.nestingLevel;
-    // TODO: Handle exceptions
-    timer.callback.apply(globalThis, timer.args);
-    nestingLevel = 0;
+		const timer = activeTimers.get(timerId);
+		nestingLevel = timer.nestingLevel;
+		// TODO: Handle exceptions
+		timer.callback.apply(globalThis, timer.args);
+		nestingLevel = 0;
 
-    if (timer.isInterval) {
-      timer.nestingLevel++;
-      const delay = Math.max(timer.delay, timer.nestingLevel > 5 ? 4 : 0);
-      timer.cancelRid = core.ops.op_create_timer(delay, timerId);
-    } else {
-      activeTimers.delete(timerId);
-    }
-  }
+		// Free the TimerHandle resource
+		core.close(timer.cancelRid);
 
-  isTimerLoopRunning = false;
+		if (timer.isInterval) {
+			timer.nestingLevel++;
+			const delay = Math.max(timer.delay, timer.nestingLevel > 5 ? 4 : 0);
+			timer.cancelRid = core.ops.op_create_timer(delay, timerId);
+		} else {
+			activeTimers.delete(timerId);
+		}
+	}
+
+	isTimerLoopRunning = false;
 }
 
 /**
@@ -65,24 +68,24 @@ function setTimeout(callback, timeout = 0, ...args) {
 
 	timeout = toLong(timeout);
 
-  const id = nextId;
-  nextId++;
+	const id = nextId;
+	nextId++;
 
-  const currentNesting = nestingLevel + 1;
-  const delay = Math.max(timeout, currentNesting > 5 ? 4 : 0);
-  const cancelRid = core.ops.op_create_timer(delay, id);
+	const currentNesting = nestingLevel + 1;
+	const delay = Math.max(timeout, currentNesting > 5 ? 4 : 0);
+	const cancelRid = core.ops.op_create_timer(delay, id);
 
-  activeTimers.set(id, {
-    nestingLevel: currentNesting,
-    callback,
-    args,
-    cancelRid,
-    isInterval: false
-  });
+	activeTimers.set(id, {
+		nestingLevel: currentNesting,
+		callback,
+		args,
+		cancelRid,
+		isInterval: false,
+	});
 
-  if (!isTimerLoopRunning) {
-    runTimerLoop();
-  }
+	if (!isTimerLoopRunning) {
+		runTimerLoop();
+	}
 
 	return id;
 }
@@ -94,45 +97,45 @@ function setTimeout(callback, timeout = 0, ...args) {
  * @returns interval id
  */
 function setInterval(callback, interval = 0, ...args) {
-  if (typeof callback !== "function") {
-    throw new UnsupportedSetTimerCodeError("Timeout");
-  }
+	if (typeof callback !== "function") {
+		throw new UnsupportedSetTimerCodeError("Timeout");
+	}
 
 	interval = toLong(interval);
 
-  const id = nextId;
-  nextId++;
+	const id = nextId;
+	nextId++;
 
-  const currentNesting = nestingLevel + 1;
-  const delay = Math.max(interval, currentNesting > 5 ? 4 : 0);
-  const cancelRid = core.ops.op_create_timer(delay, id);
+	const currentNesting = nestingLevel + 1;
+	const delay = Math.max(interval, currentNesting > 5 ? 4 : 0);
+	const cancelRid = core.ops.op_create_timer(delay, id);
 
-  activeTimers.set(id, {
-    nestingLevel: currentNesting,
-    callback,
-    args,
-    cancelRid,
-    isInterval: true,
-    delay: interval
-  });
+	activeTimers.set(id, {
+		nestingLevel: currentNesting,
+		callback,
+		args,
+		cancelRid,
+		isInterval: true,
+		delay: interval,
+	});
 
-  if (!isTimerLoopRunning) {
-    runTimerLoop();
-  }
+	if (!isTimerLoopRunning) {
+		runTimerLoop();
+	}
 
-  return id;
+	return id;
 }
 
 function clearTimeout(id) {
-  const timer = activeTimers.get(id);
-  if (timer) {
-    core.ops.op_clear_timer(timer.cancelRid);
-    activeTimers.delete(id);
-  }
+	const timer = activeTimers.get(id);
+	if (timer) {
+		core.close(timer.cancelRid);
+		activeTimers.delete(id);
+	}
 }
 
 function clearInterval(id) {
-  clearTimeout(id);
+	clearTimeout(id);
 }
 
 globalThis.setTimeout = setTimeout;

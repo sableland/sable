@@ -3,10 +3,8 @@ pub mod extensions {
     use bueno_ext_fs as fs;
     use bueno_ext_performance as performance;
     use bueno_ext_timers as timers;
-    use std::{
-        collections::BinaryHeap,
-        time::{Instant, SystemTime},
-    };
+    use std::time::{Instant, SystemTime};
+    use timers::TimerQueue;
 
     deno_core::extension!(
         bueno,
@@ -25,7 +23,6 @@ pub mod extensions {
             performance::op_time_origin,
             timers::op_timers_sleep,
             timers::op_create_timer,
-            timers::op_clear_timer,
         ],
         esm_entry_point = "ext:bueno/runtime.js",
         esm = [
@@ -58,9 +55,7 @@ pub mod extensions {
 
             {
                 // bueno_ext_timers
-                state.put(timers::TimerInfo {
-                    entries: BinaryHeap::new(),
-                });
+                state.put::<TimerQueue>(Default::default());
             };
         }
     );

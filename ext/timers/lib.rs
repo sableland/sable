@@ -1,12 +1,38 @@
-use deno_core::{op2, CancelFuture, CancelHandle, OpState, ResourceId};
+use deno_core::{op2, CancelFuture, CancelHandle, OpState, Resource, ResourceId};
 use std::{cell::RefCell, cmp::Reverse, collections::BinaryHeap, rc::Rc, time::Duration};
 use tokio::time::Instant;
+
+struct TimerHandle(RefCell<Rc<CancelHandle>>);
+impl TimerHandle {
+    fn new_rc() -> Rc<Self> {
+        Rc::new(Self(RefCell::new(CancelHandle::new_rc())))
+    }
+    fn is_canceled(&self) -> bool {
+        self.0.borrow().is_canceled()
+    }
+    fn cancel_handle(&self) -> Rc<CancelHandle> {
+        self.0.borrow().clone()
+    }
+    fn cancel_and_replace(&self) {
+        if !self.is_canceled() {
+            let old_cancel_handle = self.0.replace(CancelHandle::new_rc());
+            old_cancel_handle.cancel();
+        }
+    }
+}
+impl Resource for TimerHandle {
+    fn close(self: Rc<Self>) {
+        if !self.is_canceled() {
+            self.0.borrow().cancel();
+        }
+    }
+}
 
 pub struct TimerEntry {
     id: i32,
     deadline: Instant,
     enqueued: Instant,
-    cancel_handle: Rc<CancelHandle>,
+    handle: Rc<TimerHandle>,
 }
 impl PartialEq for TimerEntry {
     fn eq(&self, other: &Self) -> bool {
@@ -30,9 +56,7 @@ impl Ord for TimerEntry {
     }
 }
 
-pub struct TimerInfo {
-    pub entries: BinaryHeap<Reverse<TimerEntry>>,
-}
+pub type TimerQueue = BinaryHeap<Reverse<TimerEntry>>;
 
 // Waits until the next timer fires, and returns its id, or None if there are no
 // active timers.
@@ -45,20 +69,20 @@ pub async fn op_timers_sleep(op_state: Rc<RefCell<OpState>>) -> Option<i32> {
 
         {
             let op_state = &mut op_state.borrow_mut();
-            let timer_entries = &mut op_state.borrow_mut::<TimerInfo>().entries;
+            let timer_queue = op_state.borrow_mut::<TimerQueue>();
 
             // Find the first non-canceled entry
             loop {
-                if timer_entries.is_empty() {
+                if timer_queue.is_empty() {
                     return None;
                 }
-                let entry = &timer_entries.peek().unwrap().0;
-                if entry.cancel_handle.is_canceled() {
-                    timer_entries.pop().unwrap();
+                let entry = &timer_queue.peek().unwrap().0;
+                if entry.handle.is_canceled() {
+                    timer_queue.pop().unwrap();
                 } else {
                     id = entry.id;
                     deadline = entry.deadline;
-                    cancel_handle = entry.cancel_handle.clone();
+                    cancel_handle = entry.handle.cancel_handle();
                     break;
                 }
             }
@@ -70,10 +94,10 @@ pub async fn op_timers_sleep(op_state: Rc<RefCell<OpState>>) -> Option<i32> {
 
         if sleep_result.is_ok() {
             let op_state = &mut op_state.borrow_mut();
-            let timer_entries = &mut op_state.borrow_mut::<TimerInfo>().entries;
-            let entry = timer_entries.pop().unwrap().0;
+            let timer_queue = &mut op_state.borrow_mut::<TimerQueue>();
+            let entry = timer_queue.pop().unwrap().0;
             assert_eq!(entry.id, id);
-            assert!(!entry.cancel_handle.is_canceled());
+            assert!(!entry.handle.is_canceled());
             return Some(id);
         }
     }
@@ -86,25 +110,22 @@ pub fn op_create_timer(op_state: &mut OpState, delay_ms: i32, id: i32) -> Resour
     let now = Instant::now();
     let delay = Duration::from_millis(delay_ms.max(0) as u64);
     let deadline = now.checked_add(delay).unwrap();
-    let cancel_handle = CancelHandle::new_rc();
+    let timer_handle = TimerHandle::new_rc();
 
-    let timer_info = op_state.borrow_mut::<TimerInfo>();
-    timer_info.entries.push(Reverse(TimerEntry {
+    let entry = TimerEntry {
         id,
         deadline,
         enqueued: now,
-        cancel_handle: cancel_handle.clone(),
-    }));
+        handle: timer_handle.clone(),
+    };
 
-    op_state.resource_table.add_rc(cancel_handle)
-}
+    let timer_queue = op_state.borrow_mut::<TimerQueue>();
+    if let Some(first_entry) = timer_queue.peek() {
+        if entry <= first_entry.0 {
+            first_entry.0.handle.cancel_and_replace();
+        }
+    }
+    timer_queue.push(Reverse(entry));
 
-// Clears timer with given id by canc
-#[op2(fast)]
-pub fn op_clear_timer(state: &mut OpState, #[smi] resource_id: ResourceId) {
-    let cancel_handle = state
-        .resource_table
-        .take::<CancelHandle>(resource_id)
-        .unwrap();
-    cancel_handle.cancel();
+    op_state.resource_table.add_rc(timer_handle)
 }
