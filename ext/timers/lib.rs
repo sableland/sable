@@ -1,75 +1,110 @@
-use deno_core::{anyhow::bail, error::AnyError, op, op2, CancelFuture, CancelHandle, OpState};
-use std::{cell::RefCell, rc::Rc, time::Duration};
+use deno_core::{op2, CancelFuture, CancelHandle, OpState, ResourceId};
+use std::{cell::RefCell, cmp::Reverse, collections::BinaryHeap, rc::Rc, time::Duration};
+use tokio::time::Instant;
+
+pub struct TimerEntry {
+    id: i32,
+    deadline: Instant,
+    enqueued: Instant,
+    cancel_handle: Rc<CancelHandle>,
+}
+impl PartialEq for TimerEntry {
+    fn eq(&self, other: &Self) -> bool {
+        // We ignore the id and the cancel handle for equality and comparison
+        // purposes
+        self.deadline == other.deadline && self.enqueued == other.enqueued
+    }
+}
+impl PartialOrd for TimerEntry {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Eq for TimerEntry {}
+impl Ord for TimerEntry {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        match self.deadline.cmp(&other.deadline) {
+            std::cmp::Ordering::Equal => self.enqueued.cmp(&other.enqueued),
+            ord => ord,
+        }
+    }
+}
 
 pub struct TimerInfo {
-    pub next_id: usize,
-    pub timer_handles: Vec<Rc<CancelHandle>>,
+    pub entries: BinaryHeap<Reverse<TimerEntry>>,
 }
 
-// Create a new timer and return its id
-#[op2(fast)]
-pub fn op_create_timer(#[state] timer_info: &mut TimerInfo) -> f64 {
-    let current_id = timer_info.next_id;
-
-    timer_info.next_id += 1;
-    timer_info.timer_handles.push(Rc::new(CancelHandle::new()));
-
-    current_id as f64
-}
-
-// Queue timer with given id to execute after specified delay
-// Returns boolean which asserts whether timer should finally run its callback or not
+// Waits until the next timer fires, and returns its id, or None if there are no
+// active timers.
 #[op2(async)]
-pub async fn op_queue_timer(
-    state: Rc<RefCell<OpState>>,
-    #[bigint] id: usize,
-    delay: u32,
-) -> Result<bool, AnyError> {
-    let cancel_handle = {
-        let state = state.borrow();
-        let timer_info = state.borrow::<TimerInfo>();
+pub async fn op_timers_sleep(op_state: Rc<RefCell<OpState>>) -> Option<i32> {
+    loop {
+        let id;
+        let deadline;
+        let cancel_handle;
 
-        if let Some(timer) = timer_info.timer_handles.get(id) {
-            timer.clone()
-        } else {
-            bail!("Tried queueing Timer with id: {id} but it doesn't exist")
+        {
+            let op_state = &mut op_state.borrow_mut();
+            let timer_entries = &mut op_state.borrow_mut::<TimerInfo>().entries;
+
+            // Find the first non-canceled entry
+            loop {
+                if timer_entries.is_empty() {
+                    return None;
+                }
+                let entry = &timer_entries.peek().unwrap().0;
+                if entry.cancel_handle.is_canceled() {
+                    timer_entries.pop().unwrap();
+                } else {
+                    id = entry.id;
+                    deadline = entry.deadline;
+                    cancel_handle = entry.cancel_handle.clone();
+                    break;
+                }
+            }
         }
-    };
 
-    if cancel_handle.is_canceled() {
-        Ok(false)
-    } else {
-        let result = tokio::time::sleep(Duration::from_millis(delay.into()))
-            .or_cancel(&cancel_handle)
+        let sleep_result = tokio::time::sleep_until(deadline)
+            .or_cancel(cancel_handle)
             .await;
 
-        Ok(result.is_ok() && !cancel_handle.is_canceled())
+        if sleep_result.is_ok() {
+            let op_state = &mut op_state.borrow_mut();
+            let timer_entries = &mut op_state.borrow_mut::<TimerInfo>().entries;
+            let entry = timer_entries.pop().unwrap().0;
+            assert_eq!(entry.id, id);
+            assert!(!entry.cancel_handle.is_canceled());
+            return Some(id);
+        }
     }
 }
 
-// TODO(Im-Beast): convert to op2 when deferred will be suported
-// Queue timer with given id to run at the end of event loop
-// Returns boolean which asserts whether timer should finally run its callback or nots
-#[op(deferred)]
-pub async fn op_queue_timer_deferred(
-    state: Rc<RefCell<OpState>>,
-    id: usize,
-) -> Result<bool, AnyError> {
-    let state = state.borrow();
-    let timer_info = state.borrow::<TimerInfo>();
-    if let Some(timer_handle) = timer_info.timer_handles.get(id) {
-        Ok(!timer_handle.is_canceled())
-    } else {
-        bail!("Tried queueing Timer with id: {id} but it doesn't exist")
-    }
+// Create a new timer with an id and return its cancelable resource id
+#[op2(fast)]
+#[smi]
+pub fn op_create_timer(op_state: &mut OpState, delay_ms: i32, id: i32) -> ResourceId {
+    let now = Instant::now();
+    let delay = Duration::from_millis(delay_ms.max(0) as u64);
+    let deadline = now.checked_add(delay).unwrap();
+    let cancel_handle = CancelHandle::new_rc();
+
+    let timer_info = op_state.borrow_mut::<TimerInfo>();
+    timer_info.entries.push(Reverse(TimerEntry {
+        id,
+        deadline,
+        enqueued: now,
+        cancel_handle: cancel_handle.clone(),
+    }));
+
+    op_state.resource_table.add_rc(cancel_handle)
 }
 
 // Clears timer with given id by canc
 #[op2(fast)]
-pub fn op_clear_timer(state: &mut OpState, #[bigint] id: usize) {
-    let timer_info = state.borrow_mut::<TimerInfo>();
-
-    if let Some(timer_handle) = timer_info.timer_handles.get_mut(id) {
-        timer_handle.cancel();
-    }
+pub fn op_clear_timer(state: &mut OpState, #[smi] resource_id: ResourceId) {
+    let cancel_handle = state
+        .resource_table
+        .take::<CancelHandle>(resource_id)
+        .unwrap();
+    cancel_handle.cancel();
 }

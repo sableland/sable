@@ -3,7 +3,11 @@ import { toLong } from "ext:bueno/webidl/mod.js";
 
 const core = Bueno.core;
 
+const activeTimers = new Map();
+
+let nextId = 1;
 let nestingLevel = 0;
+let isTimerLoopRunning = false;
 
 // Error which throws when someone tries to use setTimeout(code, ...) or setInterval(code, ...) syntax
 // It's not supported simply because its cursed
@@ -18,48 +22,34 @@ class UnsupportedSetTimerCodeError extends Error {
 	}
 }
 
-// Wrap timer's callback with a function that checks whether value returned by op_queue_timer is true
-function wrapTimerCallback(callback, currentNesting, args) {
-	return (value) => {
-		if (value === true) {
-			nestingLevel = currentNesting;
-			callback.apply(globalThis, args);
-			nestingLevel = 0;
-		}
-	};
-}
+async function runTimerLoop() {
+  if (isTimerLoopRunning) {
+    throw new Error("WTF");
+  }
+  isTimerLoopRunning = true;
 
-/**
- * Queue timer depending on its delay
- * Deferred (0ms) -> at the end of event loop
- * Time -> after specified delay
- * @param {number} id
- * @param {number} delay
- */
-function queueTimer(id, delay) {
-	if (delay === 0) {
-		return core.ops.op_queue_timer_deferred(id, delay);
-	} else {
-		return core.ops.op_queue_timer(id, delay);
-	}
-}
+  while (true) {
+    const timerId = await core.ops.op_timers_sleep();
+    if (timerId === null) {
+      break;
+    }
 
-/**
- * Run asynchronous while loop which queues timer (interval) with given id
- * and calls given callback
- *
- * @param {number} id
- * @param {number} interval
- * @param {number} currentNesting
- * @param {(...args: any[]) => any} callback
- * @param {...any} args
- */
-async function runInterval(id, interval, currentNesting, callback, args) {
-	while (await queueTimer(id, interval)) {
-		nestingLevel = currentNesting;
-		callback.apply(globalThis, args);
-		nestingLevel = 0;
-	}
+    const timer = activeTimers.get(timerId);
+    nestingLevel = timer.nestingLevel;
+    // TODO: Handle exceptions
+    timer.callback.apply(globalThis, timer.args);
+    nestingLevel = 0;
+
+    if (timer.isInterval) {
+      timer.nestingLevel++;
+      const delay = Math.max(timer.delay, timer.nestingLevel > 5 ? 4 : 0);
+      timer.cancelRid = core.ops.op_create_timer(delay, timerId);
+    } else {
+      activeTimers.delete(timerId);
+    }
+  }
+
+  isTimerLoopRunning = false;
 }
 
 /**
@@ -75,15 +65,24 @@ function setTimeout(callback, timeout = 0, ...args) {
 
 	timeout = toLong(timeout);
 
-	const id = core.ops.op_create_timer();
+  const id = nextId;
+  nextId++;
 
-	const currentNesting = nestingLevel + 1;
-	if (currentNesting > 5 && timeout < 4) {
-		timeout = 4;
-	}
+  const currentNesting = nestingLevel + 1;
+  const delay = Math.max(timeout, currentNesting > 5 ? 4 : 0);
+  const cancelRid = core.ops.op_create_timer(delay, id);
 
-	callback = wrapTimerCallback(callback, currentNesting, args);
-	queueTimer(id, timeout).then(callback);
+  activeTimers.set(id, {
+    nestingLevel: currentNesting,
+    callback,
+    args,
+    cancelRid,
+    isInterval: false
+  });
+
+  if (!isTimerLoopRunning) {
+    runTimerLoop();
+  }
 
 	return id;
 }
@@ -95,28 +94,45 @@ function setTimeout(callback, timeout = 0, ...args) {
  * @returns interval id
  */
 function setInterval(callback, interval = 0, ...args) {
-	if (typeof callback !== "function") {
-		throw new UnsupportedSetTimerCodeError("Interval");
-	}
+  if (typeof callback !== "function") {
+    throw new UnsupportedSetTimerCodeError("Timeout");
+  }
 
 	interval = toLong(interval);
 
-	const currentNesting = nestingLevel + 1;
-	if (currentNesting > 5 && interval < 4) {
-		interval = 4;
-	}
+  const id = nextId;
+  nextId++;
 
-	const id = core.ops.op_create_timer();
-	runInterval(id, interval, currentNesting, callback, args);
-	return id;
+  const currentNesting = nestingLevel + 1;
+  const delay = Math.max(interval, currentNesting > 5 ? 4 : 0);
+  const cancelRid = core.ops.op_create_timer(delay, id);
+
+  activeTimers.set(id, {
+    nestingLevel: currentNesting,
+    callback,
+    args,
+    cancelRid,
+    isInterval: true,
+    delay: interval
+  });
+
+  if (!isTimerLoopRunning) {
+    runTimerLoop();
+  }
+
+  return id;
 }
 
 function clearTimeout(id) {
-	core.ops.op_clear_timer(id);
+  const timer = activeTimers.get(id);
+  if (timer) {
+    core.ops.op_clear_timer(timer.cancelRid);
+    activeTimers.delete(id);
+  }
 }
 
 function clearInterval(id) {
-	core.ops.op_clear_timer(id);
+  clearTimeout(id);
 }
 
 globalThis.setTimeout = setTimeout;
