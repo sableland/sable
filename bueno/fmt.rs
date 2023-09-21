@@ -1,7 +1,9 @@
 use deno_core::error::AnyError;
 use dprint_plugin_json;
 use dprint_plugin_markdown;
+use dprint_plugin_markdown::configuration::TextWrap;
 use dprint_plugin_typescript;
+use dprint_plugin_typescript::configuration::{QuoteProps, SortOrder};
 use glob::glob;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
@@ -19,7 +21,14 @@ fn format_typescript_file(path: &Path, contents: &str) -> Result<Option<String>,
         path,
         contents,
         &dprint_plugin_typescript::configuration::ConfigurationBuilder::new()
-            .line_width(80)
+            .deno()
+            .use_tabs(true)
+            .quote_props(QuoteProps::AsNeeded)
+            .comment_line_force_space_after_slashes(true)
+            .ignore_node_comment_text("bueno-fmt-ignore")
+            .ignore_file_comment_text("bueno-fmt-ignore-file")
+            .module_sort_import_declarations(SortOrder::CaseInsensitive)
+            .module_sort_export_declarations(SortOrder::CaseInsensitive)
             .build(),
     )
 }
@@ -29,6 +38,9 @@ fn format_json_file(contents: &str) -> Result<Option<String>, AnyError> {
         &contents,
         &dprint_plugin_json::configuration::ConfigurationBuilder::new()
             .line_width(80)
+            .use_tabs(true)
+            .ignore_node_comment_text("bueno-fmt-ignore")
+            .comment_line_force_space_after_slashes(true)
             .build(),
     )
 }
@@ -37,7 +49,11 @@ fn format_markdown_file(contents: &str) -> Result<Option<String>, AnyError> {
     dprint_plugin_markdown::format_text(
         &contents,
         &dprint_plugin_markdown::configuration::ConfigurationBuilder::new()
-            .line_width(80)
+            .text_wrap(TextWrap::Always)
+            .ignore_directive("bueno-fmt-ignore")
+            .ignore_start_directive("bueno-fmt-ignore-start")
+            .ignore_end_directive("bueno-fmt-ignore-end")
+            .ignore_file_directive("bueno-fmt-ignore-file")
             .build(),
         |tag, text, _line_number| format_file(tag, text),
     )

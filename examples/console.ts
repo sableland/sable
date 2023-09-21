@@ -5,8 +5,8 @@ let a: number = 5;
 console.log("Hello bueno", a);
 
 class ThisIsClass {
-  myClassProp = "dog";
-  dogName = "egg";
+	myClassProp = "dog";
+	dogName = "egg";
 }
 
 class Extended extends ThisIsClass {}
@@ -20,120 +20,120 @@ function* generator() {
 console.log(ThisIsClass, classInstance);
 
 const set = new Set([
-  1,
-  2,
-  3,
-  { test: 123 },
-  4,
-  { gasjfhasfasjkfkajsf: 123123 },
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-  11,
-  12,
+	1,
+	2,
+	3,
+	{ test: 123 },
+	4,
+	{ gasjfhasfasjkfkajsf: 123123 },
+	5,
+	6,
+	7,
+	8,
+	9,
+	10,
+	11,
+	12,
 ]);
 const shortArr = [1, 2, 3, 4];
 const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 const arrWShit = [
-  { uno: "dos", tres: "quatro" },
-  2,
-  3,
-  [1, 2, 3],
-  "hi",
-  10,
+	{ uno: "dos", tres: "quatro" },
+	2,
+	3,
+	[1, 2, 3],
+	"hi",
+	10,
 ];
 
 const map = new Map<any, any>([
-  ["k", "v"],
-  ["hdk", "v3"],
-  ["k", 3],
-  ["kdhf", {}],
-  ["kj", "v"],
+	["k", "v"],
+	["hdk", "v3"],
+	["k", 3],
+	["kdhf", {}],
+	["kj", "v"],
 ]);
 
 map.set("circ", map);
 
 const longmap = new Map<any, any>([
-  ["k", "v"],
-  ["hdk", "v3"],
-  ["hahgsfdk", "v3"],
-  ["hdk4k4", "v3hh"],
-  ["2k", 53n],
-  ["kdhf", {}],
-  ["gggkj", "v"],
+	["k", "v"],
+	["hdk", "v3"],
+	["hahgsfdk", "v3"],
+	["hdk4k4", "v3hh"],
+	["2k", 53n],
+	["kdhf", {}],
+	["gggkj", "v"],
 ]);
 
 const wmap = new WeakMap<any, any>([
-  [[12, 3, 4], "hi"],
-  [[12, 3, 4], { hello: "123" }],
-  [[12, 4], "hfgfi"],
+	[[12, 3, 4], "hi"],
+	[[12, 3, 4], { hello: "123" }],
+	[[12, 4], "hfgfi"],
 ]);
 
 const typedArr = new Uint8Array([
-  1,
-  2,
-  3,
-  4,
-  5,
-  6,
-  7,
-  234,
-  23463,
-  7412,
-  2,
-  12,
-  11,
+	1,
+	2,
+	3,
+	4,
+	5,
+	6,
+	7,
+	234,
+	23463,
+	7412,
+	2,
+	12,
+	11,
 ]);
 
 console.log("deep obj:", {
-  hello: {
-    world: "how are you?",
-    im: {
-      going: {
-        even: "deeper",
-      },
-      fn() {
-      },
-      num: 5,
-    },
-  },
-  class: ThisIsClass,
-  classInst: classInstance,
-  class2Instance,
-  bigI: 10n,
-  generator,
-  Extended,
-  biggerI: 1124582358092850923859023859023859082309539058209358902350n,
-  symbol: Symbol("AWOOGA"),
-  num: 2,
-  map,
-  longmap,
-  wmap,
-  set,
-  shortArr,
-  arr,
-  ["\n\n\n\x1b[32mLOLOL\x1b[0m"]: 123,
-  arrWShit,
-  str: "HELLO",
-  bool: false,
-  booltrue: true,
-  typedArr,
-  promise: new Promise((x) => {}),
-  resolvedPromise: new Promise<string>((res) => {
-    res("RESOLVED!");
-  }),
-  rejectedPromise: new Promise<void>((_, rej) => {
-    rej("REJECTED!");
-  }).catch(() => "rejected"),
-  proxy: new Proxy({ hello: 123 }, {}),
+	hello: {
+		world: "how are you?",
+		im: {
+			going: {
+				even: "deeper",
+			},
+			fn() {
+			},
+			num: 5,
+		},
+	},
+	class: ThisIsClass,
+	classInst: classInstance,
+	class2Instance,
+	bigI: 10n,
+	generator,
+	Extended,
+	biggerI: 1124582358092850923859023859023859082309539058209358902350n,
+	symbol: Symbol("AWOOGA"),
+	num: 2,
+	map,
+	longmap,
+	wmap,
+	set,
+	shortArr,
+	arr,
+	["\n\n\n\x1b[32mLOLOL\x1b[0m"]: 123,
+	arrWShit,
+	str: "HELLO",
+	bool: false,
+	booltrue: true,
+	typedArr,
+	promise: new Promise((x) => {}),
+	resolvedPromise: new Promise<string>((res) => {
+		res("RESOLVED!");
+	}),
+	rejectedPromise: new Promise<void>((_, rej) => {
+		rej("REJECTED!");
+	}).catch(() => "rejected"),
+	proxy: new Proxy({ hello: 123 }, {}),
 });
 
 console.log("pretty object: %o", {
-  hello: "world",
+	hello: "world",
 });
 
 const circular = {};
@@ -167,15 +167,15 @@ console.assert(false, "dog");
 console.timeLog("console apis", { test: "obj" });
 
 for (let i = 0; i < 3; ++i) {
-  console.count();
-  console.count("dog");
+	console.count();
+	console.count("dog");
 }
 
 console.countReset("dog");
 
 for (let i = 0; i < 3; ++i) {
-  console.count();
-  console.count("dog");
+	console.count();
+	console.count("dog");
 }
 
 console.countReset("cat");
@@ -196,8 +196,8 @@ console.groupEnd();
 console.log("Back to the outer level");
 
 function Person(firstName, lastName) {
-  this.firstName = firstName;
-  this.lastName = lastName;
+	this.firstName = firstName;
+	this.lastName = lastName;
 }
 
 const tyrone = new Person("Tyroneａｓｆａｓｆ", "Jones");
@@ -213,31 +213,31 @@ console.log("b");
 console.group();
 console.log("c");
 console.table([
-  ["Tyrone", "Jones"],
-  ["Janetａｓｆａｓｆ", "Smith"],
-  ["Maria", "Cruz"],
-  [{
-    obj: true,
-    a: 1,
-    b: 2,
-  }, 123],
+	["Tyrone", "Jones"],
+	["Janetａｓｆａｓｆ", "Smith"],
+	["Maria", "Cruz"],
+	[{
+		obj: true,
+		a: 1,
+		b: 2,
+	}, 123],
 ]);
 console.groupEnd();
 console.groupEnd();
 console.groupEnd();
 
 const obj = {
-  thisRefs: undefined,
-  thisDoesnt: [1, 2, 3],
-  secondRef: undefined,
-  thirdRef: undefined,
-  noRefAgain: {
-    obj: true,
-    a: {
-      123: 78,
-    },
-  },
-  thisArrRefsItself: [1, 2, 3],
+	thisRefs: undefined,
+	thisDoesnt: [1, 2, 3],
+	secondRef: undefined,
+	thirdRef: undefined,
+	noRefAgain: {
+		obj: true,
+		a: {
+			123: 78,
+		},
+	},
+	thisArrRefsItself: [1, 2, 3],
 };
 
 obj.thisRefs = obj;
@@ -256,63 +256,63 @@ console.log(obj);
 console.log(obj.noRefAgain);
 
 console.log({
-  get hi() {
-    return "this is getter";
-  },
-  set hi(hi) {},
-  set dog(dog) {
-  },
+	get hi() {
+		return "this is getter";
+	},
+	set hi(hi) {},
+	set dog(dog) {
+	},
 });
 
 console.log({
-  a: {
-    b: {
-      c: {
-        d: {
-          e: {
-            f: {
-              g: {
-                h: {
-                  i: 1,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  },
+	a: {
+		b: {
+			c: {
+				d: {
+					e: {
+						f: {
+							g: {
+								h: {
+									i: 1,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	},
 });
 const en = {
-  a: true,
-  get dog() {
-    return "lol";
-  },
-  set dog(dog) {},
+	a: true,
+	get dog() {
+		return "lol";
+	},
+	set dog(dog) {},
 
-  get shortObj() {
-    return {
-      asda: {
-        asgsagags: {
-          fgjklsjglkdsag: {
-            asfasfmjafa: true,
-          },
-        },
-      },
-    };
-  },
+	get shortObj() {
+		return {
+			asda: {
+				asgsagags: {
+					fgjklsjglkdsag: {
+						asfasfmjafa: true,
+					},
+				},
+			},
+		};
+	},
 
-  get longObj() {
-    return {
-      asda: {
-        asgsagags: {
-          fgjklsjghasjfaskfhjkasfkashfashfjkhsag: {
-            asfasfmjaasfajfasjfklasjfklasjfklafa: true,
-          },
-        },
-      },
-    };
-  },
+	get longObj() {
+		return {
+			asda: {
+				asgsagags: {
+					fgjklsjghasjfaskfhjkasfkashfashfjkhsag: {
+						asfasfmjaasfajfasjfklasjfklasjfklafa: true,
+					},
+				},
+			},
+		};
+	},
 };
 
 console.log(en);
