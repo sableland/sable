@@ -29,6 +29,7 @@ pub mod extensions {
             timers::op_clear_timer,
             testing::op_bench_fn,
             testing::op_diff_str,
+            testing::op_test_async_ops_sanitization,
         ],
         esm_entry_point = "ext:bueno/runtime.js",
         esm = [

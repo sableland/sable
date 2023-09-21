@@ -145,7 +145,7 @@ test("almostEquals", (ctx) => {
   ctx.notAlmostEquals(0.2, 0, 0.1);
 });
 
-await test("objects are equal", async (ctx) => {
+/* await test("objects are equal", async (ctx) => {
   const a = { hello: "world" };
   const b = { hello: "world" };
   ctx.notEquals(a, b);
@@ -205,17 +205,25 @@ await test("objects are equal", async (ctx) => {
         ctx.deepEquals(1, 2);
         r();
       }, 1);
+
       ctx.deepEquals(a, b);
     });
   });
 
   ctx.test("this should complain, because last step didnt finish yet", (ctx) => {});
-});
+}); */
 
-test("incorrect usage of context", (ctx) => {
+/* test("incorrect usage of context", (ctx) => {
   ctx.test("im not using my own ctx", () => {
     ctx.equals(":(", ":(");
   });
+});
+ */
+
+test("leaky", async (ctx) => {
+  setTimeout(() => {
+    ctx.equals(1, 1);
+  }, 1);
 });
 
 bench("benchmarked func", () => {

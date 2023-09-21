@@ -2,8 +2,40 @@ import { styles } from "ext:bueno/utils/ansi.js";
 import { textWidth } from "ext:bueno/utils/strings.js";
 import { Printer } from "ext:bueno/console/printer.js";
 
-// TODO(Im-Beast): bueno test and bench subcommands
-// TODO(Im-Beast): op sanitization checks
+class TestContextLeakingAsyncOpsError extends Error {
+  /**
+   * @param {TestContext} testContext
+   * @param {boolean} isAsync - whether given testContext callback returned a promise
+   */
+  constructor(testContext, isAsync) {
+    // TODO(Im-Beast): Replace this with pretty errors after they happen
+
+    let message = `
+At least one asynchronous operation was started in ${testContext.title} but never completed!
+Please await all your promises or resolve test promise when every asynchronous operation has finished:`;
+
+    if (isAsync) {
+      message += `
+test('${testContext.title}', async (ctx) => {
+  ...
+--^^^ ops leak somewhere around here, are you sure you awaited every promise?
+});`;
+    } else {
+      const ptd = "-".repeat(textWidth(testContext.title));
+
+      message += `
+test('${testContext.title}', (ctx) => {
+--------${ptd}^ this test is not asynchronous, but leaks asynchronous ops
+  ...
+--^^^ ops leak somewhere around here, are you sure this test was meant to be synchronous?
+});`;
+    }
+
+    super(message);
+
+    this.name = "TestContextLeakingAsyncOpsError";
+  }
+}
 
 const ComparisonPass = "pass";
 class ComparisonError extends Error {
@@ -321,10 +353,18 @@ class TestContext {
       return response.then(() => {
         testContext.finish();
         parent?.unlock(testContext);
+
+        if (!core.ops.op_test_async_ops_sanitization()) {
+          throw new TestContextLeakingAsyncOpsError(testContext, true);
+        }
       });
     } else {
       testContext.finish();
       parent?.unlock(testContext);
+
+      if (!core.ops.op_test_async_ops_sanitization()) {
+        throw new TestContextLeakingAsyncOpsError(testContext, false);
+      }
     }
   }
 
