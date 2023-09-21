@@ -1,5 +1,7 @@
 const { test, bench } = Bueno.testing;
 
+setTimeout(() => {}, 0);
+
 test("1+1=2", (ctx) => {
   ctx.equals(1 + 1, 2);
   ctx.deepEquals(1 + 1, 2);

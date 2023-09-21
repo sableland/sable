@@ -4,31 +4,36 @@ import { Printer } from "ext:bueno/console/printer.js";
 
 class TestContextLeakingAsyncOpsError extends Error {
   /**
-   * @param {TestContext} testContext
-   * @param {boolean} isAsync - whether given testContext callback returned a promise
+   * @param {TestContext=} testContext
+   * @param {boolean=} isAsync - whether given testContext callback returned a promise
    */
   constructor(testContext, isAsync) {
     // TODO(Im-Beast): Replace this with pretty errors after they happen
-
     let message = `
+You wanted to create a test, but there are still asynchronous ops running.
+Please make sure they've completed before you create the test.`;
+
+    if (testContext) {
+      message = `
 At least one asynchronous operation was started in ${testContext.title} but never completed!
 Please await all your promises or resolve test promise when every asynchronous operation has finished:`;
 
-    if (isAsync) {
-      message += `
+      if (isAsync) {
+        message += `
 test('${testContext.title}', async (ctx) => {
   ...
 --^^^ ops leak somewhere around here, are you sure you awaited every promise?
 });`;
-    } else {
-      const ptd = "-".repeat(textWidth(testContext.title));
+      } else {
+        const ptd = "-".repeat(textWidth(testContext.title));
 
-      message += `
+        message += `
 test('${testContext.title}', (ctx) => {
 --------${ptd}^ this test is not asynchronous, but leaks asynchronous ops
   ...
 --^^^ ops leak somewhere around here, are you sure this test was meant to be synchronous?
 });`;
+      }
     }
 
     super(message);
@@ -55,11 +60,10 @@ class TestContextInvalidUsageError extends Error {
    * @param {TestContext} testContext
    */
   constructor(testContext) {
-    // TODO(Im-Beast): Replace this with pretty errors after they happen
-
     const ptd = "-".repeat(textWidth(testContext.title));
     const ctd = "-".repeat(textWidth(testContext.currentlyTested.title));
 
+    // TODO(Im-Beast): Replace this with pretty errors after they happen
     super(
       `
 You're using context from different step!
@@ -541,6 +545,10 @@ function test(testName, callback) {
   if (core.ops.op_runtime_state() !== "test") {
     Bueno.testing.test = noop;
     return;
+  }
+
+  if (!core.ops.op_test_async_ops_sanitization()) {
+    throw new TestContextLeakingAsyncOpsError();
   }
 
   return TestContext.test(testName, callback);
