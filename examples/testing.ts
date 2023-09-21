@@ -1,7 +1,5 @@
 const { test, bench } = Bueno.testing;
 
-setTimeout(() => {}, 0);
-
 test("1+1=2", (ctx) => {
   ctx.equals(1 + 1, 2);
   ctx.deepEquals(1 + 1, 2);
@@ -222,11 +220,11 @@ test("almostEquals", (ctx) => {
 });
  */
 
-test("leaky", async (ctx) => {
+/* test("leaky", async (ctx) => {
   setTimeout(() => {
     ctx.equals(1, 1);
   }, 1);
-});
+}); */
 
 bench("benchmarked func", () => {
   for (let i = 0; i < 11; ++i) {
