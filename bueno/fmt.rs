@@ -6,6 +6,9 @@ use glob::glob;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
+// TODO(lino-levan): Make typescript/json/markdown global static variables when `LazyCell` is stable.
+// https://doc.rust-lang.org/std/cell/struct.LazyCell.html
+
 fn fake_path(ext: &str) -> PathBuf {
     let file_name = format!("file.{}", ext);
     PathBuf::from(file_name)
