@@ -7,7 +7,7 @@ use self::clap::{arg, Arg, Command};
 
 use crate::{
     bueno_run,
-    fmt::{fmt, FormatOptions},
+    tools::fmt::{fmt, FormatOptions},
     BuenoOptions,
 };
 

@@ -6,9 +6,9 @@ use loader::BuenoModuleLoader;
 use std::{env, path::PathBuf, rc::Rc, sync::Arc};
 
 mod cli;
-mod fmt;
 mod loader;
 mod module_cache;
+mod tools;
 
 use cli::parse_cli;
 use module_cache::ModuleCache;
