@@ -48,6 +48,12 @@ pub fn cli() -> Command {
                         .help("Disables formatting and checks if files are formatted"),
                 ),
         )
+        .subcommand(
+            Command::new("snapshot")
+                .about("Snapshot module at specified path")
+                .arg(arg!(<MODULE_PATH> "Module path to snapshot"))
+                .arg_required_else_help(true),
+        )
 }
 
 pub fn parse_cli() -> ExitCode {
@@ -84,6 +90,16 @@ pub fn parse_cli() -> ExitCode {
                 .unwrap_or(&default_glob);
 
             if let Err(error) = fmt(FormatOptions { check, glob }) {
+                eprintln!("error: {}", error);
+                code = ExitCode::FAILURE;
+            }
+        }
+        Some(("snapshot", sub_matches)) => {
+            let module_path = sub_matches
+                .get_one::<String>("MODULE_PATH")
+                .expect("Required");
+
+            if let Err(error) = snapshot(module_path) {
                 eprintln!("error: {}", error);
                 code = ExitCode::FAILURE;
             }
