@@ -1,20 +1,20 @@
 import { textWidth } from "ext:bueno/utils/strings.js";
 
 const tableCharacters = {
-  topLeft: "\u250C",
-  topRight: "\u2510",
-  topVertical: "\u252C",
+	topLeft: "\u250C",
+	topRight: "\u2510",
+	topVertical: "\u252C",
 
-  horizontal: "\u2500",
-  leftHorizontal: "\u251C",
-  rightHorizontal: "\u2524",
+	horizontal: "\u2500",
+	leftHorizontal: "\u251C",
+	rightHorizontal: "\u2524",
 
-  bottomLeft: "\u2514",
-  bottomRight: "\u2518",
-  bottomVertical: "\u2534",
+	bottomLeft: "\u2514",
+	bottomRight: "\u2518",
+	bottomVertical: "\u2534",
 
-  vertical: "\u2502",
-  cross: "\u253C",
+	vertical: "\u2502",
+	cross: "\u253C",
 };
 
 /**
@@ -24,80 +24,80 @@ const tableCharacters = {
  * @returns {string} table
  */
 export function createTable(data, columns, printer) {
-  if (typeof data[0] !== "object") {
-    data = data.map((x) => [x]);
-  }
+	if (typeof data[0] !== "object") {
+		data = data.map((x) => [x]);
+	}
 
-  const maxWidth = [7];
-  const tableData = [
-    ["(index)"],
-  ];
+	const maxWidth = [7];
+	const tableData = [
+		["(index)"],
+	];
 
-  let tableString = "";
+	let tableString = "";
 
-  let row = 1;
-  for (const key in data) {
-    const obj = data[key];
+	let row = 1;
+	for (const key in data) {
+		const obj = data[key];
 
-    let column = 1;
-    for (const key in obj) {
-      if (columns && !columns.includes(key)) continue;
-      const value = printer.genericFormat(obj[key]).replaceAll("\n", "");
+		let column = 1;
+		for (const key in obj) {
+			if (columns && !columns.includes(key)) continue;
+			const value = printer.genericFormat(obj[key]).replaceAll("\n", "");
 
-      tableData[0][column] = key;
+			tableData[0][column] = key;
 
-      tableData[row] ??= [];
-      tableData[row][0] ??= String(row);
-      tableData[row][column] = value;
+			tableData[row] ??= [];
+			tableData[row][0] ??= String(row);
+			tableData[row][column] = value;
 
-      maxWidth[column] = Math.max(
-        textWidth(value),
-        maxWidth[column] ?? textWidth(key),
-      );
+			maxWidth[column] = Math.max(
+				textWidth(value),
+				maxWidth[column] ?? textWidth(key),
+			);
 
-      ++column;
-    }
+			++column;
+		}
 
-    ++row;
-  }
+		++row;
+	}
 
-  let topBar = tableCharacters.topLeft;
-  let headerSeparator = tableCharacters.leftHorizontal;
-  let bottomBar = tableCharacters.bottomLeft;
+	let topBar = tableCharacters.topLeft;
+	let headerSeparator = tableCharacters.leftHorizontal;
+	let bottomBar = tableCharacters.bottomLeft;
 
-  for (let i = 0; i < maxWidth.length; ++i) {
-    const width = maxWidth[i];
-    const horiz = tableCharacters.horizontal.repeat(width + 2);
+	for (let i = 0; i < maxWidth.length; ++i) {
+		const width = maxWidth[i];
+		const horiz = tableCharacters.horizontal.repeat(width + 2);
 
-    topBar += horiz;
-    headerSeparator += horiz;
-    bottomBar += horiz;
+		topBar += horiz;
+		headerSeparator += horiz;
+		bottomBar += horiz;
 
-    if (i < maxWidth.length - 1) {
-      topBar += tableCharacters.topVertical;
-      headerSeparator += tableCharacters.cross;
-      bottomBar += tableCharacters.bottomVertical;
-    }
-  }
+		if (i < maxWidth.length - 1) {
+			topBar += tableCharacters.topVertical;
+			headerSeparator += tableCharacters.cross;
+			bottomBar += tableCharacters.bottomVertical;
+		}
+	}
 
-  topBar += tableCharacters.topRight;
-  headerSeparator += tableCharacters.rightHorizontal;
-  bottomBar += tableCharacters.bottomRight;
+	topBar += tableCharacters.topRight;
+	headerSeparator += tableCharacters.rightHorizontal;
+	bottomBar += tableCharacters.bottomRight;
 
-  tableString += topBar + "\n";
-  for (const [row, rowData] of tableData.entries()) {
-    for (const [column, value] of rowData.entries()) {
-      tableString += tableCharacters.vertical + " " + value + " ".repeat(
-        maxWidth[column] - textWidth(value) + 1,
-      );
-    }
-    tableString += tableCharacters.vertical + "\n";
+	tableString += topBar + "\n";
+	for (const [row, rowData] of tableData.entries()) {
+		for (const [column, value] of rowData.entries()) {
+			tableString += tableCharacters.vertical + " " + value + " ".repeat(
+				maxWidth[column] - textWidth(value) + 1,
+			);
+		}
+		tableString += tableCharacters.vertical + "\n";
 
-    if (row === 0) {
-      tableString += headerSeparator + "\n";
-    }
-  }
-  tableString += bottomBar;
+		if (row === 0) {
+			tableString += headerSeparator + "\n";
+		}
+	}
+	tableString += bottomBar;
 
-  return tableString;
+	return tableString;
 }

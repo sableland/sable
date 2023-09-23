@@ -1,16 +1,16 @@
 // This config is used to properly resolve ext:bueno/ specifiers
 {
-  "compilerOptions": {
-    "lib": ["ESNext"],
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "noEmit": true,
-    "allowJs": true,
-    "checkJs": true,
-    "baseUrl": "./",
-    "paths": {
-      "ext:bueno/*": ["./*"]
-    }
-  }
+	"compilerOptions": {
+		"lib": ["ESNext"],
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"noEmit": true,
+		"allowJs": true,
+		"checkJs": true,
+		"baseUrl": "./",
+		"paths": {
+			"ext:bueno/*": ["./*"]
+		}
+	}
 }
