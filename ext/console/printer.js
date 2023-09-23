@@ -15,7 +15,7 @@ export class Printer {
    * @type {Printer}
    * @param {"stdout" | "stderr"} logLevel Output to use in `print()` method
    *
-   * @param {object} config Printer configuration
+   * @param {object} [config] Printer configuration
    * @param {number} [config.indent=2] How many spaces to use as an indent
    * @param {number} [config.maxDepth=4] Maximum amount of nested objects to traverse in an object before evaluating it using `.toString()`
    * @param {number} [config.maxLineWidth=80] Maximum amount of text before breaking a line
