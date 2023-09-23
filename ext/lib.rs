@@ -1,5 +1,6 @@
 pub mod extensions {
     use std::time::{Instant, SystemTime};
+    use timers::TimerQueue;
 
     pub use bueno_ext_battery as battery;
     pub use bueno_ext_fs as fs;
@@ -24,10 +25,8 @@ pub mod extensions {
             fs::op_remove_dir,
             performance::op_high_res_time,
             performance::op_time_origin,
+            timers::op_timers_sleep,
             timers::op_create_timer,
-            timers::op_queue_timer,
-            timers::op_queue_timer_deferred,
-            timers::op_clear_timer,
             testing::op_bench_fn,
             testing::op_diff_str,
             testing::op_test_async_ops_sanitization,
@@ -64,10 +63,7 @@ pub mod extensions {
             state.put(SystemTime::now());
 
             // bueno_ext_timers
-            state.put(timers::TimerInfo {
-                next_id: 0,
-                timer_handles: vec![],
-            });
+            state.put::<TimerQueue>(Default::default());
         }
     );
 
