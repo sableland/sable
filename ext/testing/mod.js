@@ -2,6 +2,11 @@ import { styles } from "ext:bueno/utils/ansi.js";
 import { textWidth } from "ext:bueno/utils/strings.js";
 import { Printer } from "ext:bueno/console/printer.js";
 
+/**
+ * Error which gets thrown whenever:
+ *  - TestContext is leaking async ops
+ *  - Test gets started when async ops are still pending
+ */
 class TestContextLeakingAsyncOpsError extends Error {
   /**
    * @param {TestContext=} testContext
@@ -39,19 +44,6 @@ test('${testContext.title}', (ctx) => {
     super(message);
 
     this.name = "TestContextLeakingAsyncOpsError";
-  }
-}
-
-const ComparisonPass = "pass";
-class ComparisonError extends Error {
-  /**
-   * @param {string} message
-   * @param {"diff" | "none" | "logA" | "logB"} type
-   */
-  constructor(message, type = "none") {
-    super(message);
-    this.name = "ComparisonError";
-    this.type = type;
   }
 }
 
@@ -125,6 +117,26 @@ test('${parentTitle}', async (ctx) => {
   }
 }
 
+/**
+ * Error which gets thrown whenever test comparison fails
+ */
+class ComparisonError extends Error {
+  /**
+   * @param {string} message
+   * @param {"diff" | "none" | "logA" | "logB"} type
+   */
+  constructor(message, type = "none") {
+    super(message);
+    this.name = "ComparisonError";
+    this.type = type;
+  }
+}
+
+/**
+ * Value which gets returned whenever comparison passes
+ */
+const ComparisonPass = "pass";
+
 const testingPrinter = new Printer("stdout");
 
 const core = Bueno.core;
@@ -146,7 +158,7 @@ const comparisons = {
     }
 
     if (typeof a !== "number" || typeof b !== "number") {
-      return new TypeError("`almostEquals` only supports comparing numbers");
+      throw new TypeError("`almostEquals` only supports comparing numbers");
     }
 
     if (Math.abs(a - b) <= stddev) {
@@ -321,71 +333,73 @@ const comparisons = {
   },
 };
 
+/**
+ * @class
+ * @classdesc Class responsible for running tests
+ */
 class TestContext {
-  indent;
+  /**
+   * @type {TestContext | undefined}
+   * Currently evaluated sub-test
+   */
+  currentlyTested = undefined;
+
+  /** Name of current test */
+  name;
+  /** Styled {TestContext.name} */
   title;
-  testStep;
 
   passedTests = 0;
   failedTests = 0;
 
+  /**
+   * Whether this test has sub-test which is currently running
+   * If someone tries to create another subtest or comparison when test is locked it will throw
+   */
   locked = false;
-  /** @type {TestContext} */
-  currentlyTested = undefined;
 
   /**
-   * @param {string} testStep
-   * @param {TestContext | undefined} parent
+   * @param {string} name – name for current test
+   * @param {TestContext | undefined} parent – parent test
    */
-  constructor(testStep, parent) {
-    this.testStep = testStep;
+  constructor(name, parent) {
+    this.name = name;
 
     this.parent = parent;
-    this.title = `${styles.bold}${styles.cyan}${testStep}${styles.reset}`;
     this.start = performance.now();
 
+    this.title = `${styles.bold}${styles.cyan}${name}${styles.reset}`;
     console.group(this.title);
   }
 
-  static test(testStep, callback, parent) {
-    const testContext = new TestContext(testStep, parent);
-
-    parent?.lock(testContext);
-    const response = callback(testContext);
-
-    if (response instanceof Promise) {
-      return response.then(() => {
-        testContext.finish();
-        parent?.unlock(testContext);
-
-        if (!core.ops.op_test_async_ops_sanitization()) {
-          throw new TestContextLeakingAsyncOpsError(testContext, true);
-        }
-      });
-    } else {
-      testContext.finish();
-      parent?.unlock(testContext);
-
-      if (!core.ops.op_test_async_ops_sanitization()) {
-        throw new TestContextLeakingAsyncOpsError(testContext, false);
-      }
+  /**
+   * @param {TestContext} testContext – currently evaluated TestContext
+   * @param {boolean} async – whether TestContext returned a promise
+   * @throws when async ops are still pending
+   */
+  static sanitizeAsyncOps(testContext = undefined, async = false) {
+    if (!core.ops.op_test_async_ops_sanitization()) {
+      throw new TestContextLeakingAsyncOpsError(testContext, async);
     }
   }
 
-  test(testStep, callback) {
-    return TestContext.test(testStep, callback, this);
-  }
-
+  /**
+   * Lock current test and ensure that only one test runs at the time
+   * @param {TestContext} testContext – currently evaluted test context
+   */
   lock(testContext) {
     if (this.locked) {
       throw new TestContextInUseError(this, testContext);
     }
 
     this.currentlyTested = testContext;
-
     this.locked = true;
   }
 
+  /**
+   * Unlock current test and ensure that only one test runs at the time
+   * @param {TestContext} testContext – currently evaluted test context
+   */
   unlock(testContext) {
     if (!this.locked) {
       throw new TestContextInUseError(this, testContext);
@@ -394,51 +408,61 @@ class TestContext {
     this.locked = false;
   }
 
+  /**
+   * Create new test with given callback
+   * @param {string} name
+   * @param {(context: TestContext) => void | Promise<void>} callback
+   * @param {TestContext} [parent=undefined] parent
+   * @returns {void | Promise<void>}
+   */
+  static test(name, callback, parent) {
+    const testContext = new TestContext(name, parent);
+
+    parent?.lock(testContext);
+    const response = callback(testContext);
+
+    if (response instanceof Promise) {
+      return response.then(() => {
+        testContext.finish();
+        parent?.unlock(testContext);
+        TestContext.sanitizeAsyncOps(testContext, true);
+      });
+    } else {
+      testContext.finish();
+      parent?.unlock(testContext);
+      TestContext.sanitizeAsyncOps(testContext, false);
+    }
+  }
+
+  /**
+   * Create new sub-test with given callback
+   * @param {string} name
+   * @param {(context: TestContext) => void | Promise<void>} callback
+   * @returns {void | Promise<void>}
+   */
+  test(name, callback) {
+    return TestContext.test(name, callback, this);
+  }
+
+  /**
+   * Finish running this test
+   */
   finish() {
     if (this.failedTests > 0) return;
 
     const testTime = (performance.now() - this.start).toFixed(3);
-    console.log(
-      `- ${styles.lightGreen}ok${styles.reset} (${testTime}ms)`,
-    );
-    console.groupEnd(this.title);
+    console.log(`- ${styles.lightGreen}ok${styles.reset} (${testTime}ms)`);
+    console.groupEnd();
   }
 
   /**
-   * @param {ComparisonError} error - comparison error
-   * @param {*} a - object A
-   * @param {*} b - object B (or undefined if unnecessary)
+   * Fail this test if `error` is a `ComparisonError`, otherwise pass
+   *
+   * Additionally it ensures this test uses its own context
+   * @param {ComparisonError | "pass"} error
+   * @param {*} a
+   * @param {*} b
    */
-  fail(error, a, b) {
-    this.failedTests++;
-
-    console.log(
-      `- ${styles.red}${styles.bold}failed${styles.reset}:`,
-    );
-
-    console.log(error.message);
-    switch (error.type) {
-      case "none":
-        break;
-      case "logA":
-        console.log(indent, "Showing A:", a);
-        break;
-      case "logB":
-        console.log(indent, "Showing B:", b);
-        break;
-      case "diff":
-        console.log(
-          `Showing diff of ${styles.lightRed}${styles.bold}A${styles.reset} and ${styles.lightGreen}${styles.bold}B${styles.reset}:`,
-        );
-        console.log(core.ops.op_diff_str(
-          testingPrinter.format(a),
-          testingPrinter.format(b),
-        ));
-        break;
-    }
-    //throw error;
-  }
-
   assertComparisonError(error, a, b) {
     if (this.locked) {
       throw new TestContextInvalidUsageError(this);
@@ -455,109 +479,214 @@ class TestContext {
     this.passedTests++;
   }
 
-  assert(a) {
-    if (!a) {
-      this.fail(
-        new ComparisonError("Failed assertion, A is truthy", "logA"),
-        a,
-      );
-    } else {
-      this.pass();
+  /**
+   * Fail current test.
+   *
+   * If `ComparisonError.type` is:
+   *  - diff - prints pretty diff log of `a` and `b`
+   *  - logA - only logs `a`
+   *  - logB - only logs `b`
+   *  - none - doesn't log any additional info
+   *
+   * Then it throws with given `ComparisonError`
+   *
+   * @param {ComparisonError} error - comparison error
+   * @param {*} a - object A
+   * @param {*} b - object B (or undefined if unnecessary)
+   * @throws
+   */
+  fail(error, a, b) {
+    this.failedTests++;
+
+    console.log(
+      `- ${styles.red}${styles.bold}failed${styles.reset}:`,
+    );
+
+    console.log(error.message);
+    switch (error.type) {
+      case "none":
+        break;
+      case "logA":
+        console.log("Showing A:", a);
+        break;
+      case "logB":
+        console.log("Showing B:", b);
+        break;
+      case "diff":
+        console.log(
+          `Showing diff of ${styles.lightRed}${styles.bold}A${styles.reset} and ${styles.lightGreen}${styles.bold}B${styles.reset}:`,
+        );
+        console.log(core.ops.op_diff_str(
+          testingPrinter.format(a),
+          testingPrinter.format(b),
+        ));
+        break;
     }
+    throw error;
   }
 
+  /** Make sure that `a` is truthy */
+  assert(a) {
+    this.assertComparisonError(
+      a
+        ? ComparisonPass
+        : new ComparisonError("Failed assertion, A isn't truthy", "logA"),
+      a,
+    );
+  }
+
+  /** Make sure that `a === b` */
   equals(a, b) {
     this.assertComparisonError(comparisons.equals(a, b), a, b);
   }
 
+  /** Make sure that `a !== b` */
   notEquals(a, b) {
-    if (comparisons.equals(a, b) !== ComparisonPass) {
-      this.pass();
-    } else {
-      this.fail(new ComparisonError("A equals B", "none"));
-    }
+    this.assertComparisonError(
+      comparisons.equals(a, b) === ComparisonPass
+        ? new ComparisonError("A equals B", "none")
+        : ComparisonPass,
+    );
   }
 
+  /** Make sure that absolute difference of `a` and `b` isn't higher than `stddev` */
   almostEquals(a, b, stddev) {
     this.assertComparisonError(comparisons.almostEquals(a, b, stddev), a, b);
   }
 
+  /** Make sure that absolute difference of `a` and `b` is higher than `stddev` */
   notAlmostEquals(a, b, stddev) {
-    if (comparisons.almostEquals(a, b, stddev) !== ComparisonPass) {
-      this.pass();
-    } else {
-      this.fail(new ComparisonError("A almost equals B", "none"));
-    }
+    this.assertComparisonError(
+      comparisons.almostEquals(a, b, stddev) === ComparisonPass
+        ? new ComparisonError("A almost equals B", "none")
+        : ComparisonPass,
+    );
   }
 
+  /** Make sure that `a` deeply equals `b` */
   deepEquals(a, b) {
     this.assertComparisonError(comparisons.deepEquals(a, b), a, b);
   }
 
+  /** Make sure that `a` doesn't deeply equal `b` */
   notDeepEquals(a, b) {
-    if (comparisons.deepEquals(a, b) !== ComparisonPass) {
-      this.pass();
-    } else {
-      this.fail(new ComparisonError("A deep equals B", "none"));
-    }
+    this.assertComparisonError(
+      comparisons.deepEquals(a, b) === ComparisonPass
+        ? new ComparisonError("A deeply equals B", "none")
+        : ComparisonPass,
+    );
   }
 
+  /**
+   * Make sure that `a` satisfies `b`
+   * Its similiar to typescripts `A extends B ? true : false`
+   */
   satisfies(a, b) {
     this.assertComparisonError(comparisons.satisfies(a, b), a, b);
   }
 
+  /** Make sure that `a` doesn't satisfy `b` */
   notSatisfies(a, b) {
-    if (comparisons.satisfies(a, b) !== ComparisonPass) {
-      this.pass();
-    } else {
-      this.fail(new ComparisonError("A satisfies B", "none"));
-    }
+    this.assertComparisonError(
+      comparisons.satisfies(a, b) === ComparisonPass
+        ? new ComparisonError("A satisfies B", "none")
+        : ComparisonPass,
+    );
   }
 
+  /**
+   * Make sure `a` throws
+   * @param {(...args: *) => *} a
+   */
   throws(a) {
     this.assertComparisonError(comparisons.throws(a), a);
   }
 
+  /**
+   * Make sure `a` doesn't throw
+   * @param {(...args: *) => *} a
+   */
   notThrows(a) {
-    if (comparisons.throws(a) !== ComparisonPass) {
-      this.pass();
-    } else {
-      this.fail(new ComparisonError("A throws", "none"), a);
-    }
+    this.assertComparisonError(
+      comparisons.throws(a) === ComparisonPass
+        ? new ComparisonError("A throws", "none")
+        : ComparisonPass,
+    );
   }
 
+  /**
+   * Make sure `a` rejects
+   * @param {(...args: *) => Promise<*>} a
+   */
   async rejects(a) {
     this.assertComparisonError(await comparisons.rejects(a), a);
   }
 
+  /**
+   * Make sure `a` doesn't reject
+   * @param {(...args: *) => Promise<*>} a
+   */
   async notRejects(a) {
-    if (await comparisons.rejects(a) !== ComparisonPass) {
-      this.pass();
-    } else {
-      this.fail(new ComparisonError("A rejects", "none"));
+    this.assertComparisonError(
+      await comparisons.rejects(a) === ComparisonPass
+        ? new ComparisonError("A rejects", "none")
+        : ComparisonPass,
+    );
+  }
+
+  #order = new Map();
+
+  /**
+   * Make sure that this method was called in proper order
+   * @param {*} id
+   * @param {number} order
+   */
+  order(id, order) {
+    const current = this.#order.get(id) ?? 0;
+    if (order !== current) {
+      this.assertComparisonError(
+        new ComparisonError("This didn't run in proper order", "diff"),
+        order,
+        current,
+      );
     }
+    this.#order.set(id, current + 1);
   }
 }
 
+/** @type {"default" | "test" | "bench" | undefined} */
+let runtimeState;
+
 function noop() {}
 
-function test(testName, callback) {
-  if (core.ops.op_runtime_state() !== "test") {
-    Bueno.testing.test = noop;
+/**
+ * Create new test
+ * @param {string} name - name of a test
+ * @param {(context: TestContext) => void | Promise<void>} callback
+ * @returns {void | Promise<void>}
+ */
+function test(name, callback) {
+  if (!runtimeState) {
+    runtimeState = core.ops.op_runtime_state();
+  }
+
+  if (runtimeState !== "test") {
+    Bueno.bench = noop;
     return;
   }
 
-  if (!core.ops.op_test_async_ops_sanitization()) {
-    throw new TestContextLeakingAsyncOpsError();
-  }
-
-  return TestContext.test(testName, callback);
+  TestContext.sanitizeAsyncOps();
+  return TestContext.test(name, callback);
 }
 
 // TODO(Im-Beast): more advanced benchmarking
 function bench(name, callback) {
-  if (core.ops.op_runtime_state() !== "bench") {
-    Bueno.testing.bench = noop;
+  if (!runtimeState) {
+    runtimeState = core.ops.op_runtime_state();
+  }
+
+  if (runtimeState !== "bench") {
+    Bueno.bench = noop;
     return;
   }
 
