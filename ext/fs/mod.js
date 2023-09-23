@@ -25,7 +25,7 @@ function readTextFile(path) {
  * @returns {Promise<void>}
  */
 function writeFile(path, contents) {
-	core.ops.op_write_file(path, contents);
+	return core.ops.op_write_file(path, contents);
 }
 
 /**
@@ -35,7 +35,7 @@ function writeFile(path, contents) {
  * @returns {Promise<void>}
  */
 function writeTextFile(path, contents) {
-	core.ops.op_write_text_file(path, contents);
+	return core.ops.op_write_text_file(path, contents);
 }
 
 /**
@@ -44,7 +44,7 @@ function writeTextFile(path, contents) {
  * @returns {Promise<void>}
  */
 function removeFile(path) {
-	core.ops.op_remove_file(path);
+	return core.ops.op_remove_file(path);
 }
 
 /**
@@ -54,7 +54,7 @@ function removeFile(path) {
  * @returns {Promise<void>}
  */
 function removeDirectory(path, recursive) {
-	core.ops.op_remove_dir(path, recursive);
+	return core.ops.op_remove_dir(path, recursive);
 }
 
 Bueno.fs = {
