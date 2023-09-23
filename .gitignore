@@ -1,4 +1,4 @@
 /target
-
-# Mac OS Nonsense
-.DS_Store
+/.DS_Store
+/.vscode
+/.lapce

@@ -7,3 +7,4 @@ import "ext:bueno/battery/mod.js";
 import "ext:bueno/console/mod.js";
 import "ext:bueno/performance/mod.js";
 import "ext:bueno/timers/mod.js";
+import "ext:bueno/testing/mod.js";

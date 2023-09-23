@@ -1,0 +1,16 @@
+[package]
+name = "bueno_ext_testing"
+description = "Bueno testing extension"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+deno_core.workspace = true
+imara-diff.workspace = true
+owo-colors.workspace = true

@@ -6,14 +6,14 @@ use loader::BuenoModuleLoader;
 use std::{env, path::PathBuf, rc::Rc, sync::Arc};
 
 mod cli;
-mod fmt;
 mod loader;
 mod module_cache;
+mod tools;
 
 use cli::parse_cli;
 use module_cache::ModuleCache;
 
-use bueno_ext::extensions::{bueno, bueno_cleanup};
+use bueno_ext::extensions::{bueno, bueno_cleanup, runtime::RuntimeState};
 
 static RUNTIME_SNAPSHOT: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/BUENO_RUNTIME_SNAPSHOT.bin"));
@@ -21,6 +21,7 @@ static RUNTIME_SNAPSHOT: &[u8] =
 pub struct BuenoOptions {
     clean_cache: bool,
     reload_cache: bool,
+    state: RuntimeState,
 }
 
 pub async fn bueno_run(file_path: &str, options: BuenoOptions) -> Result<(), AnyError> {
@@ -38,13 +39,26 @@ pub async fn bueno_run(file_path: &str, options: BuenoOptions) -> Result<(), Any
         module_cache.clear()?;
     }
 
+    let mut extensions = vec![bueno::init_ops(), bueno_cleanup::init_ops_and_esm()];
+
+    if options.state != RuntimeState::Default {
+        let runtime_state = options.state.clone();
+        extensions.push(deno_core::Extension {
+            name: "bueno_runtime_state",
+            op_state_fn: Some(Box::new(|state| {
+                state.put(runtime_state);
+            })),
+            ..Default::default()
+        });
+    }
+
     let mut js_runtime = deno_core::JsRuntime::new(deno_core::RuntimeOptions {
         startup_snapshot: Some(Snapshot::Static(RUNTIME_SNAPSHOT)),
         module_loader: Some(Rc::new(BuenoModuleLoader {
             module_cache,
             options,
         })),
-        extensions: vec![bueno::init_ops(), bueno_cleanup::init_ops_and_esm()],
+        extensions,
         ..Default::default()
     });
 

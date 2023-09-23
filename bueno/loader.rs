@@ -68,13 +68,13 @@ impl deno_core::ModuleLoader for BuenoModuleLoader {
                     (deno_core::ModuleType::JavaScript, true)
                 }
                 MediaType::Json => (deno_core::ModuleType::Json, false),
-                mt => {
+                _ => {
                     // TODO: Better errors
                     let path = module_specifier.to_file_path();
                     if let Ok(path) = path {
                         panic!("Unsupported extension {:?}", path.extension())
                     } else {
-                        panic!("Unsupported MimeType {mt}")
+                        panic!("Unsupported MimeType {media_type}")
                     }
                 }
             };
