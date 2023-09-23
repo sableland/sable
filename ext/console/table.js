@@ -21,7 +21,7 @@ const tableCharacters = {
  * @param {any[] | object} data Data to create table from
  * @param {(string | number)[]} columns An array which contains indexes of column to include in the table
  * @param {import("./printer.js").Printer} printer Printer used for formatting cell values
- * @returns
+ * @returns {string} table
  */
 export function createTable(data, columns, printer) {
 	if (typeof data[0] !== "object") {
@@ -33,7 +33,7 @@ export function createTable(data, columns, printer) {
 		["(index)"],
 	];
 
-	let string = "";
+	let tableString = "";
 
 	let row = 1;
 	for (const key in data) {
@@ -84,23 +84,20 @@ export function createTable(data, columns, printer) {
 	headerSeparator += tableCharacters.rightHorizontal;
 	bottomBar += tableCharacters.bottomRight;
 
-	console.log(topBar);
+	tableString += topBar + "\n";
 	for (const [row, rowData] of tableData.entries()) {
-		let string = "";
 		for (const [column, value] of rowData.entries()) {
-			string += tableCharacters.vertical + " " + value + " ".repeat(
+			tableString += tableCharacters.vertical + " " + value + " ".repeat(
 				maxWidth[column] - textWidth(value) + 1,
 			);
 		}
-		string += tableCharacters.vertical;
-
-		console.log(string);
+		tableString += tableCharacters.vertical + "\n";
 
 		if (row === 0) {
-			console.log(headerSeparator);
+			tableString += headerSeparator + "\n";
 		}
 	}
-	console.log(bottomBar);
+	tableString += bottomBar;
 
-	return string;
+	return tableString;
 }

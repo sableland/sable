@@ -96,13 +96,8 @@ export class Console {
 
 	#tablePrinter = new Printer("stdout", genericFormattingConfig);
 	table(data, columns) {
-		const table = createTable(
-			data,
-			columns,
-			this.#tablePrinter,
-			this.#groupStackSize,
-		);
-		this.#tablePrinter.print(table, 0);
+		const table = createTable(data, columns, this.#tablePrinter);
+		this.#tablePrinter.print(table, this.#groupStackSize);
 	}
 
 	clear() {
@@ -204,9 +199,8 @@ export class Console {
 			.trim();
 
 		this.#groupStack.unshift(groupName);
-		this.#groupStackSize += 1;
-
 		printer.print(`[ ${groupName} ]`, this.#groupStackSize);
+		this.#groupStackSize += 1;
 	}
 
 	groupCollapsed(...args) {
