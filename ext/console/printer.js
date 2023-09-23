@@ -136,7 +136,6 @@ export class Printer {
 	 * @see https://console.spec.whatwg.org/#generic-javascript-object-formatting
 	 *
 	 * @param {any} arg Item to format
-	 * @param {number} depth Currently traversed depth
 	 * @returns {string} Formatted `arg`
 	 */
 	genericFormat(arg) {
@@ -149,13 +148,13 @@ export class Printer {
 
 			// non-primitives
 			case "function": {
-				const stringified = fn.toString();
+				const stringified = arg.toString();
 
-				const stringTag = fn[Symbol.toStringTag];
+				const stringTag = arg[Symbol.toStringTag];
 				const constructorName = stringTag ??
 					(stringified.startsWith("class") ? "Class" : "Function");
 
-				return `${constructorName} (${fn.name || "anonymous"})`;
+				return `${constructorName} (${arg.name || "anonymous"})`;
 			}
 			case "object":
 				return JSON.stringify(arg, null, " ");
@@ -167,7 +166,7 @@ export class Printer {
 	}
 
 	#formatObject(obj, depth = 0, circular = false) {
-		if (obj === null) return this.#formatNull(depth);
+		if (obj === null) return this.#formatNull();
 
 		let formatted = "";
 		let index = this.spottedObjects.get(obj);

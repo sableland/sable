@@ -20,7 +20,7 @@ const escapeCharMap = new Map([
 
 /**
  * @param {string} text
- * @param {number=0} start from which index it should start calculating width
+ * @param {number} [start=0] from which index it should start calculating width
  * @returns {number} actual {text} width
  */
 export function textWidth(text, start = 0) {

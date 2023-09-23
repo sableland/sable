@@ -1,4 +1,6 @@
 class SharedStdio {
+	rid;
+
 	write(data) {
 		return Bueno.io.write(this.rid, data);
 	}

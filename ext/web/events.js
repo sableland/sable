@@ -1,3 +1,10 @@
+// TODO(Im-Beast): Implement EventInit
+class EventInit {
+	bubbles;
+	cancelable;
+	composed;
+}
+
 export class Event {
 	/** @type {string} */
 	#type;
@@ -14,7 +21,7 @@ export class Event {
 	 * @param {string} type
 	 * @param {EventInit} eventInitDict
 	 */
-	constructor(type, eventInitDict = {}) {
+	constructor(type, eventInitDict = new EventInit()) {
 		this.#type = type;
 		this.#bubbles = eventInitDict.bubbles ?? false;
 		this.#cancelable = eventInitDict.cancelable ?? false;
@@ -90,6 +97,14 @@ export class Event {
 	}
 }
 
+// TODO(Im-Beast): Implement CustomEventInit
+class CustomEventInit extends EventInit {
+	detail;
+}
+
+// TODO(Im-Beast): Implement AbortSignal
+class AbortSignal {}
+
 export class CustomEvent extends Event {
 	#detail;
 
@@ -97,7 +112,7 @@ export class CustomEvent extends Event {
 	 * @param {string} type
 	 * @param {CustomEventInit} eventInitDict
 	 */
-	constructor(type, eventInitDict = {}) {
+	constructor(type, eventInitDict = new CustomEventInit()) {
 		super(type, eventInitDict);
 		this.#detail = eventInitDict.detail;
 	}
@@ -116,20 +131,25 @@ export class CustomEvent extends Event {
 // TODO(lino-levan): Handle options
 // TODO(lino-levan): Add AbortController / AbortSignal
 export class EventTarget {
-	/** @type {Record<string, (event: Event)=>void>} */
-	#events = {};
+	/** @type {((event: Event) => void | { handleEvent: (event: Event) => void })[]} */
+	#events = [];
 
 	/**
 	 * @param {string} type
-	 * @param {null | (event: Event)=>void | { handleEvent: (event: Event)=>void }} callback
-	 * @param {boolean | {capture?: boolean, once?: boolean, passive?: boolean, signal?: AbortSignal}} options
+	 * @param {({ handleEvent: (event: Event) => void }) | ((event: Event) => void)} callback
+	 * @param {boolean | {
+	 * 	capture?: boolean,
+	 * 	once?: boolean,
+	 * 	passive?: boolean,
+	 * 	signal?: AbortSignal
+	 * }} [options=undefined]
 	 */
 	addEventListener(type, callback, options) {
 		if (!callback) return;
 
-		if (!(type in events)) {
-			events[type] = [];
-		}
+		const events = this.#events;
+
+		events[type] ??= [];
 
 		if (!events[type].includes(callback)) {
 			if (typeof callback === "function") {
@@ -142,20 +162,18 @@ export class EventTarget {
 
 	/**
 	 * @param {string} type
-	 * @param {null | (event: Event)=>void | { handleEvent: (event: Event)=>void }} callback
-	 * @param {boolean | {capture?: boolean}} options
+	 * @param {({ handleEvent: (event: Event) => void }) | ((event: Event) => void)} callback
+	 * @param {boolean | { capture?: boolean }} [options=undefined]
 	 */
 	removeEventListener(type, callback, options) {
 		if (!callback) return;
 
-		if (!(type in events)) {
-			return;
-		}
+		const typeEvents = this.#events[type];
+		if (!typeEvents) return;
 
-		const index = events[type].indexOf(callback);
-
+		const index = typeEvents.indexOf(callback);
 		if (index !== -1) {
-			events[type].splice(index, 1);
+			typeEvents.splice(index, 1);
 		}
 	}
 

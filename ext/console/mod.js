@@ -79,6 +79,8 @@ export class Console {
 				.print(this.#formatter.format(args, printer), 0, false)
 				.trim(),
 		};
+
+		// @ts-expect-error V8-specific feature
 		Error.captureStackTrace(error, this.trace);
 
 		printer.print(error.stack, this.#groupStackSize);
@@ -115,7 +117,7 @@ export class Console {
 		this.#countMap[label] ??= 0;
 		const value = ++this.#countMap[label];
 
-		this.#countPrinter.print(`${label}: ${value}`);
+		this.#countPrinter.print(`${label}: ${value}`, this.#groupStackSize);
 	}
 
 	#countResetPrinter = new Printer("stdout", genericFormattingConfig);
@@ -125,7 +127,10 @@ export class Console {
 		if (label in this.#countMap) {
 			this.#countMap[label] &&= 0;
 		} else {
-			this.#countResetPrinter.print(`Count for '${label}' doesn't exist`);
+			this.#countResetPrinter.print(
+				`Count for '${label}' doesn't exist`,
+				this.#groupStackSize,
+			);
 		}
 	}
 	// #endregion
@@ -140,7 +145,6 @@ export class Console {
 		if (label in this.#timerTable) {
 			this.#timePrinter.print(
 				`Timer '${label}' already exists`,
-				this.#groupStackSize,
 				this.#groupStackSize,
 			);
 		} else {
