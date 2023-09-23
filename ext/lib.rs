@@ -1,11 +1,12 @@
 pub mod extensions {
     use std::time::{Instant, SystemTime};
 
-    use bueno_ext_battery as battery;
-    use bueno_ext_fs as fs;
-    use bueno_ext_performance as performance;
-    use bueno_ext_testing as testing;
-    use bueno_ext_timers as timers;
+    pub use bueno_ext_battery as battery;
+    pub use bueno_ext_fs as fs;
+    pub use bueno_ext_performance as performance;
+    pub use bueno_ext_runtime as runtime;
+    pub use bueno_ext_testing as testing;
+    pub use bueno_ext_timers as timers;
 
     deno_core::extension!(
         bueno,

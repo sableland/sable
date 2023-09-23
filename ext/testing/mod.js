@@ -359,8 +359,8 @@ class TestContext {
   locked = false;
 
   /**
-   * @param {string} name – name for current test
-   * @param {TestContext | undefined} parent – parent test
+   * @param {string} name - name for current test
+   * @param {TestContext | undefined} parent - parent test
    */
   constructor(name, parent) {
     this.name = name;
@@ -373,8 +373,8 @@ class TestContext {
   }
 
   /**
-   * @param {TestContext} testContext – currently evaluated TestContext
-   * @param {boolean} async – whether TestContext returned a promise
+   * @param {TestContext} testContext - currently evaluated TestContext
+   * @param {boolean} async - whether TestContext returned a promise
    * @throws when async ops are still pending
    */
   static sanitizeAsyncOps(testContext = undefined, async = false) {
@@ -385,7 +385,7 @@ class TestContext {
 
   /**
    * Lock current test and ensure that only one test runs at the time
-   * @param {TestContext} testContext – currently evaluted test context
+   * @param {TestContext} testContext - currently evaluted test context
    */
   lock(testContext) {
     if (this.locked) {
@@ -398,7 +398,7 @@ class TestContext {
 
   /**
    * Unlock current test and ensure that only one test runs at the time
-   * @param {TestContext} testContext – currently evaluted test context
+   * @param {TestContext} testContext - currently evaluted test context
    */
   unlock(testContext) {
     if (!this.locked) {
