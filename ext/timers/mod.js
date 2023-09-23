@@ -98,7 +98,7 @@ function setTimeout(callback, timeout = 0, ...args) {
  */
 function setInterval(callback, interval = 0, ...args) {
 	if (typeof callback !== "function") {
-		throw new UnsupportedSetTimerCodeError("Timeout");
+		throw new UnsupportedSetTimerCodeError("Interval");
 	}
 
 	interval = toLong(interval);
