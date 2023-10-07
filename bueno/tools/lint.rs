@@ -58,9 +58,7 @@ fn lint_file(path: &Path) -> Result<Vec<oxc_diagnostics::Error>, AnyError> {
 
     // Handle parser errors
     if !ret.errors.is_empty() {
-        eprintln!("[{}]", path.display());
-        print_errors(&source_text, ret.errors);
-        return Ok(Vec::new());
+        return Ok(ret.errors);
     }
 
     let program = allocator.alloc(ret.program);
