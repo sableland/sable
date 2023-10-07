@@ -39,7 +39,7 @@ pub fn lint(options: LintOptions) -> Result<LinterResult, AnyError> {
                 }
                 _ => {}
             },
-            Err(e) => println!("{:?}", e),
+            Err(e) => eprintln!("{:?}", e),
         }
     }
 
@@ -58,7 +58,7 @@ fn lint_file(path: &Path) -> Result<Vec<oxc_diagnostics::Error>, AnyError> {
 
     // Handle parser errors
     if !ret.errors.is_empty() {
-        println!("[{}]", path.display());
+        eprintln!("[{}]", path.display());
         print_errors(&source_text, ret.errors);
         return Ok(Vec::new());
     }
@@ -88,7 +88,7 @@ fn lint_file(path: &Path) -> Result<Vec<oxc_diagnostics::Error>, AnyError> {
 pub fn print_errors(source_text: &str, errors: Vec<oxc_diagnostics::Error>) {
     for error in errors {
         let error = error.with_source_code(source_text.to_string());
-        println!("{error:?}");
+        eprintln!("{error:?}");
     }
 }
 
