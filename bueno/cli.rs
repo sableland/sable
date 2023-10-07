@@ -11,7 +11,7 @@ use self::clap::{arg, Arg, Command};
 use crate::{
     bueno_run,
     tools::fmt::{fmt, FormatOptions},
-    tools::lint::{lint, LintOptions},
+    tools::lint::{lint, print_errors, LintOptions, LinterResult},
     BuenoOptions,
 };
 
@@ -73,7 +73,7 @@ pub fn cli() -> Command {
         .subcommand(
             Command::new("lint")
                 .about("Lint files given a global patern")
-                .arg(arg!([glob] "Global pattern to format")),
+                .arg(arg!([glob] "Global pattern to lint")),
         )
 }
 
@@ -127,12 +127,20 @@ pub fn parse_cli() -> ExitCode {
             let result = lint(LintOptions { glob });
 
             match result {
-                Ok(false) => {
+                Ok(LinterResult::Errors(errors)) => {
                     code = ExitCode::FAILURE;
-                }
-                Err(error) => {
-                    eprintln!("error: {}", error);
-                    code = ExitCode::FAILURE;
+                    for (path, errors) in errors {
+                        eprintln!("lint: {:?}", path);
+                        let source_text = std::fs::read_to_string(path);
+                        match source_text {
+                            Ok(source_text) => {
+                                print_errors(&source_text, errors);
+                            }
+                            Err(error) => {
+                                eprintln!("error: {}", error);
+                            }
+                        }
+                    }
                 }
                 _ => {}
             }

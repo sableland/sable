@@ -9,21 +9,33 @@ use oxc_diagnostics::{
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::{SourceType, Span};
-use std::ffi::OsStr;
 use std::path::Path;
+use std::rc::Rc;
+use std::{collections::HashMap, ffi::OsStr};
 
 pub struct LintOptions<'a> {
     pub glob: &'a String,
 }
 
-pub fn lint(options: LintOptions) -> Result<bool, AnyError> {
-    let mut no_errors = false;
+pub enum LinterResult {
+    Ok,
+    Errors(HashMap<Rc<Path>, Vec<oxc_diagnostics::Error>>),
+}
+
+pub fn lint(options: LintOptions) -> Result<LinterResult, AnyError> {
+    let mut errors: HashMap<Rc<Path>, Vec<oxc_diagnostics::Error>> = HashMap::new();
 
     for entry in glob(&options.glob)? {
         match entry {
             Ok(path) => match path.extension().and_then(OsStr::to_str) {
                 Some("js" | "ts" | "jsx" | "tsx") => {
-                    no_errors = lint_file(path.as_path())? || no_errors;
+                    let lint_errors = lint_file(path.as_path())?;
+
+                    if lint_errors.is_empty() {
+                        continue;
+                    }
+
+                    errors.insert(Rc::from(path), lint_errors);
                 }
                 _ => {}
             },
@@ -31,10 +43,14 @@ pub fn lint(options: LintOptions) -> Result<bool, AnyError> {
         }
     }
 
-    Ok(no_errors)
+    if errors.is_empty() {
+        Ok(LinterResult::Ok)
+    } else {
+        Ok(LinterResult::Errors(errors))
+    }
 }
 
-fn lint_file(path: &Path) -> Result<bool, AnyError> {
+fn lint_file(path: &Path) -> Result<Vec<oxc_diagnostics::Error>, AnyError> {
     let source_text = std::fs::read_to_string(path)?;
     let allocator = Allocator::default();
     let source_type = SourceType::from_path(path).unwrap();
@@ -44,7 +60,7 @@ fn lint_file(path: &Path) -> Result<bool, AnyError> {
     if !ret.errors.is_empty() {
         println!("[{}]", path.display());
         print_errors(&source_text, ret.errors);
-        return Ok(false);
+        return Ok(Vec::new());
     }
 
     let program = allocator.alloc(ret.program);
@@ -66,16 +82,10 @@ fn lint_file(path: &Path) -> Result<bool, AnyError> {
         }
     }
 
-    if !errors.is_empty() {
-        println!("[{}]", path.display());
-        print_errors(&source_text, errors);
-        return Ok(false);
-    }
-
-    Ok(true)
+    Ok(errors)
 }
 
-fn print_errors(source_text: &str, errors: Vec<oxc_diagnostics::Error>) {
+pub fn print_errors(source_text: &str, errors: Vec<oxc_diagnostics::Error>) {
     for error in errors {
         let error = error.with_source_code(source_text.to_string());
         println!("{error:?}");
