@@ -1,0 +1,17 @@
+[package]
+name = "bueno_ext_web"
+description = "Bueno Web APIs extension"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+deno_core.workspace = true
+tokio.workspace = true
+
+encoding_rs = "=0.8.33"

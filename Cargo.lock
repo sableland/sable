@@ -205,6 +205,7 @@ dependencies = [
  "bueno_ext_runtime",
  "bueno_ext_testing",
  "bueno_ext_timers",
+ "bueno_ext_web",
  "deno_core",
 ]
 
@@ -254,6 +255,15 @@ name = "bueno_ext_timers"
 version = "0.0.1"
 dependencies = [
  "deno_core",
+ "tokio",
+]
+
+[[package]]
+name = "bueno_ext_web"
+version = "0.0.1"
+dependencies = [
+ "deno_core",
+ "encoding_rs",
  "tokio",
 ]
 
@@ -479,9 +489,9 @@ dependencies = [
 
 [[package]]
 name = "deno_ast"
-version = "0.29.3"
+version = "0.29.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "577ec3850834c2578eb44afa9250f9a807f8497664e6e2aaae19cea0aac2fe3b"
+checksum = "8a8adb6aeb787db71d015d8e9f63f6e004eeb09c86babb4ded00878be18619b1"
 dependencies = [
  "anyhow",
  "base64 0.13.1",
@@ -515,9 +525,9 @@ dependencies = [
 
 [[package]]
 name = "deno_core"
-version = "0.214.0"
+version = "0.221.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be0af76effe9a766f7c9a253171ab10b9adfaf4b10c6eb0b9f005f9dd0ba2948"
+checksum = "cf694d66a55050bdfad2036765f93547392ba7c131adc7fcd5e91fa31e291c51"
 dependencies = [
  "anyhow",
  "bytes",
@@ -553,9 +563,9 @@ dependencies = [
 
 [[package]]
 name = "deno_ops"
-version = "0.90.0"
+version = "0.97.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "568aba570695e05f08c2181bcd6cd3579684af42f489b9ae42712348044b4af7"
+checksum = "aab46b645231decaf3b03d9eb99a5207e4e66c8c53b7774000b44e3ae43e0f99"
 dependencies = [
  "deno-proc-macro-rules",
  "lazy-regex",
@@ -573,9 +583,9 @@ dependencies = [
 
 [[package]]
 name = "deno_unsync"
-version = "0.2.1"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0720e562455d6374a5292baec3fc895ed8bfed0937428e3245e50979924e5b15"
+checksum = "f8a8f3722afd50e566ecfc783cc8a3a046bc4dd5eb45007431dfb2776aeb8993"
 dependencies = [
  "tokio",
 ]
@@ -2086,9 +2096,9 @@ dependencies = [
 
 [[package]]
 name = "serde_v8"
-version = "0.123.0"
+version = "0.130.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc3e1c4d2b20f6983e86077c66b25b8d768f2e102e09659af2af034ac47ae709"
+checksum = "2c6078fc5e16615b092b26199e7f1d7d2d336848623d32e00f95e74618274111"
 dependencies = [
  "bytes",
  "derive_more",
@@ -3004,9 +3014,9 @@ checksum = "79daa5ed5740825c40b389c5e50312b9c86df53fccd33f281df655642b43869d"
 
 [[package]]
 name = "v8"
-version = "0.76.0"
+version = "0.79.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d4e8ae7ef8b4e852e728e343cb6bb471a0424dfefa22585ea0c14a61252d73f"
+checksum = "b15561535230812a1db89a696f1f16a12ae6c2c370c6b2241c68d4cb33963faf"
 dependencies = [
  "bitflags 1.3.2",
  "fslock",
