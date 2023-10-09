@@ -68,31 +68,36 @@ pub async fn op_copy_dir(#[string] origin: String, #[string] dest: String) -> Re
 use async_recursion::async_recursion;
 #[async_recursion]
 pub async fn op_copy_dir_recurse(origin: String, dest: String) -> Result<(), AnyError> {
+
+    // Setup for viewing directory contents and checking if dir
     let orgForMetadata = origin.clone();
     let attr = tokio::fs::metadata(orgForMetadata);
     let dirBool = attr.await?.is_dir();
-    print!("attributes : {:?}\n", dirBool);
+
+    // if directory, make a directory at destination and loop through contents
     if dirBool {  
 
+        // Make a new directory at destination
         let destForCreate = dest.clone();
         tokio::fs::create_dir(destForCreate).await?;
 
+        // Loop through all contents of folder
         let mut entries = tokio::fs::read_dir(origin).await?;
         while let Some(entry) = entries.next_entry().await? {
 
-            let mut next = dest.to_owned();
-
+            // Take name of file and add to destination path
             let wholePathStr = entry.path().into_os_string().into_string().unwrap().clone();
-            print!("entry path : {}\n", entry.path().into_os_string().into_string().unwrap());
             let parts = wholePathStr.split("/");
             let itemStr = parts.last().unwrap();
-
-            print!("item = {}\n", itemStr);
+            let mut next = dest.to_owned();
             next.push_str(&"/");
             next.push_str(&itemStr);
-            print!("next : {}\n", next);
+
+            // Recursive call to copy over contents of folder being looked at
             op_copy_dir_recurse(entry.path().into_os_string().into_string().unwrap(), next).await?;
         }
+
+    // If file, copy file over to destination
     } else {
         tokio::fs::copy(origin, dest).await?;
     }
