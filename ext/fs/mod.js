@@ -57,6 +57,26 @@ function removeDirectory(path, recursive) {
 	return core.ops.op_remove_dir(path, recursive);
 }
 
+/**
+ * Copies file asynchronously
+ * @param {string} origin
+ * @param {string} dest
+ * @returns {Promise<void>}
+ */
+function copyFile(origin, dest) {
+	return core.ops.op_copy_file(origin, dest);
+}
+
+/**
+ * Copies folder asynchronously
+ * @param {string} origin
+ * @param {string} dest
+ * @returns {Promise<void>}
+ */
+function copyDirectory(origin, dest) {
+	return core.ops.op_copy_dir(origin, dest);
+}
+
 Bueno.fs = {
 	readFile,
 	readTextFile,
@@ -64,4 +84,6 @@ Bueno.fs = {
 	writeTextFile,
 	removeFile,
 	removeDirectory,
+    copyFile,
+    copyDirectory,
 };
