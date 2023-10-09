@@ -60,7 +60,6 @@ pub async fn op_copy_file(#[string] origin: String, #[string] dest: String) -> R
 
 #[op2(async)]
 pub async fn op_copy_dir(#[string] origin: String, #[string] dest: String) -> Result<(), AnyError> {
-    print!("got here");
     op_copy_dir_recurse(origin, dest).await?;
     Ok(())
 }
