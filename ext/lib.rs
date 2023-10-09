@@ -26,6 +26,7 @@ pub mod extensions {
             fs::op_copy_file,
             fs::op_copy_dir,
             fs::op_move_file,
+            fs::op_move_folder,
             performance::op_high_res_time,
             performance::op_time_origin,
             timers::op_timers_sleep,

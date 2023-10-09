@@ -87,6 +87,16 @@ function moveFile(origin, dest) {
     return core.ops.op_move_file(origin, dest);
 }
 
+/**
+ * Moves folder asyncrhonously
+ * @param {string} origin
+ * @param {string} dest
+ * @returns {Promise<void>}
+ */
+function moveFolder(origin, dest) {
+    return core.ops.op_move_folder(origin, dest);
+}
+
 Bueno.fs = {
 	readFile,
 	readTextFile,
@@ -96,5 +106,6 @@ Bueno.fs = {
 	removeDirectory,
     copyFile,
     copyDirectory,
-    moveFile
+    moveFile,
+    moveFolder,
 };

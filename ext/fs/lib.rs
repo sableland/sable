@@ -108,3 +108,9 @@ pub async fn op_move_file(#[string] origin: String, #[string] dest: String) -> R
     tokio::fs::rename(origin, dest).await?;
     Ok(())
 }
+
+#[op2(async)]
+pub async fn op_move_folder(#[string] origin: String, #[string] dest: String) -> Result<(), AnyError> {
+    tokio::fs::rename(origin, dest).await?;
+    Ok(())
+}
