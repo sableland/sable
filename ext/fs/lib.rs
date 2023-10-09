@@ -102,3 +102,9 @@ pub async fn op_copy_dir_recurse(origin: String, dest: String) -> Result<(), Any
     }
     Ok(())
 }
+
+#[op2(async)]
+pub async fn op_move_file(#[string] origin: String, #[string] dest: String) -> Result<(), AnyError> {
+    tokio::fs::rename(origin, dest).await?;
+    Ok(())
+}
