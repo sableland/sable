@@ -11,6 +11,7 @@ use self::clap::{arg, Arg, Command};
 use crate::{
     bueno_run,
     tools::fmt::{fmt, FormatOptions},
+    tools::lint::{lint, print_errors, LintOptions, LinterResult},
     BuenoOptions,
 };
 
@@ -69,6 +70,11 @@ pub fn cli() -> Command {
                         .help("Disables formatting and checks if files are formatted"),
                 ),
         )
+        .subcommand(
+            Command::new("lint")
+                .about("Lint files given a global patern")
+                .arg(arg!([glob] "Global pattern to lint")),
+        )
 }
 
 pub fn parse_cli() -> ExitCode {
@@ -110,6 +116,33 @@ pub fn parse_cli() -> ExitCode {
             if let Err(error) = fmt(FormatOptions { check, glob }) {
                 eprintln!("error: {}", error);
                 code = ExitCode::FAILURE;
+            }
+        }
+        Some(("lint", sub_matches)) => {
+            let default_glob = "**/*".to_string();
+            let glob = sub_matches
+                .get_one::<String>("glob")
+                .unwrap_or(&default_glob);
+
+            let result = lint(LintOptions { glob });
+
+            match result {
+                Ok(LinterResult::Errors(errors)) => {
+                    code = ExitCode::FAILURE;
+                    for (path, errors) in errors {
+                        eprintln!("lint: {:?}", path);
+                        let source_text = std::fs::read_to_string(path);
+                        match source_text {
+                            Ok(source_text) => {
+                                print_errors(&source_text, errors);
+                            }
+                            Err(error) => {
+                                eprintln!("error: {}", error);
+                            }
+                        }
+                    }
+                }
+                _ => {}
             }
         }
         Some((subcommand, _)) => unimplemented!("Subcommand {subcommand} is not implemented yet"),

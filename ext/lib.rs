@@ -8,6 +8,7 @@ pub mod extensions {
     pub use bueno_ext_runtime as runtime;
     pub use bueno_ext_testing as testing;
     pub use bueno_ext_timers as timers;
+    pub use bueno_ext_web as web;
 
     deno_core::extension!(
         bueno,
@@ -30,6 +31,9 @@ pub mod extensions {
             testing::op_bench_fn,
             testing::op_diff_str,
             testing::op_test_async_ops_sanitization,
+            web::op_encoding_normalize_label,
+            web::op_encoding_decode_utf8,
+            web::op_encoding_decode_single,
         ],
         esm_entry_point = "ext:bueno/runtime.js",
         esm = [
@@ -42,6 +46,7 @@ pub mod extensions {
             "web/mod.js",
             "web/events.js",
             "web/streams.js",
+            "web/encoding.js",
             "console/mod.js",
             "console/printer.js",
             "console/formatter.js",
