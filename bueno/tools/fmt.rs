@@ -6,15 +6,10 @@ use dprint_plugin_typescript;
 use dprint_plugin_typescript::configuration::{QuoteProps, SortOrder};
 use glob::glob;
 use std::ffi::OsStr;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 // TODO(lino-levan): Make typescript/json/markdown global static variables when `LazyCell` is stable.
 // https://doc.rust-lang.org/std/cell/struct.LazyCell.html
-
-fn fake_path(ext: &str) -> PathBuf {
-    let file_name = format!("file.{}", ext);
-    PathBuf::from(file_name)
-}
 
 fn format_typescript_file(path: &Path, contents: &str) -> Result<Option<String>, AnyError> {
     dprint_plugin_typescript::format_text(
@@ -33,9 +28,10 @@ fn format_typescript_file(path: &Path, contents: &str) -> Result<Option<String>,
     )
 }
 
-fn format_json_file(contents: &str) -> Result<Option<String>, AnyError> {
+fn format_json_file(path: &Path, contents: &str) -> Result<Option<String>, AnyError> {
     dprint_plugin_json::format_text(
-        &contents,
+        path,
+        contents,
         &dprint_plugin_json::configuration::ConfigurationBuilder::new()
             .line_width(80)
             .use_tabs(true)
@@ -45,7 +41,7 @@ fn format_json_file(contents: &str) -> Result<Option<String>, AnyError> {
     )
 }
 
-fn format_markdown_file(contents: &str) -> Result<Option<String>, AnyError> {
+fn format_markdown_file(path: &Path, contents: &str) -> Result<Option<String>, AnyError> {
     dprint_plugin_markdown::format_text(
         &contents,
         &dprint_plugin_markdown::configuration::ConfigurationBuilder::new()
@@ -55,15 +51,15 @@ fn format_markdown_file(contents: &str) -> Result<Option<String>, AnyError> {
             .ignore_end_directive("bueno-fmt-ignore-end")
             .ignore_file_directive("bueno-fmt-ignore-file")
             .build(),
-        |tag, text, _line_number| format_file(tag, text),
+        |tag, text, _line_number| format_file(path, tag, text),
     )
 }
 
-fn format_file(ext: &str, contents: &str) -> Result<Option<String>, AnyError> {
+fn format_file(path: &Path, ext: &str, contents: &str) -> Result<Option<String>, AnyError> {
     match ext {
-        "js" | "ts" | "jsx" | "tsx" => format_typescript_file(fake_path(ext).as_path(), &contents),
-        "json" | "jsonc" => format_json_file(&contents),
-        "md" | "markdown" => format_markdown_file(&contents),
+        "js" | "ts" | "jsx" | "tsx" => format_typescript_file(path, contents),
+        "json" | "jsonc" => format_json_file(path, contents),
+        "md" | "markdown" => format_markdown_file(path, contents),
         _ => Ok(None),
     }
 }
@@ -80,18 +76,18 @@ pub fn fmt(options: FormatOptions) -> Result<(), AnyError> {
                 Some(
                     ext @ ("js" | "ts" | "jsx" | "tsx" | "json" | "jsonc" | "md" | "markdown"),
                 ) => {
-                    let contents = std::fs::read_to_string(path.clone())?;
-
-                    if let Some(text) = format_file(ext, &contents)? {
-                        println!("fmt: {}", path.display());
+                    let contents = std::fs::read_to_string(&path)?;
+                    if let Some(text) = format_file(&path, ext, &contents)? {
+                        println!("Formatted: {}", path.display());
                         if !options.check {
+                            // TODO(Im-Beast): Use atomic writes to make sure files are safely written
                             std::fs::write(path, text)?;
                         }
                     }
                 }
                 _ => {}
             },
-            Err(e) => println!("{:?}", e),
+            Err(e) => eprintln!("{:?}", e),
         }
     }
 

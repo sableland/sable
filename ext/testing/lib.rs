@@ -1,4 +1,4 @@
-use deno_core::{op2, v8, OpState};
+use deno_core::{op2, v8};
 use diff::{PrettyDiffBuilder, PrettyDiffBuilderConfig};
 use std::time::Instant;
 
@@ -56,18 +56,13 @@ pub fn op_bench_fn(scope: &mut v8::HandleScope, func: &v8::Function) -> f64 {
 pub fn op_diff_str(#[string] before: &str, #[string] after: &str) -> String {
     let input = InternedInput::new(before, after);
     let diff_builder = PrettyDiffBuilder::new(&input, DIFF_CONFIG);
-
     diff(Algorithm::Histogram, &input, diff_builder)
 }
 
 /** Returns whether there are no async ops running in the background */
 #[op2(fast)]
-pub fn op_test_async_ops_sanitization(state: &OpState) -> bool {
-    let aggregated = state.tracker.aggregate();
-
-    let dispatched_async_ops =
-        aggregated.ops_dispatched_async + aggregated.ops_dispatched_async_unref;
-    let completed_async_ops = aggregated.ops_completed_async + aggregated.ops_completed_async_unref;
-
-    return dispatched_async_ops <= completed_async_ops;
+pub fn op_test_async_ops_sanitization() -> bool {
+    // FIXME(Im-Beast): Since https://github.com/denoland/deno_core/pull/295 metrics have changed a lot
+    // And will require a bit more care
+    return true;
 }

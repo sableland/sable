@@ -22,16 +22,16 @@ reqwest = "0.11.20"
 shellexpand = "3.1.0"
 glob = "0.3.1"
 
-dprint-plugin-json = "=0.17.4"
-dprint-plugin-markdown = "=0.16.1"
-dprint-plugin-typescript = "=0.87.1"
+dprint-plugin-json = "=0.19.2"
+dprint-plugin-markdown = "=0.16.4"
+dprint-plugin-typescript = "=0.88.10"
 
-oxc_allocator = "0.2.0"
-oxc_ast = "0.2.0"
-oxc_diagnostics = "0.2.0"
-oxc_parser = "0.2.0"
-oxc_semantic = "0.2.0"
-oxc_span = "0.2.0"
+oxc_allocator = "0.10.0"
+oxc_ast = "0.10.0"
+oxc_diagnostics = "0.10.0"
+oxc_parser = "0.10.0"
+oxc_semantic = "0.10.0"
+oxc_span = "0.10.0"
 
 [build-dependencies]
 deno_core.workspace = true
