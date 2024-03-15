@@ -11,10 +11,10 @@ resolver = "2"
 members = ["ext", "bueno"]
 
 [workspace.dependencies]
-deno_core = "0.221.0"
-deno_ast = { version = "0.29.5", features = ["transpiling"] }
-tokio = { version = "1.28.1", features = ["full"] }
+deno_core = "0.270.0"
+deno_ast = { version = "1.0.1", features = ["transpiling"] }
+tokio = { version = "1.36.0", features = ["full"] }
 imara-diff = "0.1.5"
-owo-colors = "3.5.0"
+owo-colors = "4.0.0"
 
 bueno_ext = { path = "./ext/" }

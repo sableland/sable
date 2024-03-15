@@ -1,7 +1,7 @@
 extern crate bueno_ext;
 extern crate deno_core;
 
-use deno_core::{error::AnyError, url::Url, Snapshot};
+use deno_core::{error::AnyError, url::Url};
 use loader::BuenoModuleLoader;
 use std::{env, path::PathBuf, rc::Rc, sync::Arc};
 
@@ -53,7 +53,7 @@ pub async fn bueno_run(file_path: &str, options: BuenoOptions) -> Result<(), Any
     }
 
     let mut js_runtime = deno_core::JsRuntime::new(deno_core::RuntimeOptions {
-        startup_snapshot: Some(Snapshot::Static(RUNTIME_SNAPSHOT)),
+        startup_snapshot: Some(RUNTIME_SNAPSHOT),
         module_loader: Some(Rc::new(BuenoModuleLoader {
             module_cache,
             options,
@@ -62,11 +62,11 @@ pub async fn bueno_run(file_path: &str, options: BuenoOptions) -> Result<(), Any
         ..Default::default()
     });
 
-    let mod_id = js_runtime.load_main_module(&main_module, None).await?;
+    let mod_id = js_runtime.load_main_es_module(&main_module).await?;
     let result = js_runtime.mod_evaluate(mod_id);
-    js_runtime.run_event_loop(false).await?;
+    js_runtime.run_event_loop(Default::default()).await?;
 
-    result.await?
+    result.await
 }
 
 fn main() {

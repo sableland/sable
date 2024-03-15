@@ -68,7 +68,7 @@ pub mod extensions {
             state.put(SystemTime::now());
 
             // bueno_ext_timers
-            state.put::<TimerQueue>(Default::default());
+            state.put(TimerQueue::new());
         }
     );
 
