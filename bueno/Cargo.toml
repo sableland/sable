@@ -26,13 +26,6 @@ dprint-plugin-json = "=0.19.2"
 dprint-plugin-markdown = "=0.16.4"
 dprint-plugin-typescript = "=0.88.10"
 
-oxc_allocator = "0.10.0"
-oxc_ast = "0.10.0"
-oxc_diagnostics = "0.10.0"
-oxc_parser = "0.10.0"
-oxc_semantic = "0.10.0"
-oxc_span = "0.10.0"
-
 [build-dependencies]
 deno_core.workspace = true
 bueno_ext.workspace = true
