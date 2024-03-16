@@ -2,16 +2,16 @@ extern crate clap;
 
 use std::str::FromStr;
 
-use bueno_ext::extensions::runtime::RuntimeState;
+use sable_ext::extensions::runtime::RuntimeState;
 use clap::ArgAction;
 use std::process::ExitCode;
 
 use self::clap::{arg, Arg, Command};
 
 use crate::{
-    bueno_run,
+    sable_run,
     tools::fmt::{fmt, FormatOptions},
-    BuenoOptions,
+    SableOptions,
 };
 
 pub fn cli() -> Command {
@@ -28,7 +28,7 @@ pub fn cli() -> Command {
         .help("Delete cache of all modules")
         .conflicts_with("reload-cache");
 
-    Command::new("buenojs")
+    Command::new("sable")
         .about("THE JavaScript Runtime")
         .subcommand_required(true)
         .arg_required_else_help(true)
@@ -83,13 +83,13 @@ pub async fn parse_cli() -> ExitCode {
                 .get_one::<String>("MODULE_PATH")
                 .expect("Required");
 
-            let options = BuenoOptions {
+            let options = SableOptions {
                 reload_cache: sub_matches.get_flag("reload-cache"),
                 clean_cache: sub_matches.get_flag("clean-cache"),
                 state: RuntimeState::from_str(subcommand).unwrap(),
             };
 
-            if let Err(error) = bueno_run(&module_path, options).await {
+            if let Err(error) = sable_run(&module_path, options).await {
                 // TODO: better looking errors
                 eprintln!("error: {}", error);
                 code = ExitCode::FAILURE;

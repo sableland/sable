@@ -2,13 +2,13 @@ use std::fs::File;
 use std::path::PathBuf;
 use std::{env, io::Write};
 
-use bueno_ext::extensions::bueno;
+use sable_ext::extensions::sable;
 use deno_core::snapshot::{create_snapshot, CreateSnapshotOptions};
 
 fn main() {
     // Build the file path to the snapshot.
     let out = PathBuf::from(env::var_os("OUT_DIR").unwrap());
-    let snapshot_path = out.join("BUENO_RUNTIME_SNAPSHOT.bin");
+    let snapshot_path = out.join("SABLE_RUNTIME_SNAPSHOT.bin");
 
     // Create the snapshot.
     let output = create_snapshot(
@@ -16,7 +16,7 @@ fn main() {
             extension_transpiler: None,
             skip_op_registration: false,
             cargo_manifest_dir: env!("CARGO_MANIFEST_DIR"),
-            extensions: vec![bueno::init_ops_and_esm()],
+            extensions: vec![sable::init_ops_and_esm()],
             startup_snapshot: None,
             with_runtime_cb: None,
         },

@@ -1,1 +1,0 @@
-globalThis.Bueno = globalThis.Deno;

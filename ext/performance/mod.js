@@ -1,6 +1,6 @@
-import "ext:bueno/console/mod.js";
+import "ext:sable/console/mod.js";
 
-const core = Bueno.core;
+const core = Sable.core;
 
 // TODO(Im-Beast): Implement other Performance methods
 export class Performance {

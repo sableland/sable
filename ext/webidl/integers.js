@@ -1,4 +1,4 @@
-import { correctZeroSign, toNumber } from "ext:bueno/webidl/numbers.js";
+import { correctZeroSign, toNumber } from "ext:sable/webidl/numbers.js";
 
 export const IDL_TYPE = {
 	clamp: "clamp",

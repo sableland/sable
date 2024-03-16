@@ -7,11 +7,11 @@ use deno_core::{
 };
 use tokio::fs;
 
-use crate::{module_cache::ModuleCache, BuenoOptions};
+use crate::{module_cache::ModuleCache, SableOptions};
 
-pub struct BuenoModuleLoader {
+pub struct SableModuleLoader {
     pub module_cache: Arc<ModuleCache>,
-    pub options: BuenoOptions,
+    pub options: SableOptions,
 }
 
 fn media_type_to_module_type(media_type: &MediaType) -> Result<ModuleType, Error> {
@@ -29,7 +29,7 @@ fn media_type_to_module_type(media_type: &MediaType) -> Result<ModuleType, Error
     Ok(media_type)
 }
 
-impl ModuleLoader for BuenoModuleLoader {
+impl ModuleLoader for SableModuleLoader {
     fn resolve(
         &self,
         specifier: &str,

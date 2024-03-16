@@ -26,9 +26,7 @@ be, a good JS runtime.
 In many regards, this isn't true anymore. Deno supports many features that stray
 away from it's web-focused nature which could be considered as turning it's back
 away from it's original design goals. Some of the recent decisions have been
-controversial in the community and are some things we'd like to avoid
-implementing e.g.: `npm:`, `node:` specifiers and soon to be `deno:` specifier,
-`package.json` support and more.
+controversial in the community and are some things we'd like to avoid implementing e.g.: `npm:`, `node:`, `jsr:` specifiers, `package.json` support and more.
 
 ## Why not Node?
 

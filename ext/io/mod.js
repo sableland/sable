@@ -1,6 +1,6 @@
-import { Stderr, Stdin, Stdout } from "ext:bueno/io/stdio.js";
+import { Stderr, Stdin, Stdout } from "ext:sable/io/stdio.js";
 
-const core = Bueno.core;
+const core = Sable.core;
 
 /**
  * Read resource id asynchronously
@@ -32,7 +32,7 @@ function close(rid) {
 	core.close(rid);
 }
 
-Bueno.io = {
+Sable.io = {
 	read,
 	write,
 	close,

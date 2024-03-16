@@ -1,14 +1,14 @@
 [workspace.package]
 version = "0.0.1"
-name = "buenojs"
+name = "sable"
 edition = "2021"
 license = "MIT"
-authors = ["The Bueno Team"]
-repository = "https://github.com/buenojs/bueno"
+authors = ["The Sable Team"]
+repository = "https://github.com/sableland/sable"
 
 [workspace]
 resolver = "2"
-members = ["ext", "bueno"]
+members = ["ext", "sable"]
 
 [workspace.dependencies]
 deno_core = "0.270.0"
@@ -17,4 +17,4 @@ tokio = { version = "1.36.0", features = ["full"] }
 imara-diff = "0.1.5"
 owo-colors = "4.0.0"
 
-bueno_ext = { path = "./ext/" }
+sable_ext = { path = "./ext/" }

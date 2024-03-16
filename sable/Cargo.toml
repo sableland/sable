@@ -1,6 +1,6 @@
 [package]
-name = "bueno_runtime"
-description = "Bueno runtime"
+name = "sable_runtime"
+description = "Sable runtime"
 edition.workspace = true
 version.workspace = true
 authors.workspace = true
@@ -8,14 +8,14 @@ license.workspace = true
 repository.workspace = true
 
 [[bin]]
-name = "bueno"
+name = "sable"
 path = "main.rs"
 
 [dependencies]
 deno_core.workspace = true
 deno_ast.workspace = true
 tokio.workspace = true
-bueno_ext.workspace = true
+sable_ext.workspace = true
 
 clap = "4.4.0"
 reqwest = "0.11.20"
@@ -28,4 +28,4 @@ dprint-plugin-typescript = "=0.88.10"
 
 [build-dependencies]
 deno_core.workspace = true
-bueno_ext.workspace = true
+sable_ext.workspace = true

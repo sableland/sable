@@ -1,2 +1,2 @@
-delete globalThis.Bueno.core;
+delete globalThis.Sable.core;
 delete globalThis.Deno;

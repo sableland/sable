@@ -1,8 +1,8 @@
-extern crate bueno_ext;
+extern crate sable_ext;
 extern crate deno_core;
 
 use deno_core::{error::AnyError, url::Url};
-use loader::BuenoModuleLoader;
+use loader::SableModuleLoader;
 use std::{env, path::PathBuf, rc::Rc, sync::Arc};
 
 mod cli;
@@ -14,18 +14,18 @@ mod utils;
 use cli::parse_cli;
 use module_cache::ModuleCache;
 
-use bueno_ext::extensions::{bueno, bueno_cleanup, runtime::RuntimeState};
+use sable_ext::extensions::{sable, sable_cleanup, runtime::RuntimeState};
 
 static RUNTIME_SNAPSHOT: &[u8] =
-    include_bytes!(concat!(env!("OUT_DIR"), "/BUENO_RUNTIME_SNAPSHOT.bin"));
+    include_bytes!(concat!(env!("OUT_DIR"), "/SABLE_RUNTIME_SNAPSHOT.bin"));
 
-pub struct BuenoOptions {
+pub struct SableOptions {
     clean_cache: bool,
     reload_cache: bool,
     state: RuntimeState,
 }
 
-pub async fn bueno_run(file_path: &str, options: BuenoOptions) -> Result<(), AnyError> {
+pub async fn sable_run(file_path: &str, options: SableOptions) -> Result<(), AnyError> {
     let main_module = if let Ok(url) = Url::parse(file_path) {
         url
     } else {
@@ -33,19 +33,19 @@ pub async fn bueno_run(file_path: &str, options: BuenoOptions) -> Result<(), Any
     };
 
     let module_cache = Arc::new(ModuleCache::new(PathBuf::from(
-        shellexpand::full("~/.cache/bueno/modules")?.into_owned(),
+        shellexpand::full("~/.cache/sable/modules")?.into_owned(),
     )));
 
     if options.clean_cache {
         module_cache.clear().await?;
     }
 
-    let mut extensions = vec![bueno::init_ops(), bueno_cleanup::init_ops_and_esm()];
+    let mut extensions = vec![sable::init_ops(), sable_cleanup::init_ops_and_esm()];
 
     if options.state != RuntimeState::Default {
         let runtime_state = options.state.clone();
         extensions.push(deno_core::Extension {
-            name: "bueno_runtime_state",
+            name: "sable_runtime_state",
             op_state_fn: Some(Box::new(|state| {
                 state.put(runtime_state);
             })),
@@ -55,7 +55,7 @@ pub async fn bueno_run(file_path: &str, options: BuenoOptions) -> Result<(), Any
 
     let mut js_runtime = deno_core::JsRuntime::new(deno_core::RuntimeOptions {
         startup_snapshot: Some(RUNTIME_SNAPSHOT),
-        module_loader: Some(Rc::new(BuenoModuleLoader {
+        module_loader: Some(Rc::new(SableModuleLoader {
             module_cache,
             options,
         })),

@@ -1,16 +1,16 @@
-use bueno_ext_testing;
+use sable_ext_testing;
 use deno_core::{
     anyhow::{bail, Error},
     op2, OpState,
 };
 use std::str::FromStr;
 
-// RuntimeState specifies whether Bueno runs in testing/benchmarking or normal mode
+// RuntimeState specifies whether Sable runs in testing/benchmarking or normal mode
 #[derive(Clone, PartialEq)]
 pub enum RuntimeState {
     Default = 0,
-    Test = bueno_ext_testing::TEST_STATE_VALUE,
-    Bench = bueno_ext_testing::BENCH_STATE_VALUE,
+    Test = sable_ext_testing::TEST_STATE_VALUE,
+    Bench = sable_ext_testing::BENCH_STATE_VALUE,
 }
 
 impl ToString for RuntimeState {

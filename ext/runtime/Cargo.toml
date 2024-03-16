@@ -1,6 +1,6 @@
 [package]
-name = "bueno_ext_runtime"
-description = "Bueno extension for runtime related things"
+name = "sable_ext_runtime"
+description = "Sable extension for runtime related things"
 edition.workspace = true
 version.workspace = true
 authors.workspace = true
@@ -12,4 +12,4 @@ path = "lib.rs"
 
 [dependencies]
 deno_core.workspace = true
-bueno_ext_testing = { path = "../testing" }
+sable_ext_testing = { path = "../testing" }

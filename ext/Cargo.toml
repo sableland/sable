@@ -1,6 +1,6 @@
 [package]
-name = "bueno_ext"
-description = "Bueno runtime extensions"
+name = "sable_ext"
+description = "Sable runtime extensions"
 edition.workspace = true
 version.workspace = true
 authors.workspace = true
@@ -12,10 +12,10 @@ path = "lib.rs"
 
 [dependencies]
 deno_core.workspace = true
-bueno_ext_battery = { path = "./battery/" }
-bueno_ext_fs = { path = "./fs/" }
-bueno_ext_performance = { path = "./performance/" }
-bueno_ext_timers = { path = "./timers/" }
-bueno_ext_testing = { path = "./testing/" }
-bueno_ext_runtime = { path = "./runtime/" }
-bueno_ext_web = { path = "./web/" }
+sable_ext_battery = { path = "./battery/" }
+sable_ext_fs = { path = "./fs/" }
+sable_ext_performance = { path = "./performance/" }
+sable_ext_timers = { path = "./timers/" }
+sable_ext_testing = { path = "./testing/" }
+sable_ext_runtime = { path = "./runtime/" }
+sable_ext_web = { path = "./web/" }

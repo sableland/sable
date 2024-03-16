@@ -1,7 +1,7 @@
 // https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#timers
-import { toLong } from "ext:bueno/webidl/mod.js";
+import { toLong } from "ext:sable/webidl/mod.js";
 
-const core = Bueno.core;
+const core = Sable.core;
 
 const activeTimers = new Map();
 

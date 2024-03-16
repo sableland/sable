@@ -1,0 +1,1 @@
+globalThis.Sable = globalThis.Deno;
