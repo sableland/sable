@@ -1,10 +1,11 @@
 use std::sync::Arc;
 
-use deno_ast::{MediaType, ParseParams, SourceTextInfo};
+use deno_ast::MediaType;
 use deno_core::{
-    anyhow::bail, futures::FutureExt, ModuleLoadResponse, ModuleSourceCode, ModuleSpecifier,
-    RequestedModuleType,
+    anyhow::Error, error::generic_error, futures::FutureExt, ModuleCodeBytes, ModuleLoadResponse,
+    ModuleLoader, ModuleSource, ModuleSourceCode, ModuleSpecifier, ModuleType, RequestedModuleType,
 };
+use tokio::fs;
 
 use crate::{module_cache::ModuleCache, BuenoOptions};
 
@@ -13,7 +14,22 @@ pub struct BuenoModuleLoader {
     pub options: BuenoOptions,
 }
 
-impl deno_core::ModuleLoader for BuenoModuleLoader {
+fn media_type_to_module_type(media_type: &MediaType) -> Result<ModuleType, Error> {
+    let media_type = match media_type {
+        MediaType::Mjs | MediaType::JavaScript => ModuleType::JavaScript,
+        MediaType::Json => ModuleType::Json,
+        _ => {
+            return Err(generic_error(format!(
+                "Unsupported media type {}",
+                media_type
+            )))
+        }
+    };
+
+    Ok(media_type)
+}
+
+impl ModuleLoader for BuenoModuleLoader {
     fn resolve(
         &self,
         specifier: &str,
@@ -28,114 +44,89 @@ impl deno_core::ModuleLoader for BuenoModuleLoader {
         module_specifier: &ModuleSpecifier,
         _maybe_referrer: Option<&ModuleSpecifier>,
         _is_dyn_import: bool,
-        _requested_module_type: RequestedModuleType,
+        requested_module_type: RequestedModuleType,
     ) -> ModuleLoadResponse {
         let module_specifier = module_specifier.clone();
         let module_cache = self.module_cache.clone();
         let reload_cache = self.options.reload_cache;
 
-        ModuleLoadResponse::Async(
-            async move {
-                let scheme = module_specifier.scheme();
-                let mut response: Option<reqwest::Response> = None;
-
-                // Determine what the MediaType is (this is done based on the file
-                // extension) and whether transpiling is required.
-                let mut media_type = MediaType::from_specifier(&module_specifier);
-
-                // If MediaType is unknown and it's an URL then check the
-                // MediaType from Content-Type header of the response
-                if media_type == MediaType::Unknown && scheme != "file" {
-                    println!("getting MediaType from URL");
-                    response = Some(reqwest::get(module_specifier.as_str()).await?);
-
-                    media_type = MediaType::from_content_type(
+        let module_source = async move {
+            if !reload_cache {
+                if let Ok(source_code) = module_cache.get(&module_specifier).await {
+                    println!("Using cached {}", module_specifier);
+                    return Ok(ModuleSource::new(
+                        media_type_to_module_type(&MediaType::from_specifier(&module_specifier))?,
+                        ModuleSourceCode::Bytes(ModuleCodeBytes::Boxed(source_code)),
                         &module_specifier,
-                        &response
-                            .as_ref()
-                            .unwrap()
+                    ));
+                }
+            }
+
+            let scheme = module_specifier.scheme();
+            let media_type = MediaType::from_specifier(&module_specifier);
+
+            let (media_type, source_code, should_cache) = match scheme {
+                "http" | "https" => {
+                    let response = reqwest::get(module_specifier.as_str()).await?;
+
+                    let media_type = if media_type == MediaType::Unknown {
+                        response
                             .headers()
                             .get(reqwest::header::CONTENT_TYPE)
-                            .unwrap()
-                            .to_str()
-                            .unwrap(),
-                    );
+                            .map_or(media_type, |ct| {
+                                ct.to_str().map_or(media_type, |str| {
+                                    MediaType::from_content_type(&module_specifier, str)
+                                })
+                            })
+                    } else {
+                        media_type
+                    };
 
-                    println!("got mediatype: {}", media_type.to_string());
+                    let source_code = ModuleSourceCode::String(response.text().await?.into());
+
+                    (media_type, source_code, true)
                 }
-
-                let (module_type, should_transpile) = match media_type {
-                    MediaType::Mjs | MediaType::JavaScript => {
-                        (deno_core::ModuleType::JavaScript, false)
-                    }
-                    MediaType::Jsx => (deno_core::ModuleType::JavaScript, true),
-                    MediaType::Dmts | MediaType::Dts | MediaType::TypeScript | MediaType::Tsx => {
-                        (deno_core::ModuleType::JavaScript, true)
-                    }
-                    MediaType::Json => (deno_core::ModuleType::Json, false),
-                    _ => {
-                        // TODO: Better errors
-                        let path = module_specifier.to_file_path();
-                        if let Ok(path) = path {
-                            panic!("Unsupported extension {:?}", path.extension())
-                        } else {
-                            panic!("Unsupported MimeType {media_type}")
-                        }
-                    }
-                };
-
-                let (code, requires_caching) = match scheme {
-                    "http" | "https" => match module_cache.get(&module_specifier) {
-                        Ok(code) if !reload_cache => (code, false),
-                        Err(_) | Ok(_) => {
-                            if response.is_none() {
-                                response = Some(reqwest::get(module_specifier.as_str()).await?);
-                            }
-
-                            let unwrapped = response.unwrap();
-
-                            if !unwrapped.status().is_success() {
-                                bail!("Failed fetching {}", module_specifier);
-                            }
-
-                            let code = unwrapped.text().await?;
-                            (code, true)
-                        }
-                    },
-                    "file" => {
-                        let code = std::fs::read_to_string(&module_specifier.path())?;
-                        (code, false)
-                    }
-                    scheme => panic!("Unsupported url scheme {:?}", scheme),
-                };
-
-                // Transpile if necessary.
-                let code = if should_transpile {
-                    let parsed = deno_ast::parse_module(ParseParams {
-                        specifier: module_specifier.to_string(),
-                        text_info: SourceTextInfo::from_string(code),
-                        media_type,
-                        capture_tokens: false,
-                        scope_analysis: false,
-                        maybe_syntax: None,
+                "file" => {
+                    let path = &module_specifier.to_file_path().map_err(|_| {
+                        generic_error(format!(
+                            "Failed to convert module specifier ({}) to file path",
+                            module_specifier
+                        ))
                     })?;
-                    parsed.transpile(&Default::default())?.text
-                } else {
-                    code
-                };
 
-                if requires_caching {
-                    module_cache.add(&module_specifier, code.clone())?;
+                    let file_contents = fs::read(path).await?;
+                    let source_code = ModuleSourceCode::Bytes(ModuleCodeBytes::Boxed(
+                        file_contents.into_boxed_slice(),
+                    ));
+
+                    (media_type, source_code, false)
                 }
+                scheme => return Err(generic_error(format!("Unsupported scheme {}", scheme))),
+            };
 
-                // Load and return module.
-                Ok(deno_core::ModuleSource::new(
-                    module_type,
-                    ModuleSourceCode::String(code.into()),
-                    &module_specifier,
-                ))
+            if should_cache {
+                println!("Caching {}", module_specifier);
+                module_cache.add(&module_specifier, &source_code).await?;
             }
-            .boxed_local(),
-        )
+
+            let module_type = media_type_to_module_type(&media_type)?;
+
+            if module_type == ModuleType::Json && requested_module_type != RequestedModuleType::Json
+            {
+                return Err(generic_error(format!(
+                    "Cannot load JSON module as {}.\nTo load the module as JSON specify the `with {{ type: \"json\" }}` attribute",
+                    requested_module_type
+                )));
+            }
+
+            Ok(ModuleSource::new(
+                module_type,
+                source_code,
+                &module_specifier,
+            ))
+        }
+        .boxed_local();
+
+        ModuleLoadResponse::Async(module_source)
     }
 }

@@ -9,6 +9,7 @@ mod cli;
 mod loader;
 mod module_cache;
 mod tools;
+mod utils;
 
 use cli::parse_cli;
 use module_cache::ModuleCache;
@@ -31,12 +32,12 @@ pub async fn bueno_run(file_path: &str, options: BuenoOptions) -> Result<(), Any
         deno_core::resolve_path(file_path, &env::current_dir().unwrap())?
     };
 
-    let module_cache = Arc::new(ModuleCache {
-        cache_location: PathBuf::from(shellexpand::full("~/.cache/bueno/modules")?.to_string()),
-    });
+    let module_cache = Arc::new(ModuleCache::new(PathBuf::from(
+        shellexpand::full("~/.cache/bueno/modules")?.into_owned(),
+    )));
 
     if options.clean_cache {
-        module_cache.clear()?;
+        module_cache.clear().await?;
     }
 
     let mut extensions = vec![bueno::init_ops(), bueno_cleanup::init_ops_and_esm()];
@@ -69,6 +70,7 @@ pub async fn bueno_run(file_path: &str, options: BuenoOptions) -> Result<(), Any
     result.await
 }
 
-fn main() {
-    parse_cli();
+#[tokio::main(flavor = "current_thread")]
+async fn main() {
+    parse_cli().await;
 }

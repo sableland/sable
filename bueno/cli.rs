@@ -71,7 +71,7 @@ pub fn cli() -> Command {
         )
 }
 
-pub fn parse_cli() -> ExitCode {
+pub async fn parse_cli() -> ExitCode {
     let mut code = ExitCode::SUCCESS;
     let matches = cli().get_matches();
 
@@ -79,11 +79,6 @@ pub fn parse_cli() -> ExitCode {
         Some((subcommand @ "run", sub_matches))
         | Some((subcommand @ "test", sub_matches))
         | Some((subcommand @ "bench", sub_matches)) => {
-            let runtime = tokio::runtime::Builder::new_current_thread()
-                .enable_all()
-                .build()
-                .unwrap();
-
             let module_path = sub_matches
                 .get_one::<String>("MODULE_PATH")
                 .expect("Required");
@@ -94,7 +89,7 @@ pub fn parse_cli() -> ExitCode {
                 state: RuntimeState::from_str(subcommand).unwrap(),
             };
 
-            if let Err(error) = runtime.block_on(bueno_run(&module_path, options)) {
+            if let Err(error) = bueno_run(&module_path, options).await {
                 // TODO: better looking errors
                 eprintln!("error: {}", error);
                 code = ExitCode::FAILURE;
@@ -107,7 +102,7 @@ pub fn parse_cli() -> ExitCode {
                 .get_one::<String>("glob")
                 .unwrap_or(&default_glob);
 
-            if let Err(error) = fmt(FormatOptions { check, glob }) {
+            if let Err(error) = fmt(FormatOptions::new(check, glob)).await {
                 eprintln!("error: {}", error);
                 code = ExitCode::FAILURE;
             }

@@ -1,6 +1,6 @@
 import { isOdd } from "https://deno.land/x/is_odd@0.1.2/index.ts";
 
-let a: number = 5;
+let a = 5;
 
 console.log("Hello bueno", a);
 
@@ -47,7 +47,7 @@ const arrWShit = [
 	10,
 ];
 
-const map = new Map<any, any>([
+const map = new Map([
 	["k", "v"],
 	["hdk", "v3"],
 	["k", 3],
@@ -57,7 +57,7 @@ const map = new Map<any, any>([
 
 map.set("circ", map);
 
-const longmap = new Map<any, any>([
+const longmap = new Map([
 	["k", "v"],
 	["hdk", "v3"],
 	["hahgsfdk", "v3"],
@@ -67,7 +67,7 @@ const longmap = new Map<any, any>([
 	["gggkj", "v"],
 ]);
 
-const wmap = new WeakMap<any, any>([
+const wmap = new WeakMap([
 	[[12, 3, 4], "hi"],
 	[[12, 3, 4], { hello: "123" }],
 	[[12, 4], "hfgfi"],
@@ -123,10 +123,10 @@ console.log("deep obj:", {
 	booltrue: true,
 	typedArr,
 	promise: new Promise((x) => {}),
-	resolvedPromise: new Promise<string>((res) => {
+	resolvedPromise: new Promise()((res) => {
 		res("RESOLVED!");
 	}),
-	rejectedPromise: new Promise<void>((_, rej) => {
+	rejectedPromise: new Promise((_, rej) => {
 		rej("REJECTED!");
 	}).catch(() => "rejected"),
 	proxy: new Proxy({ hello: 123 }, {}),
