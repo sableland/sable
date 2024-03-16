@@ -1,6 +1,6 @@
 [package]
-name = "bueno_ext_fs"
-description = "Bueno file system extension"
+name = "sable_ext_fs"
+description = "Sable file system extension"
 edition.workspace = true
 version.workspace = true
 authors.workspace = true

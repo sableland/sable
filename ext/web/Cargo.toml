@@ -1,6 +1,6 @@
 [package]
-name = "bueno_ext_web"
-description = "Bueno Web APIs extension"
+name = "sable_ext_web"
+description = "Sable Web APIs extension"
 edition.workspace = true
 version.workspace = true
 authors.workspace = true

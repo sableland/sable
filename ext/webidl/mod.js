@@ -1,1 +1,1 @@
-export * from "ext:bueno/webidl/numbers.js";
+export * from "ext:sable/webidl/numbers.js";

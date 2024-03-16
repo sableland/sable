@@ -229,95 +229,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bueno_ext"
-version = "0.0.1"
-dependencies = [
- "bueno_ext_battery",
- "bueno_ext_fs",
- "bueno_ext_performance",
- "bueno_ext_runtime",
- "bueno_ext_testing",
- "bueno_ext_timers",
- "bueno_ext_web",
- "deno_core",
-]
-
-[[package]]
-name = "bueno_ext_battery"
-version = "0.0.1"
-dependencies = [
- "battery",
- "deno_core",
-]
-
-[[package]]
-name = "bueno_ext_fs"
-version = "0.0.1"
-dependencies = [
- "deno_core",
- "tokio",
-]
-
-[[package]]
-name = "bueno_ext_performance"
-version = "0.0.1"
-dependencies = [
- "deno_core",
- "tokio",
-]
-
-[[package]]
-name = "bueno_ext_runtime"
-version = "0.0.1"
-dependencies = [
- "bueno_ext_testing",
- "deno_core",
-]
-
-[[package]]
-name = "bueno_ext_testing"
-version = "0.0.1"
-dependencies = [
- "deno_core",
- "imara-diff",
- "owo-colors",
-]
-
-[[package]]
-name = "bueno_ext_timers"
-version = "0.0.1"
-dependencies = [
- "deno_core",
- "tokio",
-]
-
-[[package]]
-name = "bueno_ext_web"
-version = "0.0.1"
-dependencies = [
- "deno_core",
- "encoding_rs",
- "tokio",
-]
-
-[[package]]
-name = "bueno_runtime"
-version = "0.0.1"
-dependencies = [
- "bueno_ext",
- "clap",
- "deno_ast 1.0.1",
- "deno_core",
- "dprint-plugin-json",
- "dprint-plugin-markdown",
- "dprint-plugin-typescript",
- "glob",
- "reqwest",
- "shellexpand",
- "tokio",
-]
-
-[[package]]
 name = "bumpalo"
 version = "3.15.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1755,6 +1666,95 @@ name = "ryu-js"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ad97d4ce1560a5e27cec89519dc8300d1aa6035b099821261c651486a19e44d5"
+
+[[package]]
+name = "sable_ext"
+version = "0.0.1"
+dependencies = [
+ "deno_core",
+ "sable_ext_battery",
+ "sable_ext_fs",
+ "sable_ext_performance",
+ "sable_ext_runtime",
+ "sable_ext_testing",
+ "sable_ext_timers",
+ "sable_ext_web",
+]
+
+[[package]]
+name = "sable_ext_battery"
+version = "0.0.1"
+dependencies = [
+ "battery",
+ "deno_core",
+]
+
+[[package]]
+name = "sable_ext_fs"
+version = "0.0.1"
+dependencies = [
+ "deno_core",
+ "tokio",
+]
+
+[[package]]
+name = "sable_ext_performance"
+version = "0.0.1"
+dependencies = [
+ "deno_core",
+ "tokio",
+]
+
+[[package]]
+name = "sable_ext_runtime"
+version = "0.0.1"
+dependencies = [
+ "deno_core",
+ "sable_ext_testing",
+]
+
+[[package]]
+name = "sable_ext_testing"
+version = "0.0.1"
+dependencies = [
+ "deno_core",
+ "imara-diff",
+ "owo-colors",
+]
+
+[[package]]
+name = "sable_ext_timers"
+version = "0.0.1"
+dependencies = [
+ "deno_core",
+ "tokio",
+]
+
+[[package]]
+name = "sable_ext_web"
+version = "0.0.1"
+dependencies = [
+ "deno_core",
+ "encoding_rs",
+ "tokio",
+]
+
+[[package]]
+name = "sable_runtime"
+version = "0.0.1"
+dependencies = [
+ "clap",
+ "deno_ast 1.0.1",
+ "deno_core",
+ "dprint-plugin-json",
+ "dprint-plugin-markdown",
+ "dprint-plugin-typescript",
+ "glob",
+ "reqwest",
+ "sable_ext",
+ "shellexpand",
+ "tokio",
+]
 
 [[package]]
 name = "schannel"

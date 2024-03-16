@@ -1,6 +1,6 @@
 [package]
-name = "bueno_ext_timers"
-description = "Bueno Timers API extension"
+name = "sable_ext_timers"
+description = "Sable Timers API extension"
 edition.workspace = true
 version.workspace = true
 authors.workspace = true

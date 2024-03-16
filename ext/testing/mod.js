@@ -1,6 +1,6 @@
-import { Printer } from "ext:bueno/console/printer.js";
-import { styles } from "ext:bueno/utils/ansi.js";
-import { textWidth } from "ext:bueno/utils/strings.js";
+import { Printer } from "ext:sable/console/printer.js";
+import { styles } from "ext:sable/utils/ansi.js";
+import { textWidth } from "ext:sable/utils/strings.js";
 
 /**
  * Error which gets thrown whenever:
@@ -139,7 +139,7 @@ const ComparisonPass = "pass";
 
 const testingPrinter = new Printer("stdout");
 
-const core = Bueno.core;
+const core = Sable.core;
 
 const comparisons = {
 	equals(a, b) {
@@ -671,7 +671,7 @@ function test(name, callback) {
 	}
 
 	if (runtimeState !== "test") {
-		Bueno.bench = noop;
+		Sable.bench = noop;
 		return;
 	}
 
@@ -686,7 +686,7 @@ function bench(name, callback) {
 	}
 
 	if (runtimeState !== "bench") {
-		Bueno.bench = noop;
+		Sable.bench = noop;
 		return;
 	}
 
@@ -696,7 +696,7 @@ function bench(name, callback) {
 	return time;
 }
 
-Bueno.testing = {
+Sable.testing = {
 	test,
 	bench,
 };

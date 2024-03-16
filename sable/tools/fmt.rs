@@ -26,8 +26,8 @@ fn format_typescript_file(path: &Path, contents: &str) -> Result<Option<String>,
             .use_tabs(true)
             .quote_props(QuoteProps::AsNeeded)
             .comment_line_force_space_after_slashes(true)
-            .ignore_node_comment_text("bueno-fmt-ignore")
-            .ignore_file_comment_text("bueno-fmt-ignore-file")
+            .ignore_node_comment_text("sable-fmt-ignore")
+            .ignore_file_comment_text("sable-fmt-ignore-file")
             .module_sort_import_declarations(SortOrder::CaseInsensitive)
             .module_sort_export_declarations(SortOrder::CaseInsensitive)
             .build(),
@@ -41,7 +41,7 @@ fn format_json_file(path: &Path, contents: &str) -> Result<Option<String>, Error
         &dprint_plugin_json::configuration::ConfigurationBuilder::new()
             .line_width(80)
             .use_tabs(true)
-            .ignore_node_comment_text("bueno-fmt-ignore")
+            .ignore_node_comment_text("sable-fmt-ignore")
             .comment_line_force_space_after_slashes(true)
             .build(),
     )
@@ -52,10 +52,10 @@ fn format_markdown_file(path: &Path, contents: &str) -> Result<Option<String>, E
         &contents,
         &dprint_plugin_markdown::configuration::ConfigurationBuilder::new()
             .text_wrap(TextWrap::Always)
-            .ignore_directive("bueno-fmt-ignore")
-            .ignore_start_directive("bueno-fmt-ignore-start")
-            .ignore_end_directive("bueno-fmt-ignore-end")
-            .ignore_file_directive("bueno-fmt-ignore-file")
+            .ignore_directive("sable-fmt-ignore")
+            .ignore_start_directive("sable-fmt-ignore-start")
+            .ignore_end_directive("sable-fmt-ignore-end")
+            .ignore_file_directive("sable-fmt-ignore-file")
             .build(),
         |tag, text, _line_number| format_file(path, tag, text),
     )

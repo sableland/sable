@@ -2,7 +2,7 @@ import { isOdd } from "https://deno.land/x/is_odd@0.1.2/index.ts";
 
 let a = 5;
 
-console.log("Hello bueno", a);
+console.log("Hello sable", a);
 
 class ThisIsClass {
 	myClassProp = "dog";
@@ -158,7 +158,7 @@ console.time("console apis");
 console.log(undefined);
 console.log(null);
 
-console.error("Hello bueno");
+console.error("Hello sable");
 
 console.error("is a even?", isOdd(a));
 console.trace("test %o", { hello: "world" });

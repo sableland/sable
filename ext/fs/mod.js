@@ -1,4 +1,4 @@
-const core = Bueno.core;
+const core = Sable.core;
 
 /**
  * Reads a file asynchronously
@@ -57,7 +57,7 @@ function removeDirectory(path, recursive) {
 	return core.ops.op_remove_dir(path, recursive);
 }
 
-Bueno.fs = {
+Sable.fs = {
 	readFile,
 	readTextFile,
 	writeFile,

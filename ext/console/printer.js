@@ -1,9 +1,9 @@
-import { styles } from "ext:bueno/utils/ansi.js";
-import { escapeControlCharacters, textWidth } from "ext:bueno/utils/strings.js";
+import { styles } from "ext:sable/utils/ansi.js";
+import { escapeControlCharacters, textWidth } from "ext:sable/utils/strings.js";
 
 // TODO(Im-Beast): Create a list of "standard" colors used for formatting so they actually mean something
 
-const core = Bueno.core;
+const core = Sable.core;
 
 const TypedArray = Object.getPrototypeOf(Int8Array);
 

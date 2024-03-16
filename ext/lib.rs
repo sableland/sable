@@ -2,16 +2,16 @@ pub mod extensions {
     use std::time::{Instant, SystemTime};
     use timers::TimerQueue;
 
-    pub use bueno_ext_battery as battery;
-    pub use bueno_ext_fs as fs;
-    pub use bueno_ext_performance as performance;
-    pub use bueno_ext_runtime as runtime;
-    pub use bueno_ext_testing as testing;
-    pub use bueno_ext_timers as timers;
-    pub use bueno_ext_web as web;
+    pub use sable_ext_battery as battery;
+    pub use sable_ext_fs as fs;
+    pub use sable_ext_performance as performance;
+    pub use sable_ext_runtime as runtime;
+    pub use sable_ext_testing as testing;
+    pub use sable_ext_timers as timers;
+    pub use sable_ext_web as web;
 
     deno_core::extension!(
-        bueno,
+        sable,
         ops = [
             battery::op_battery_charging,
             battery::op_battery_charging_time,
@@ -35,9 +35,9 @@ pub mod extensions {
             web::op_encoding_decode_utf8,
             web::op_encoding_decode_single,
         ],
-        esm_entry_point = "ext:bueno/runtime.js",
+        esm_entry_point = "ext:sable/runtime.js",
         esm = [
-            "bueno.js",
+            "sable.js",
             "runtime.js",
             "io/mod.js",
             "io/stdio.js",
@@ -60,21 +60,21 @@ pub mod extensions {
             "testing/mod.js",
         ],
         state = |state| {
-            // bueno_ext_runtime
+            // sable_ext_runtime
             state.put(runtime::RuntimeState::Default);
 
-            // bueno_ext_perf
+            // sable_ext_perf
             state.put(Instant::now());
             state.put(SystemTime::now());
 
-            // bueno_ext_timers
+            // sable_ext_timers
             state.put(TimerQueue::new());
         }
     );
 
     deno_core::extension!(
-        bueno_cleanup,
-        esm_entry_point = "ext:bueno_cleanup/cleanup.js",
+        sable_cleanup,
+        esm_entry_point = "ext:sable_cleanup/cleanup.js",
         esm = ["cleanup.js",],
     );
 }

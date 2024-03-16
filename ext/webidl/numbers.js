@@ -16,4 +16,4 @@ export function correctZeroSign(value) {
 	return value;
 }
 
-export * from "ext:bueno/webidl/integers.js";
+export * from "ext:sable/webidl/integers.js";

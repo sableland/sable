@@ -2,15 +2,15 @@ class SharedStdio {
 	rid;
 
 	write(data) {
-		return Bueno.io.write(this.rid, data);
+		return Sable.io.write(this.rid, data);
 	}
 
 	read(buffer) {
-		return Bueno.io.read(this.rid, buffer);
+		return Sable.io.read(this.rid, buffer);
 	}
 
 	close() {
-		Bueno.io.close(this.rid);
+		Sable.io.close(this.rid);
 	}
 }
 

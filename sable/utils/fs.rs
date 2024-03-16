@@ -6,7 +6,7 @@ use tokio::fs;
 use tokio::io::AsyncWriteExt;
 
 pub async fn atomic_write(path: impl AsRef<Path>, data: impl AsRef<[u8]>) -> Result<(), Error> {
-    let temp_path = PathBuf::from(shellexpand::full("~/.cache/bueno/temp")?.into_owned());
+    let temp_path = PathBuf::from(shellexpand::full("~/.cache/sable/temp")?.into_owned());
 
     if temp_path.try_exists().is_err() {
         fs::create_dir_all(temp_path.parent().unwrap()).await?;

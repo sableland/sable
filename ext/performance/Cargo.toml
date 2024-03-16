@@ -1,6 +1,6 @@
 [package]
-name = "bueno_ext_performance"
-description = "Bueno Performance extension"
+name = "sable_ext_performance"
+description = "Sable Performance extension"
 edition.workspace = true
 version.workspace = true
 authors.workspace = true

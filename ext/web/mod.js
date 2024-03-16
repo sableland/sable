@@ -1,5 +1,5 @@
-import { TextDecoder, TextEncoder } from "ext:bueno/web/encoding.js";
-import { CustomEvent, Event, EventTarget } from "ext:bueno/web/events.js";
+import { TextDecoder, TextEncoder } from "ext:sable/web/encoding.js";
+import { CustomEvent, Event, EventTarget } from "ext:sable/web/events.js";
 
 globalThis.navigator = {};
 globalThis.Event = Event;

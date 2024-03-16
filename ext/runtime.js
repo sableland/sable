@@ -1,10 +1,10 @@
-import "ext:bueno/bueno.js";
+import "ext:sable/sable.js";
 
-import "ext:bueno/web/mod.js";
-import "ext:bueno/io/mod.js";
-import "ext:bueno/fs/mod.js";
-import "ext:bueno/battery/mod.js";
-import "ext:bueno/console/mod.js";
-import "ext:bueno/performance/mod.js";
-import "ext:bueno/timers/mod.js";
-import "ext:bueno/testing/mod.js";
+import "ext:sable/web/mod.js";
+import "ext:sable/io/mod.js";
+import "ext:sable/fs/mod.js";
+import "ext:sable/battery/mod.js";
+import "ext:sable/console/mod.js";
+import "ext:sable/performance/mod.js";
+import "ext:sable/timers/mod.js";
+import "ext:sable/testing/mod.js";

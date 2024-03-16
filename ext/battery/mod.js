@@ -1,4 +1,4 @@
-const core = Bueno.core;
+const core = Sable.core;
 
 class BatteryManager extends EventTarget {
 	get charging() {

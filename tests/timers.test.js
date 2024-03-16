@@ -1,4 +1,4 @@
-const { test } = Bueno.testing;
+const { test } = Sable.testing;
 
 // a
 // b

@@ -1,4 +1,4 @@
-const { test, bench } = Bueno.testing;
+const { test, bench } = Sable.testing;
 
 test("1+1=2", (ctx) => {
 	ctx.equals(1 + 1, 2);

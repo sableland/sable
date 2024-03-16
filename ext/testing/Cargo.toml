@@ -1,6 +1,6 @@
 [package]
-name = "bueno_ext_testing"
-description = "Bueno testing extension"
+name = "sable_ext_testing"
+description = "Sable testing extension"
 edition.workspace = true
 version.workspace = true
 authors.workspace = true

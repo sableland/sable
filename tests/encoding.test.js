@@ -1,4 +1,4 @@
-const { test } = Bueno.testing;
+const { test } = Sable.testing;
 
 test("Encoding API", (ctx) => {
 	const decoder = new TextDecoder("utf-8");

@@ -1,6 +1,6 @@
 [package]
-name = "bueno_ext_battery"
-description = "Bueno battery extension"
+name = "sable_ext_battery"
+description = "Sable battery extension"
 edition.workspace = true
 version.workspace = true
 authors.workspace = true
