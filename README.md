@@ -1,27 +1,27 @@
-# Project Bueno <sub>(temporary name)</sub>
+# Sable
 
-Bueno is a web-standards focused JS/TS runtime with as much tooling built-in as
+Sable is a web-standards focused Javascript runtime with as much tooling built-in as
 possible. It is meant to be both a learning project and a sort of spiritual
-sibling to Deno 1.x. Bueno is very ambitious and has many goals, but one of the
+sibling to Deno 1.x. Sable is very ambitious and has many goals, but one of the
 non-goals is support for node modules in any way (outside of transpilation by
 CDNs).
 
 ## Goals
 
-- Native support TypeScript/TSX/JSX
 - Support as many Web Standard API's as possible
 - URL Imports
 - Go fast
 
 ## Anti-Goals
 
+- Native support of TypeScript/TSX/JSX (maybe will be possible in the future with service workers)
 - Node/npm support IN ANY SHAPE OR FORM
 - Support for `Deno.*` APIs outside of possible shims
 
 ## Why not Deno?
 
-Bueno's goal is to follow the spirit of what Deno was originally was meant to
-be, a good JS/TS runtime.
+Sable's goal is to follow the spirit of what Deno was originally was meant to
+be, a good JS runtime.
 
 In many regards, this isn't true anymore. Deno supports many features that stray
 away from it's web-focused nature which could be considered as turning it's back
@@ -40,10 +40,4 @@ unfortunate. It's time to let go of Node.
 
 ## Why not Bun?
 
-Frick Bun. We'll start to consider Bun as a serious alternative when they:
-
-- Start treating employees better
-- Stop cheating on benchmarks
-- Stick to web standards
-- Abandon CommonJS
-- Stop segfaulting
+Please check out [this repo](https://github.com/Im-Beast/bun).
