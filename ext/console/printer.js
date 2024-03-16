@@ -1,5 +1,6 @@
 import { styles } from "ext:sable/utils/ansi.js";
-import { escapeControlCharacters, textWidth } from "ext:sable/utils/strings.js";
+import { escapeControlChars } from "ext:sable/utils/escape_control_chars.js";
+import {textWidth} from "ext:sable/utils/text_width.js";
 
 // TODO(Im-Beast): Create a list of "standard" colors used for formatting so they actually mean something
 
@@ -232,7 +233,7 @@ export class Printer {
 
 	#formatString(str, depth, escape = false) {
 		if (escape) {
-			str = escapeControlCharacters(str);
+			str = escapeControlChars(str);
 		}
 
 		return depth > 0 ? `${styles.yellow}"${str}"${styles.reset}` : str;
@@ -408,7 +409,7 @@ export class Printer {
 		for (const key in obj) {
 			const descriptor = Object.getOwnPropertyDescriptor(obj, key);
 
-			let formattedKey = escapeControlCharacters(key);
+			let formattedKey = escapeControlChars(key);
 			if (formattedKey !== key) {
 				formattedKey = this.#formatString(formattedKey, depth, false);
 			}

@@ -1,4 +1,4 @@
-import { textWidth } from "ext:sable/utils/strings.js";
+import { textWidth } from "ext:sable/utils/text_width.js";
 
 const tableCharacters = {
 	topLeft: "\u250C",

@@ -56,7 +56,10 @@ pub mod extensions {
             "webidl/numbers.js",
             "webidl/integers.js",
             "utils/ansi.js",
-            "utils/strings.js",
+            "utils/char_width.js",
+            "utils/escape_control_chars.js",
+            "utils/loop_ansi.js",
+            "utils/text_width.js",
             "testing/mod.js",
         ],
         state = |state| {
