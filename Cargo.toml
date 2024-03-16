@@ -1,10 +1,10 @@
 [workspace.package]
 version = "0.0.1"
-name = "sablejs"
+name = "sableland"
 edition = "2021"
 license = "MIT"
 authors = ["The Sable Team"]
-repository = "https://github.com/sablejs/sable"
+repository = "https://github.com/sableland/sable"
 
 [workspace]
 resolver = "2"

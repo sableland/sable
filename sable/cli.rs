@@ -28,7 +28,7 @@ pub fn cli() -> Command {
         .help("Delete cache of all modules")
         .conflicts_with("reload-cache");
 
-    Command::new("sablejs")
+    Command::new("sable")
         .about("THE JavaScript Runtime")
         .subcommand_required(true)
         .arg_required_else_help(true)
