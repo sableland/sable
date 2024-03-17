@@ -1,6 +1,5 @@
+import { op_read, op_write, op_close } from "ext:core/ops";
 import { Stderr, Stdin, Stdout } from "ext:sable/io/stdio.js";
-
-const core = Sable.core;
 
 /**
  * Read resource id asynchronously
@@ -11,7 +10,7 @@ const core = Sable.core;
 async function read(rid, buffer) {
 	// Can't read into nothing
 	if (buffer.length === 0) return 0;
-	return (await core.read(rid)) || null;
+	return (await op_read(rid)) || null;
 }
 
 /**
@@ -21,7 +20,7 @@ async function read(rid, buffer) {
  * @returns number of bytes that has been written
  */
 function write(rid, data) {
-	return core.write(rid, data);
+	return op_write(rid, data);
 }
 
 /**
@@ -29,7 +28,7 @@ function write(rid, data) {
  * @param {number} rid resource id
  */
 function close(rid) {
-	core.close(rid);
+	op_close(rid);
 }
 
 Sable.io = {

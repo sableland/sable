@@ -1,4 +1,11 @@
-const core = Sable.core;
+import {
+	op_read_text_file,
+	op_read_file,
+	op_write_file,
+	op_write_text_file,
+	op_remove_file,
+	op_remove_dir,
+} from "ext:core/ops"
 
 /**
  * Reads a file asynchronously
@@ -6,7 +13,7 @@ const core = Sable.core;
  * @returns {Promise<Uint8Array>}
  */
 function readFile(path) {
-	return core.ops.op_read_file(path);
+	return op_read_file(path);
 }
 
 /**
@@ -15,7 +22,7 @@ function readFile(path) {
  * @returns {Promise<string>}
  */
 function readTextFile(path) {
-	return core.ops.op_read_text_file(path);
+	return op_read_text_file(path);
 }
 
 /**
@@ -25,7 +32,7 @@ function readTextFile(path) {
  * @returns {Promise<void>}
  */
 function writeFile(path, contents) {
-	return core.ops.op_write_file(path, contents);
+	return op_write_file(path, contents);
 }
 
 /**
@@ -35,7 +42,7 @@ function writeFile(path, contents) {
  * @returns {Promise<void>}
  */
 function writeTextFile(path, contents) {
-	return core.ops.op_write_text_file(path, contents);
+	return op_write_text_file(path, contents);
 }
 
 /**
@@ -44,7 +51,7 @@ function writeTextFile(path, contents) {
  * @returns {Promise<void>}
  */
 function removeFile(path) {
-	return core.ops.op_remove_file(path);
+	return op_remove_file(path);
 }
 
 /**
@@ -54,7 +61,7 @@ function removeFile(path) {
  * @returns {Promise<void>}
  */
 function removeDirectory(path, recursive) {
-	return core.ops.op_remove_dir(path, recursive);
+	return op_remove_dir(path, recursive);
 }
 
 Sable.fs = {

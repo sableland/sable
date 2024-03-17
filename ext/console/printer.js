@@ -1,10 +1,10 @@
+import { op_print, op_get_promise_details } from "ext:core/ops";
+
 import { styles } from "ext:sable/utils/ansi.js";
 import { escapeControlChars } from "ext:sable/utils/escape_control_chars.js";
 import { textWidth } from "ext:sable/utils/text_width.js";
 
 // TODO(Im-Beast): Create a list of "standard" colors used for formatting so they actually mean something
-
-const core = Sable.core;
 
 const TypedArray = Object.getPrototypeOf(Int8Array);
 
@@ -81,10 +81,10 @@ export class Printer {
 		if (print) {
 			switch (this.logLevel) {
 				case "stdout":
-					core.print(output, false);
+					op_print(output, false);
 					break;
 				case "stderr":
-					core.print(output, true);
+					op_print(output, true);
 					break;
 				default:
 					throw new Error("Unknown Printer LogLevel:" + this.logLevel);
@@ -332,7 +332,7 @@ export class Printer {
 		let info = `${styles.yellow}unknown${styles.reset}`;
 
 		try {
-			const details = core.getPromiseDetails(promise);
+			const details = op_get_promise_details(promise);
 			const state = details[0];
 			const result = details[1];
 

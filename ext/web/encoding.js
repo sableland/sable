@@ -1,4 +1,4 @@
-const core = Sable.core;
+import { op_encoding_normalize_label, op_encoding_decode_utf8, op_encoding_decode_single, op_encode } from "ext:core/ops";
 
 /**
  * @typedef {Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array} TypedArray
@@ -31,7 +31,7 @@ export class TextDecoder {
 	 * @param {TextDecoderOptions} options
 	 */
 	constructor(label = "utf-8", options = {}) {
-		const encoding = core.ops.op_encoding_normalize_label(label);
+		const encoding = op_encoding_normalize_label(label);
 		this.#encoding = encoding;
 		this.#fatal = options.fatal;
 		this.#ignoreBOM = options.ignoreBOM;
@@ -77,10 +77,10 @@ export class TextDecoder {
 		if (!stream) {
 			// Fast path for utf8 single pass encoding.
 			if (this.#utf8SinglePass) {
-				return core.ops.op_encoding_decode_utf8(input, this.#ignoreBOM);
+				return op_encoding_decode_utf8(input, this.#ignoreBOM);
 			}
 
-			return core.ops.op_encoding_decode_single(
+			return op_encoding_decode_single(
 				input,
 				this.#encoding,
 				this.#fatal,
@@ -104,7 +104,7 @@ export class TextEncoder {
 	 * @returns {Uint8Array}
 	 */
 	encode(input = "") {
-		return core.encode(input);
+		return op_encode(input);
 	}
 
 	// TODO(lino-levan): Implement encodeInto

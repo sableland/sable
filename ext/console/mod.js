@@ -1,10 +1,10 @@
+import { op_print } from "ext:core/ops";
+
 import { Formatter } from "ext:sable/console/formatter.js";
 import { Printer } from "ext:sable/console/printer.js";
 import { createTable } from "ext:sable/console/table.js";
 
 // TODO(Im-Beast): Expose to the users ability to customize Printer config
-
-const core = Sable.core;
 
 const optimallyUsefulFormattingConfig = {
 	indent: 2,
@@ -103,7 +103,7 @@ export class Console {
 	}
 
 	clear() {
-		core.print("\x1b[1;1H\x1b[0J", false);
+		op_print("\x1b[1;1H\x1b[0J", false);
 	}
 	// #endregion
 
