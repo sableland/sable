@@ -1,6 +1,6 @@
 import { Printer } from "ext:sable/console/printer.js";
 import { styles } from "ext:sable/utils/ansi.js";
-import { textWidth } from "ext:sable/utils/strings.js";
+import { textWidth } from "ext:sable/utils/text_width.js";
 
 /**
  * Error which gets thrown whenever:

@@ -1,3 +1,5 @@
+import { cssStyleToAnsi, parseCss } from "ext:sable/console/css.js";
+
 export class Formatter {
 	/**
 	 * Return first spotted format specifier
@@ -81,8 +83,10 @@ export class Formatter {
 						);
 						break;
 					case "%c":
-						// TODO(Im-Beast): CSS Styling
-						arg = arg.replace("%c", "");
+						if (current) {
+							arg = arg.replace(specifier, cssStyleToAnsi(parseCss(current))) +
+								"\x1b[0m";
+						}
 						break;
 					default:
 						--i;

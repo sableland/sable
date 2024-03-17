@@ -1,4 +1,6 @@
-import { isOdd } from "https://deno.land/x/is_odd@0.1.2/index.ts";
+import isOdd from "https://esm.sh/v135/is-odd@3.0.1/es2022/is-odd.mjs";
+
+console.log(isOdd)
 
 let a = 5;
 
@@ -123,7 +125,7 @@ console.log("deep obj:", {
 	booltrue: true,
 	typedArr,
 	promise: new Promise((x) => {}),
-	resolvedPromise: new Promise()((res) => {
+	resolvedPromise: new Promise((res) => {
 		res("RESOLVED!");
 	}),
 	rejectedPromise: new Promise((_, rej) => {
@@ -214,8 +216,8 @@ console.group();
 console.log("c");
 console.table([
 	["Tyrone", "Jones"],
-	["Janetａｓｆａｓｆ", "Smith"],
-	["Maria", "Cruz"],
+	["Janetａｓｆａｓｆ", "Smith 🐶🐶"],
+	["Mar🐩🐩ia", "Cruz"],
 	[{
 		obj: true,
 		a: 1,
@@ -316,3 +318,6 @@ const en = {
 };
 
 console.log(en);
+
+console.log("%cHello %cworld", "color: red", "color: blue; background-color: yellow"); 
+console.log("%o%O%c")

@@ -1,5 +1,6 @@
 import { styles } from "ext:sable/utils/ansi.js";
-import { escapeControlCharacters, textWidth } from "ext:sable/utils/strings.js";
+import { escapeControlChars } from "ext:sable/utils/escape_control_chars.js";
+import { textWidth } from "ext:sable/utils/text_width.js";
 
 // TODO(Im-Beast): Create a list of "standard" colors used for formatting so they actually mean something
 
@@ -40,7 +41,7 @@ export class Printer {
 	}
 
 	/**
-	 * @param {string | any[]} stringOrArgs Item(s) that need to be formatted and printed
+	 * @param {string | unknown[]} stringOrArgs Item(s) that need to be formatted and printed
 	 * @param {number} groupStackSize `console.group` indentation level
 	 * @param {boolean} print Whether to print to the output or not
 	 * @returns {string} formatted output
@@ -63,9 +64,13 @@ export class Printer {
 				if (i > 0) string += " ";
 
 				string += groupIndent;
-				string +=
-					(this.usefulFormatting ? this.format(arg) : this.genericFormat(arg))
-						.replaceAll("\n", "\n" + groupIndent);
+				if (typeof arg === "string") {
+					string += arg;
+				} else {
+					string +=
+						(this.usefulFormatting ? this.format(arg) : this.genericFormat(arg))
+							.replaceAll("\n", "\n" + groupIndent);
+				}
 			}
 		}
 
@@ -166,6 +171,7 @@ export class Printer {
 	}
 
 	#formatObject(obj, depth = 0, circular = false) {
+		// FIXME: Add quotes in keys if they contain non-alphanumeric characters
 		if (obj === null) return this.#formatNull();
 
 		let formatted = "";
@@ -232,7 +238,7 @@ export class Printer {
 
 	#formatString(str, depth, escape = false) {
 		if (escape) {
-			str = escapeControlCharacters(str);
+			str = escapeControlChars(str);
 		}
 
 		return depth > 0 ? `${styles.yellow}"${str}"${styles.reset}` : str;
@@ -408,7 +414,7 @@ export class Printer {
 		for (const key in obj) {
 			const descriptor = Object.getOwnPropertyDescriptor(obj, key);
 
-			let formattedKey = escapeControlCharacters(key);
+			let formattedKey = escapeControlChars(key);
 			if (formattedKey !== key) {
 				formattedKey = this.#formatString(formattedKey, depth, false);
 			}
