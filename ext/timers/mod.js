@@ -1,7 +1,7 @@
+import { op_timers_sleep, op_create_timer, op_close } from "ext:core/ops";
+
 // https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#timers
 import { toLong } from "ext:sable/webidl/mod.js";
-
-const core = Sable.core;
 
 const activeTimers = new Map();
 
@@ -29,7 +29,7 @@ async function runTimerLoop() {
 	isTimerLoopRunning = true;
 
 	while (true) {
-		const timerId = await core.ops.op_timers_sleep();
+		const timerId = await op_timers_sleep();
 		if (timerId === null) {
 			break;
 		}
@@ -41,12 +41,12 @@ async function runTimerLoop() {
 		nestingLevel = 0;
 
 		// Free the TimerHandle resource
-		core.close(timer.cancelRid);
+		op_close(timer.cancelRid);
 
 		if (timer.isInterval) {
 			timer.nestingLevel++;
 			const delay = Math.max(timer.delay, timer.nestingLevel > 5 ? 4 : 0);
-			timer.cancelRid = core.ops.op_create_timer(delay, timerId);
+			timer.cancelRid = op_create_timer(delay, timerId);
 		} else {
 			activeTimers.delete(timerId);
 		}
@@ -73,7 +73,7 @@ function setTimeout(callback, timeout = 0, ...args) {
 
 	const currentNesting = nestingLevel + 1;
 	const delay = Math.max(timeout, currentNesting > 5 ? 4 : 0);
-	const cancelRid = core.ops.op_create_timer(delay, id);
+	const cancelRid = op_create_timer(delay, id);
 
 	activeTimers.set(id, {
 		nestingLevel: currentNesting,
@@ -108,7 +108,7 @@ function setInterval(callback, interval = 0, ...args) {
 
 	const currentNesting = nestingLevel + 1;
 	const delay = Math.max(interval, currentNesting > 5 ? 4 : 0);
-	const cancelRid = core.ops.op_create_timer(delay, id);
+	const cancelRid = op_create_timer(delay, id);
 
 	activeTimers.set(id, {
 		nestingLevel: currentNesting,
@@ -129,7 +129,7 @@ function setInterval(callback, interval = 0, ...args) {
 function clearTimeout(id) {
 	const timer = activeTimers.get(id);
 	if (timer) {
-		core.close(timer.cancelRid);
+		op_close(timer.cancelRid);
 		activeTimers.delete(id);
 	}
 }

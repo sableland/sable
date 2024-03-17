@@ -1,5 +1,5 @@
-extern crate sable_ext;
 extern crate deno_core;
+extern crate sable_ext;
 
 use deno_core::{error::AnyError, url::Url};
 use loader::SableModuleLoader;
@@ -14,7 +14,7 @@ mod utils;
 use cli::parse_cli;
 use module_cache::ModuleCache;
 
-use sable_ext::extensions::{sable, sable_cleanup, runtime::RuntimeState};
+use sable_ext::extensions::{runtime::RuntimeState, sable, sable_cleanup};
 
 static RUNTIME_SNAPSHOT: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/SABLE_RUNTIME_SNAPSHOT.bin"));

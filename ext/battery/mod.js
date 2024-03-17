@@ -1,20 +1,20 @@
-const core = Sable.core;
+import { op_battery_charging, op_battery_charging_time, op_battery_discharging_time, op_battery_level} from "ext:core/ops"
 
 class BatteryManager extends EventTarget {
 	get charging() {
-		return core.ops.op_battery_charging();
+		return op_battery_charging();
 	}
 
 	get chargingTime() {
-		return core.ops.op_battery_charging_time();
+		return op_battery_charging_time();
 	}
 
 	get dischargingTime() {
-		return core.ops.op_battery_discharging_time();
+		return op_battery_discharging_time();
 	}
 
 	get level() {
-		return core.ops.op_battery_level();
+		return op_battery_level();
 	}
 }
 

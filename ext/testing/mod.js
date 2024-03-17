@@ -1,3 +1,5 @@
+import { op_test_async_ops_sanitization, op_diff_str, op_runtime_state, op_bench_fn } from "ext:core/ops";
+
 import { Printer } from "ext:sable/console/printer.js";
 import { styles } from "ext:sable/utils/ansi.js";
 import { textWidth } from "ext:sable/utils/text_width.js";
@@ -138,8 +140,6 @@ class ComparisonError extends Error {
 const ComparisonPass = "pass";
 
 const testingPrinter = new Printer("stdout");
-
-const core = Sable.core;
 
 const comparisons = {
 	equals(a, b) {
@@ -378,7 +378,7 @@ class TestContext {
 	 * @throws when async ops are still pending
 	 */
 	static sanitizeAsyncOps(testContext = undefined, async = false) {
-		if (!core.ops.op_test_async_ops_sanitization()) {
+		if (!op_test_async_ops_sanitization()) {
 			throw new TestContextLeakingAsyncOpsError(testContext, async);
 		}
 	}
@@ -516,7 +516,7 @@ class TestContext {
 				console.log(
 					`Showing diff of ${styles.lightRed}${styles.bold}A${styles.reset} and ${styles.lightGreen}${styles.bold}B${styles.reset}:`,
 				);
-				console.log(core.ops.op_diff_str(
+				console.log(op_diff_str(
 					testingPrinter.format(a),
 					testingPrinter.format(b),
 				));
@@ -667,7 +667,7 @@ function noop() {}
  */
 function test(name, callback) {
 	if (!runtimeState) {
-		runtimeState = core.ops.op_runtime_state();
+		runtimeState = op_runtime_state();
 	}
 
 	if (runtimeState !== "test") {
@@ -682,7 +682,7 @@ function test(name, callback) {
 // TODO(Im-Beast): more advanced benchmarking
 function bench(name, callback) {
 	if (!runtimeState) {
-		runtimeState = core.ops.op_runtime_state();
+		runtimeState = op_runtime_state();
 	}
 
 	if (runtimeState !== "bench") {
@@ -691,7 +691,7 @@ function bench(name, callback) {
 	}
 
 	console.log(`[ Benching '${name}' ]`);
-	const time = core.ops.op_bench_fn(callback);
+	const time = op_bench_fn(callback);
 	console.log(`${name} takes ${time}ms`);
 	return time;
 }

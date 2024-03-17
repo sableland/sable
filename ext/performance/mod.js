@@ -1,17 +1,17 @@
-import "ext:sable/console/mod.js";
+import { op_high_res_time, op_time_origin } from "ext:core/ops";
 
-const core = Sable.core;
+import "ext:sable/console/mod.js";
 
 // TODO(Im-Beast): Implement other Performance methods
 export class Performance {
 	#timeOrigin;
 
 	now() {
-		return core.ops.op_high_res_time();
+		return op_high_res_time();
 	}
 
 	get timeOrigin() {
-		this.#timeOrigin ??= core.ops.op_time_origin();
+		this.#timeOrigin ??= op_time_origin();
 		return this.#timeOrigin;
 	}
 
