@@ -1,4 +1,4 @@
-// bueno-fmt-ignore
+// sable-fmt-ignore
 const escapeCharMap = new Map([
   // 0x00-0x1F
   ["\x00", "\\x00"], ["\x01", "\\x01"], ["\x02", "\\x02"], ["\x03", "\\x03"], ["\x04", "\\x04"],

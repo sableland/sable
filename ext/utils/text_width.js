@@ -1,5 +1,5 @@
-import { loopAnsi } from "ext:bueno/utils/loop_ansi.js";
-import { charWidth } from "ext:bueno/utils/char_width.js";
+import { loopAnsi } from "ext:sable/utils/loop_ansi.js";
+import { charWidth } from "ext:sable/utils/char_width.js";
 
 /**
  * Calculate width of given {input}.\

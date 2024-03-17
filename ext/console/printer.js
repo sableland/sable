@@ -1,6 +1,6 @@
 import { styles } from "ext:sable/utils/ansi.js";
 import { escapeControlChars } from "ext:sable/utils/escape_control_chars.js";
-import {textWidth} from "ext:sable/utils/text_width.js";
+import { textWidth } from "ext:sable/utils/text_width.js";
 
 // TODO(Im-Beast): Create a list of "standard" colors used for formatting so they actually mean something
 
@@ -41,7 +41,7 @@ export class Printer {
 	}
 
 	/**
-	 * @param {string | any[]} stringOrArgs Item(s) that need to be formatted and printed
+	 * @param {string | unknown[]} stringOrArgs Item(s) that need to be formatted and printed
 	 * @param {number} groupStackSize `console.group` indentation level
 	 * @param {boolean} print Whether to print to the output or not
 	 * @returns {string} formatted output
@@ -64,9 +64,13 @@ export class Printer {
 				if (i > 0) string += " ";
 
 				string += groupIndent;
-				string +=
-					(this.usefulFormatting ? this.format(arg) : this.genericFormat(arg))
-						.replaceAll("\n", "\n" + groupIndent);
+				if (typeof arg === "string") {
+					string += arg;
+				} else {
+					string +=
+						(this.usefulFormatting ? this.format(arg) : this.genericFormat(arg))
+							.replaceAll("\n", "\n" + groupIndent);
+				}
 			}
 		}
 
@@ -167,6 +171,7 @@ export class Printer {
 	}
 
 	#formatObject(obj, depth = 0, circular = false) {
+		// FIXME: Add quotes in keys if they contain non-alphanumeric characters
 		if (obj === null) return this.#formatNull();
 
 		let formatted = "";

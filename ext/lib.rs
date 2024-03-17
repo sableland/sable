@@ -49,6 +49,7 @@ pub mod extensions {
             "console/mod.js",
             "console/printer.js",
             "console/formatter.js",
+            "console/css.js",
             "console/table.js",
             "performance/mod.js",
             "timers/mod.js",

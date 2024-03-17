@@ -318,3 +318,6 @@ const en = {
 };
 
 console.log(en);
+
+console.log("%cHello %cworld", "color: red", "color: blue; background-color: yellow"); 
+console.log("%o%O%c")
