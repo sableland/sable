@@ -1,9 +1,6 @@
-use deno_core::{op2, v8};
+use deno_core::{op2, v8, OpMetricsSummaryTracker, OpState};
 use diff::{PrettyDiffBuilder, PrettyDiffBuilderConfig};
-use std::time::Instant;
-
-pub const TEST_STATE_VALUE: isize = 1;
-pub const BENCH_STATE_VALUE: isize = 2;
+use std::{rc::Rc, time::Instant};
 
 mod diff;
 use imara_diff::{diff, intern::InternedInput, Algorithm};
@@ -61,8 +58,13 @@ pub fn op_diff_str(#[string] before: &str, #[string] after: &str) -> String {
 
 /** Returns whether there are no async ops running in the background */
 #[op2(fast)]
-pub fn op_test_async_ops_sanitization() -> bool {
-    // FIXME(Im-Beast): Since https://github.com/denoland/deno_core/pull/295 metrics have changed a lot
-    // And will require a bit more care
-    return true;
+pub fn op_test_async_ops_sanitization(state: &OpState) -> bool {
+    let metrics_tracker = state.borrow::<Option<Rc<OpMetricsSummaryTracker>>>();
+    match metrics_tracker {
+        None => true,
+        Some(tracker) => {
+            let summary = tracker.aggregate();
+            summary.ops_completed_async == summary.ops_dispatched_async
+        }
+    }
 }

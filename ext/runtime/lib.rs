@@ -1,4 +1,3 @@
-use sable_ext_testing;
 use deno_core::{
     anyhow::{bail, Error},
     op2, OpState,
@@ -6,11 +5,12 @@ use deno_core::{
 use std::str::FromStr;
 
 // RuntimeState specifies whether Sable runs in testing/benchmarking or normal mode
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Copy, PartialEq)]
+#[repr(u8)]
 pub enum RuntimeState {
-    Default = 0,
-    Test = sable_ext_testing::TEST_STATE_VALUE,
-    Bench = sable_ext_testing::BENCH_STATE_VALUE,
+    Default,
+    Test,
+    Bench,
 }
 
 impl ToString for RuntimeState {
