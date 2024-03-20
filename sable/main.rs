@@ -1,7 +1,9 @@
 extern crate deno_core;
 extern crate sable_ext;
 
-use deno_core::{error::AnyError, url::Url};
+use deno_core::{
+    error::AnyError, url::Url, Extension, JsRuntime, OpMetricsSummaryTracker, RuntimeOptions,
+};
 use loader::SableModuleLoader;
 use std::{env, path::PathBuf, rc::Rc, sync::Arc};
 
@@ -40,21 +42,29 @@ pub async fn sable_run(file_path: &str, options: SableOptions) -> Result<(), Any
         module_cache.clear().await?;
     }
 
+    let mut maybe_tracker: Option<Rc<OpMetricsSummaryTracker>> = None;
     let mut extensions = vec![sable::init_ops(), sable_cleanup::init_ops_and_esm()];
 
-    if options.state != RuntimeState::Default {
-        let runtime_state = options.state.clone();
-        extensions.push(deno_core::Extension {
-            name: "sable_runtime_state",
-            op_state_fn: Some(Box::new(|state| {
-                state.put(runtime_state);
-            })),
-            ..Default::default()
-        });
+    match options.state {
+        RuntimeState::Test | RuntimeState::Bench => {
+            maybe_tracker.replace(Rc::new(OpMetricsSummaryTracker::default()));
+            let maybe_tracker = maybe_tracker.clone();
+            extensions.push(Extension {
+                name: "sable_testing",
+                op_state_fn: Some(Box::new(move |state| {
+                    state.put(options.state);
+                    state.put(maybe_tracker)
+                })),
+                ..Default::default()
+            });
+        }
+        _ => {}
     }
 
-    let mut js_runtime = deno_core::JsRuntime::new(deno_core::RuntimeOptions {
+    let mut js_runtime = JsRuntime::new(RuntimeOptions {
         startup_snapshot: Some(RUNTIME_SNAPSHOT),
+        op_metrics_factory_fn: maybe_tracker
+            .map(|tracker| tracker.op_metrics_factory_fn(|op| op.is_async)),
         module_loader: Some(Rc::new(SableModuleLoader {
             module_cache,
             options,

@@ -1,7 +1,4 @@
 pub mod extensions {
-    use std::time::{Instant, SystemTime};
-    use timers::TimerQueue;
-
     pub use sable_ext_battery as battery;
     pub use sable_ext_fs as fs;
     pub use sable_ext_performance as performance;
@@ -68,11 +65,14 @@ pub mod extensions {
             state.put(runtime::RuntimeState::Default);
 
             // sable_ext_perf
-            state.put(Instant::now());
-            state.put(SystemTime::now());
+            state.put(std::time::Instant::now());
+            state.put(std::time::SystemTime::now());
 
             // sable_ext_timers
-            state.put(TimerQueue::new());
+            state.put(timers::TimerQueue::new());
+
+            // sable_ext_testing
+            state.put::<Option<std::rc::Rc<deno_core::OpMetricsSummaryTracker>>>(None);
         }
     );
 

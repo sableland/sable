@@ -2,8 +2,8 @@ extern crate clap;
 
 use std::str::FromStr;
 
-use sable_ext::extensions::runtime::RuntimeState;
 use clap::ArgAction;
+use sable_ext::extensions::runtime::RuntimeState;
 use std::process::ExitCode;
 
 use self::clap::{arg, Arg, Command};
