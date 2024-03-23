@@ -5,7 +5,7 @@ const { test } = Sable.testing;
 // c
 // 1
 // 2
-test("Timers API", (ctx) => {
+await test("Timers API", (ctx) => {
 	return new Promise((resolve) => {
 		const start = performance.now();
 		const id = setInterval(() => {

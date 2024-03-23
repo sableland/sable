@@ -89,8 +89,8 @@ extern "C" fn sanitization_promise_hook<'a, 'b>(
     _: v8::Local<'b, v8::Value>,
 ) {
     let scope = unsafe { &mut v8::CallbackScope::new(promise) };
-    let state = JsRuntime::op_state_from(scope);
-    let mut state = state.borrow_mut(); // scopes deref into &Isolate
+    let state = JsRuntime::op_state_from(scope); // scopes deref into &Isolate
+    let mut state = state.borrow_mut();
 
     let metrics_tracker = state
         .borrow_mut::<Option<Rc<PromiseMetricsSummaryTracker>>>()

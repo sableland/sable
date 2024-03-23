@@ -88,7 +88,7 @@ pub async fn sable_run(file_path: &str, options: SableOptions) -> Result<(), Any
     js_runtime.run_event_loop(Default::default()).await?;
 
     if let Some(promise_tracker) = maybe_promise_tracker {
-        for metrics in promise_tracker.per_promise().iter() {
+        for metrics in promise_tracker.per_test().iter() {
             if metrics.has_pending_promises() {
                 return Err(generic_error(format!(
                     "Test {:?} has pending promises: {} of them resolved while {} got initialized",

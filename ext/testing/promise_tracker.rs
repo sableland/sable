@@ -27,7 +27,7 @@ pub struct PromiseMetricsSummaryTracker {
 }
 
 impl PromiseMetricsSummaryTracker {
-    pub fn per_promise(&self) -> Ref<'_, Vec<PromiseMetricsSummary>> {
+    pub fn per_test(&self) -> Ref<'_, Vec<PromiseMetricsSummary>> {
         self.metrics.borrow()
     }
 
