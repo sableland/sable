@@ -2,7 +2,9 @@ extern crate deno_core;
 extern crate sable_ext;
 
 use deno_core::{
-    error::AnyError, url::Url, Extension, JsRuntime, OpMetricsSummaryTracker, RuntimeOptions,
+    error::{generic_error, AnyError},
+    url::Url,
+    Extension, JsRuntime, OpMetricsSummaryTracker, RuntimeOptions,
 };
 use loader::SableModuleLoader;
 use std::{env, path::PathBuf, rc::Rc, sync::Arc};
@@ -88,10 +90,10 @@ pub async fn sable_run(file_path: &str, options: SableOptions) -> Result<(), Any
     if let Some(promise_tracker) = maybe_promise_tracker {
         for metrics in promise_tracker.per_promise().iter() {
             if metrics.has_pending_promises() {
-                eprintln!(
+                return Err(generic_error(format!(
                     "Test {:?} has pending promises: {} of them resolved while {} got initialized",
-                    metrics.test_name, metrics.promises_initialized, metrics.promises_resolved
-                );
+                    metrics.test_name, metrics.promises_initialized, metrics.promises_resolved,
+                )));
             }
         }
     }
