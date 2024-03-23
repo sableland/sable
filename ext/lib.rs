@@ -7,6 +7,14 @@ pub mod extensions {
     pub use sable_ext_timers as timers;
     pub use sable_ext_web as web;
 
+    use deno_core::OpMetricsSummaryTracker;
+    use runtime::RuntimeState;
+    use std::rc::Rc;
+    use std::time::Instant;
+    use std::time::SystemTime;
+    use testing::PromiseMetricsSummaryTracker;
+    use timers::TimerQueue;
+
     deno_core::extension!(
         sable,
         ops = [
@@ -27,7 +35,9 @@ pub mod extensions {
             timers::op_create_timer,
             testing::op_bench_fn,
             testing::op_diff_str,
-            testing::op_test_async_ops_sanitization,
+            testing::op_test_sanitization,
+            testing::op_set_promise_sanitization_hook,
+            testing::op_set_promise_sanitization_name,
             web::op_encoding_normalize_label,
             web::op_encoding_decode_utf8,
             web::op_encoding_decode_single,
@@ -62,23 +72,24 @@ pub mod extensions {
         ],
         state = |state| {
             // sable_ext_runtime
-            state.put(runtime::RuntimeState::Default);
+            state.put(RuntimeState::Default);
 
             // sable_ext_perf
-            state.put(std::time::Instant::now());
-            state.put(std::time::SystemTime::now());
+            state.put(Instant::now());
+            state.put(SystemTime::now());
 
             // sable_ext_timers
-            state.put(timers::TimerQueue::new());
+            state.put(TimerQueue::new());
 
             // sable_ext_testing
-            state.put::<Option<std::rc::Rc<deno_core::OpMetricsSummaryTracker>>>(None);
+            state.put::<Option<Rc<OpMetricsSummaryTracker>>>(None);
+            state.put::<Option<Rc<PromiseMetricsSummaryTracker>>>(None);
         }
     );
 
     deno_core::extension!(
         sable_cleanup,
         esm_entry_point = "ext:sable_cleanup/cleanup.js",
-        esm = ["cleanup.js",],
+        esm = ["cleanup.js"],
     );
 }

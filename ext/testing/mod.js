@@ -1,4 +1,11 @@
-import { op_test_async_ops_sanitization, op_diff_str, op_runtime_state, op_bench_fn } from "ext:core/ops";
+import {
+	op_bench_fn,
+	op_diff_str,
+	op_runtime_state,
+	op_set_promise_sanitization_hook,
+	op_set_promise_sanitization_name,
+	op_test_sanitization,
+} from "ext:core/ops";
 
 import { Printer } from "ext:sable/console/printer.js";
 import { styles } from "ext:sable/utils/ansi.js";
@@ -22,23 +29,23 @@ Please make sure they've completed before you create the test.`;
 
 		if (testContext) {
 			message = `
-At least one asynchronous operation was started in ${testContext.title} but never completed!
+At least one asynchronous operation or a Promise was started in ${testContext.title} but never completed!
 Please await all your promises or resolve test promise when every asynchronous operation has finished:`;
 
 			if (isAsync) {
 				message += `
 test('${testContext.title}', async (ctx) => {
   ...
---^^^ ops leak somewhere around here, are you sure you awaited every promise?
+--^^^ ops or Promises leak somewhere around here, are you sure you awaited every promise?
 });`;
 			} else {
 				const ptd = "-".repeat(textWidth(testContext.title));
 
 				message += `
 test('${testContext.title}', (ctx) => {
---------${ptd}^ this test is not asynchronous, but leaks asynchronous ops
+--------${ptd}^ this test is not asynchronous, but leaks asynchronous ops or Promises
   ...
---^^^ ops leak somewhere around here, are you sure this test was meant to be synchronous?
+--^^^ ops or Promises leak somewhere around here, are you sure this test was meant to be synchronous?
 });`;
 			}
 		}
@@ -363,6 +370,9 @@ class TestContext {
 	 * @param {TestContext | undefined} parent - parent test
 	 */
 	constructor(name, parent) {
+		op_set_promise_sanitization_hook();
+		op_set_promise_sanitization_name(name);
+
 		this.name = name;
 
 		this.parent = parent;
@@ -378,7 +388,7 @@ class TestContext {
 	 * @throws when async ops are still pending
 	 */
 	static sanitizeAsyncOps(testContext = undefined, async = false) {
-		if (!op_test_async_ops_sanitization()) {
+		if (!op_test_sanitization()) {
 			throw new TestContextLeakingAsyncOpsError(testContext, async);
 		}
 	}
@@ -424,13 +434,19 @@ class TestContext {
 		if (response instanceof Promise) {
 			return response.then(() => {
 				testContext.finish();
-				parent?.unlock(testContext);
 				TestContext.sanitizeAsyncOps(testContext, true);
+				if (parent) {
+					parent.unlock(testContext);
+					op_set_promise_sanitization_name(parent.name);
+				}
 			});
 		} else {
 			testContext.finish();
-			parent?.unlock(testContext);
 			TestContext.sanitizeAsyncOps(testContext, false);
+			if (parent) {
+				parent.unlock(testContext);
+				op_set_promise_sanitization_name(parent.name);
+			}
 		}
 	}
 

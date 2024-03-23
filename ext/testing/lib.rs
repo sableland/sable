@@ -1,6 +1,9 @@
-use deno_core::{op2, v8, OpMetricsSummaryTracker, OpState};
+use deno_core::{op2, v8, JsRuntime, OpMetricsSummaryTracker, OpState};
 use diff::{PrettyDiffBuilder, PrettyDiffBuilderConfig};
 use std::{rc::Rc, time::Instant};
+
+mod promise_tracker;
+pub use promise_tracker::PromiseMetricsSummaryTracker;
 
 mod diff;
 use imara_diff::{diff, intern::InternedInput, Algorithm};
@@ -58,13 +61,64 @@ pub fn op_diff_str(#[string] before: &str, #[string] after: &str) -> String {
 
 /** Returns whether there are no async ops running in the background */
 #[op2(fast)]
-pub fn op_test_async_ops_sanitization(state: &OpState) -> bool {
-    let metrics_tracker = state.borrow::<Option<Rc<OpMetricsSummaryTracker>>>();
-    match metrics_tracker {
+pub fn op_test_sanitization(state: &OpState) -> bool {
+    let op_metrics_tracker = state.borrow::<Option<Rc<OpMetricsSummaryTracker>>>();
+    let ops_ok = match op_metrics_tracker {
         None => true,
         Some(tracker) => {
             let summary = tracker.aggregate();
-            summary.ops_completed_async == summary.ops_dispatched_async
+            !summary.has_outstanding_ops()
         }
+    };
+
+    let promise_metrics_tracker = state.borrow::<Option<Rc<PromiseMetricsSummaryTracker>>>();
+    let promises_ok = match promise_metrics_tracker {
+        None => true,
+        Some(tracker) => {
+            let summary = tracker.aggregate();
+            !summary.has_pending_promises()
+        }
+    };
+
+    ops_ok && promises_ok
+}
+
+extern "C" fn sanitization_promise_hook<'a, 'b>(
+    hook_type: v8::PromiseHookType,
+    promise: v8::Local<'a, v8::Promise>,
+    _: v8::Local<'b, v8::Value>,
+) {
+    let scope = unsafe { &mut v8::CallbackScope::new(promise) };
+    let state = JsRuntime::op_state_from(scope);
+    let mut state = state.borrow_mut(); // scopes deref into &Isolate
+
+    let metrics_tracker = state
+        .borrow_mut::<Option<Rc<PromiseMetricsSummaryTracker>>>()
+        .as_ref()
+        .unwrap();
+
+    let mut metrics = metrics_tracker.metrics_mut();
+
+    match hook_type {
+        v8::PromiseHookType::Init => {
+            metrics.promises_initialized += 1;
+        }
+        v8::PromiseHookType::Resolve => {
+            metrics.promises_resolved += 1;
+        }
+        _ => {}
     }
+}
+
+#[op2(fast)]
+pub fn op_set_promise_sanitization_name(state: &mut OpState, #[string] test_name: String) {
+    let Some(tracker) = state.borrow_mut::<Option<Rc<PromiseMetricsSummaryTracker>>>() else {
+        return;
+    };
+    tracker.track(test_name);
+}
+
+#[op2]
+pub fn op_set_promise_sanitization_hook(scope: &mut v8::HandleScope) {
+    scope.set_promise_hook(sanitization_promise_hook);
 }

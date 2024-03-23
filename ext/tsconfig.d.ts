@@ -31,7 +31,9 @@ declare module "ext:core/ops" {
   export function op_time_origin(): number;
 
   // testing
-  export function op_test_async_ops_sanitization(): boolean;
+  export function op_set_promise_sanitization_hook(): void;
+  export function op_set_promise_sanitization_name(testName: string): void;
+  export function op_test_sanitization(): boolean;
   export function op_diff_str(a: string, b: string): string;
   export function op_bench_fn(callback: () => void): number;
 
