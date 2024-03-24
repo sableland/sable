@@ -61,26 +61,34 @@ pub fn op_diff_str(#[string] before: &str, #[string] after: &str) -> String {
 
 /** Returns whether there are no async ops running in the background */
 #[op2(fast)]
-pub fn op_test_sanitization(state: &OpState) -> bool {
-    let op_metrics_tracker = state.borrow::<Option<Rc<OpMetricsSummaryTracker>>>();
-    let ops_ok = match op_metrics_tracker {
-        None => true,
+#[bigint]
+pub fn op_get_outstanding_ops(
+    #[state] op_metrics_tracker: &Option<Rc<OpMetricsSummaryTracker>>,
+) -> u64 {
+    match op_metrics_tracker {
+        None => 0,
         Some(tracker) => {
             let summary = tracker.aggregate();
-            !summary.has_outstanding_ops()
+            summary.ops_dispatched_async - summary.ops_completed_async
         }
-    };
+    }
+}
 
-    let promise_metrics_tracker = state.borrow::<Option<Rc<PromiseMetricsSummaryTracker>>>();
-    let promises_ok = match promise_metrics_tracker {
-        None => true,
-        Some(tracker) => {
-            let summary = tracker.aggregate();
-            !summary.has_pending_promises()
-        }
-    };
-
-    ops_ok && promises_ok
+#[op2(fast)]
+#[bigint]
+pub fn op_get_pending_promises(
+    #[state] promise_metrics_tracker: &Option<Rc<PromiseMetricsSummaryTracker>>,
+) -> u64 {
+    match promise_metrics_tracker {
+        None => 0,
+        Some(tracker) => tracker.metrics().map_or(0, |metrics| {
+            debug_assert!(
+                metrics.promises_initialized >= metrics.promises_resolved,
+                "Initialized promises should be greater or equal to resolved promises"
+            );
+            metrics.promises_initialized - metrics.promises_resolved
+        }),
+    }
 }
 
 extern "C" fn sanitization_promise_hook<'a, 'b>(
@@ -97,21 +105,26 @@ extern "C" fn sanitization_promise_hook<'a, 'b>(
         .as_ref()
         .unwrap();
 
-    let mut metrics = metrics_tracker.metrics_mut();
+    let promise_id = promise.get_identity_hash();
 
     match hook_type {
         v8::PromiseHookType::Init => {
-            metrics.promises_initialized += 1;
+            let mut metrics = metrics_tracker.metrics_mut();
+            metrics.initialized(promise_id);
         }
         v8::PromiseHookType::Resolve => {
-            metrics.promises_resolved += 1;
+            let Some(mut metrics) = metrics_tracker.metrics_mut_with_promise(promise_id) else {
+                // We don't want to track promises that we didn't initialize
+                return;
+            };
+            metrics.resolved(promise_id);
         }
         _ => {}
     }
 }
 
 #[op2(fast)]
-pub fn op_set_promise_sanitization_name(state: &mut OpState, #[string] test_name: String) {
+pub fn op_set_promise_sanitized_test_name(state: &mut OpState, #[string] test_name: String) {
     let Some(tracker) = state.borrow_mut::<Option<Rc<PromiseMetricsSummaryTracker>>>() else {
         return;
     };

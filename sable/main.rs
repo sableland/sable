@@ -92,7 +92,7 @@ pub async fn sable_run(file_path: &str, options: SableOptions) -> Result<(), Any
             if metrics.has_pending_promises() {
                 return Err(generic_error(format!(
                     "Test {:?} has pending promises: {} of them resolved while {} got initialized",
-                    metrics.test_name, metrics.promises_initialized, metrics.promises_resolved,
+                    metrics.test_name, metrics.promises_resolved, metrics.promises_initialized,
                 )));
             }
         }

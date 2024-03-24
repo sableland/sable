@@ -3,55 +3,33 @@ import {
 	op_diff_str,
 	op_runtime_state,
 	op_set_promise_sanitization_hook,
-	op_set_promise_sanitization_name,
-	op_test_sanitization,
+	op_set_promise_sanitized_test_name,
+	op_get_outstanding_ops,
+	op_get_pending_promises,
 } from "ext:core/ops";
 
 import { Printer } from "ext:sable/console/printer.js";
 import { styles } from "ext:sable/utils/ansi.js";
-import { textWidth } from "ext:sable/utils/text_width.js";
 
-/**
- * Error which gets thrown whenever:
- *  - TestContext is leaking async ops
- *  - Test gets started when async ops are still pending
- */
+class TestContextLeakingPendingPromisesError extends Error {
+	/**
+	 * @param {TestContext} testContext
+	 * @param {number} pendingPromises
+	 * @param {number} promiseLeniency
+	 */
+	constructor(testContext, pendingPromises, promiseLeniency) {
+		super(`Test ${testContext.title} is leaking pending promises. ${pendingPromises} promises pending while ${promiseLeniency} have been allowed.`);
+		this.name = "TestContextPendingPromisesError";
+	}
+}
+
 class TestContextLeakingAsyncOpsError extends Error {
 	/**
-	 * @param {TestContext=} testContext
-	 * @param {boolean=} isAsync - whether given testContext callback returned a promise
+	 * @param {TestContext} testContext
 	 */
-	constructor(testContext, isAsync) {
-		// TODO(Im-Beast): Replace this with pretty errors after they happen
-		let message = `
-You wanted to create a test, but there are still asynchronous ops running.
-Please make sure they've completed before you create the test.`;
-
-		if (testContext) {
-			message = `
-At least one asynchronous operation or a Promise was started in ${testContext.title} but never completed!
-Please await all your promises or resolve test promise when every asynchronous operation has finished:`;
-
-			if (isAsync) {
-				message += `
-test('${testContext.title}', async (ctx) => {
-  ...
---^^^ ops or Promises leak somewhere around here, are you sure you awaited every promise?
-});`;
-			} else {
-				const ptd = "-".repeat(textWidth(testContext.title));
-
-				message += `
-test('${testContext.title}', (ctx) => {
---------${ptd}^ this test is not asynchronous, but leaks asynchronous ops or Promises
-  ...
---^^^ ops or Promises leak somewhere around here, are you sure this test was meant to be synchronous?
-});`;
-			}
-		}
-
-		super(message);
-
+	constructor(testContext) {
+			super(`At least one asynchronous operation was started in ${testContext.title} but never completed!
+Please await all your promises or resolve test promise when every asynchronous operation has finished:`)
 		this.name = "TestContextLeakingAsyncOpsError";
 	}
 }
@@ -61,25 +39,10 @@ class TestContextInvalidUsageError extends Error {
 	 * @param {TestContext} testContext
 	 */
 	constructor(testContext) {
-		const ptd = "-".repeat(textWidth(testContext.title));
-		const ctd = "-".repeat(textWidth(testContext.currentlyTested.title));
-
-		// TODO(Im-Beast): Replace this with pretty errors after they happen
 		super(
-			`
-You're using context from different step!
-Please use the step from current callback:
-test('${testContext.title}', (ctx) => {
-----------${ptd}^^^ you're using this
-  ...
-  ctx.test('${testContext.currentlyTested.title}', (ctx) => {
-----------------${ctd}^^^ instead of this
-    ...
-  });
-  ...
-});`,
+			`You're using context from different step in ${testContext.title}!
+Please use the context of the current callback.`,
 		);
-
 		this.name = "TestContextInvalidUsageError";
 	}
 }
@@ -96,30 +59,8 @@ class TestContextInUseError extends Error {
 		const currentTitle = testContext.currentlyTested.title;
 		const triedTitle = tried.title;
 
-		const ctd = "-".repeat(textWidth(currentTitle));
-		const cts = " ".repeat(textWidth(currentTitle));
-		const ttd = "-".repeat(textWidth(triedTitle));
-
-		// TODO(Im-Beast): Replace this with pretty errors after they happen
 		super(
-			`
-You started another sub-test when previous one didn't finish! (${parentTitle} is ${locked})
-Please check if you're not awaiting async sub-test:
-test('${parentTitle}', async (ctx) => {
-  ...
-  vvv${ctd}--- you're not awaiting it |
-  ctx.test('${currentTitle}', async (ctx) => { |
-               ${cts}^^^^^------------/
-                          but this is async
-    ...
-  });
-  ...
-      vvvv${ttd}------------- which in turn crashes here
-  ctx.test('${triedTitle}', (ctx) => {
-    ...
-  });
-  ...
-});`,
+			`You tried to start another sub-test (${triedTitle}) when previous one (${currentTitle}) didn't finish! (${parentTitle} is ${locked});`,
 		);
 
 		this.name = "TestContextInUseError";
@@ -370,9 +311,6 @@ class TestContext {
 	 * @param {TestContext | undefined} parent - parent test
 	 */
 	constructor(name, parent) {
-		op_set_promise_sanitization_hook();
-		op_set_promise_sanitization_name(name);
-
 		this.name = name;
 
 		this.parent = parent;
@@ -384,12 +322,17 @@ class TestContext {
 
 	/**
 	 * @param {TestContext} testContext - currently evaluated TestContext
-	 * @param {boolean} async - whether TestContext returned a promise
+	 * @param {number} promiseLeniency - maximum amount of allowed pending promises
 	 * @throws when async ops are still pending
 	 */
-	static sanitizeAsyncOps(testContext = undefined, async = false) {
-		if (!op_test_sanitization()) {
-			throw new TestContextLeakingAsyncOpsError(testContext, async);
+	static sanitizeAsyncOps(testContext = undefined, promiseLeniency = 0) {
+		if (op_get_outstanding_ops()) {
+			throw new TestContextLeakingAsyncOpsError(testContext);
+		}
+
+		const pendingPromises = op_get_pending_promises();
+		if (pendingPromises > promiseLeniency) {
+			throw new TestContextLeakingPendingPromisesError(testContext, pendingPromises, promiseLeniency);
 		}
 	}
 
@@ -429,27 +372,32 @@ class TestContext {
 		const testContext = new TestContext(name, parent);
 
 		parent?.lock(testContext);
+		op_set_promise_sanitized_test_name(name);
+		op_set_promise_sanitization_hook();
 		const response = callback(testContext);
-
 		if (response instanceof Promise) {
 			return response.then(() => {
+				// We allow two pending promises for the test itself
+				// And second for awaiting the test
+				// In case this assumption is wrong, program will still throw at the end of the event loop
+				TestContext.sanitizeAsyncOps(testContext, 2);
 				testContext.finish();
-				TestContext.sanitizeAsyncOps(testContext, true);
 				if (parent) {
 					parent.unlock(testContext);
-					op_set_promise_sanitization_name(parent.name);
+					op_set_promise_sanitized_test_name(parent.name);
 				}
-			});
+			})
 		} else {
+			TestContext.sanitizeAsyncOps(testContext, 0);
 			testContext.finish();
-			TestContext.sanitizeAsyncOps(testContext, false);
 			if (parent) {
 				parent.unlock(testContext);
-				op_set_promise_sanitization_name(parent.name);
+				op_set_promise_sanitized_test_name(parent.name);
 			}
 		}
 	}
 
+	// TODO(Im-Beast): Add TestContext.fails
 	/**
 	 * Create new sub-test with given callback
 	 * @param {string} name
@@ -687,11 +635,10 @@ function test(name, callback) {
 	}
 
 	if (runtimeState !== "test") {
-		Sable.bench = noop;
+		Sable.testing.test = noop;
 		return;
 	}
 
-	TestContext.sanitizeAsyncOps();
 	return TestContext.test(name, callback);
 }
 
@@ -702,7 +649,7 @@ function bench(name, callback) {
 	}
 
 	if (runtimeState !== "bench") {
-		Sable.bench = noop;
+		Sable.testing.bench = noop;
 		return;
 	}
 
