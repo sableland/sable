@@ -49,10 +49,9 @@ pub async fn sable_run(file_path: &str, options: SableOptions) -> Result<(), Any
     let mut extensions = vec![sable::init_ops(), sable_cleanup::init_ops_and_esm()];
 
     let (maybe_op_tracker, maybe_promise_tracker) = match options.state {
-        RuntimeState::Test | RuntimeState::Bench => {
+        RuntimeState::Test => {
             let op_tracker = Some(Rc::new(OpMetricsSummaryTracker::default()));
             let promise_tracker = Some(Rc::new(PromiseMetricsSummaryTracker::default()));
-
             {
                 let op_tracker = op_tracker.clone();
                 let promise_tracker = promise_tracker.clone();
@@ -67,6 +66,21 @@ pub async fn sable_run(file_path: &str, options: SableOptions) -> Result<(), Any
                 });
             }
             (op_tracker, promise_tracker)
+        }
+        RuntimeState::Bench => {
+            let op_tracker = Some(Rc::new(OpMetricsSummaryTracker::default()));
+            {
+                let op_tracker = op_tracker.clone();
+                extensions.push(Extension {
+                    name: "sable_testing",
+                    op_state_fn: Some(Box::new(move |state| {
+                        state.put(options.state);
+                        state.put(op_tracker);
+                    })),
+                    ..Default::default()
+                });
+            }
+            (op_tracker, None)
         }
         _ => (None, None),
     };
