@@ -1,4 +1,9 @@
-import { op_battery_charging, op_battery_charging_time, op_battery_discharging_time, op_battery_level} from "ext:core/ops"
+import {
+	op_battery_charging,
+	op_battery_charging_time,
+	op_battery_discharging_time,
+	op_battery_level,
+} from "ext:core/ops";
 
 class BatteryManager extends EventTarget {
 	get charging() {

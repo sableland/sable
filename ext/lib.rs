@@ -39,7 +39,7 @@ pub mod extensions {
             "io/mod.js",
             "io/stdio.js",
             "fs/mod.js",
-            "battery/mod.js",
+            "battery/mod.ts",
             "web/mod.js",
             "web/events.js",
             "web/encoding.js",
