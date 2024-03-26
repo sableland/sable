@@ -15,6 +15,12 @@ declare module "ext:core/ops" {
   // sable
   export function op_runtime_state(): "default" | "test" | "bench";
 
+  // battery
+  export function op_battery_charging(): boolean;
+  export function op_battery_charging_time(): number;
+  export function op_battery_discharging_time(): number;
+  export function op_battery_level(): number;
+
   // fs
   export function op_read_text_file(path: string): Promise<string>;
   export function op_write_text_file(path: string, data: string): Promise<void>;
