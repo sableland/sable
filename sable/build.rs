@@ -4,8 +4,9 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::{env, io::Write};
 
-use deno_ast::{parse_module, MediaType, ParseParams, SourceTextInfo};
+use deno_ast::{parse_module, EmitOptions, MediaType, ParseParams, SourceTextInfo};
 use deno_core::snapshot::{create_snapshot, CreateSnapshotOptions};
+use deno_core::url::Url;
 use deno_core::FastString;
 use sable_ext::extensions::sable;
 
@@ -17,7 +18,7 @@ fn main() {
     let ts_transpiler = Rc::new(|module_name: FastString, code_string: FastString| {
         if module_name.ends_with(".ts") {
             let parsed = parse_module(ParseParams {
-                specifier: module_name.to_string(),
+                specifier: Url::parse(&module_name).expect("Invalid module name"),
                 text_info: SourceTextInfo::from_string(code_string.to_string()),
                 media_type: MediaType::TypeScript,
                 capture_tokens: false,
@@ -25,7 +26,10 @@ fn main() {
                 maybe_syntax: None,
             })?;
 
-            let transpiled = parsed.transpile(&Default::default())?;
+            let transpiled = parsed.transpile(&EmitOptions {
+                use_decorators_proposal: true,
+                ..Default::default()
+            })?;
 
             Ok((
                 transpiled.text.into(),

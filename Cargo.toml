@@ -11,8 +11,8 @@ resolver = "2"
 members = ["ext", "sable"]
 
 [workspace.dependencies]
-deno_core = "0.270.0"
-deno_ast = { version = "1.0.1", features = ["transpiling"] }
+deno_core = "0.272.0"
+deno_ast = { version = "0.34.2", features = ["transpiling"] }
 tokio = { version = "1.36.0", features = ["full"] }
 imara-diff = "0.1.5"
 owo-colors = "4.0.0"
