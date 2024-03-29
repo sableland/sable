@@ -5,7 +5,7 @@ use deno_core::{
     error::AnyError, url::Url, Extension, JsRuntime, OpMetricsSummaryTracker, RuntimeOptions,
 };
 use loader::SableModuleLoader;
-use std::{env, path::PathBuf, rc::Rc, sync::Arc};
+use std::{env, path::PathBuf, process::ExitCode, rc::Rc, sync::Arc};
 
 mod cli;
 mod loader;
@@ -81,6 +81,6 @@ pub async fn sable_run(file_path: &str, options: SableOptions) -> Result<(), Any
 }
 
 #[tokio::main(flavor = "current_thread")]
-async fn main() {
-    parse_cli().await;
+async fn main() -> ExitCode {
+    parse_cli().await
 }
