@@ -58,6 +58,7 @@ impl ModuleLoader for SableModuleLoader {
                         media_type_to_module_type(&MediaType::from_specifier(&module_specifier))?,
                         ModuleSourceCode::Bytes(ModuleCodeBytes::Boxed(source_code)),
                         &module_specifier,
+                        None,
                     ));
                 }
             }
@@ -123,6 +124,7 @@ impl ModuleLoader for SableModuleLoader {
                 module_type,
                 source_code,
                 &module_specifier,
+                None,
             ))
         }
         .boxed_local();
