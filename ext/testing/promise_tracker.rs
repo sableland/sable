@@ -30,20 +30,16 @@ impl PromiseMetricsSummary {
 
     pub fn initialized(&mut self, promise_id: NonZeroI32) {
         self.promises_initialized += 1;
-        debug_assert!(
-            self.promises.insert(promise_id),
-            "Promise {promise_id} has been initialized twice"
-        );
+        let inserted = self.promises.insert(promise_id);
+        debug_assert!(inserted, "Promise {promise_id} has been initialized twice");
     }
 
     pub fn resolved(&mut self, promise_id: NonZeroI32) {
         self.promises_resolved += 1;
         // identity_hash is not guaranteed to be unique
         // we remove it in case it would be added again
-        debug_assert!(
-            self.promises.remove(&promise_id),
-            "Promise {promise_id} not found"
-        );
+        let removed = self.promises.remove(&promise_id);
+        debug_assert!(removed, "Promise {promise_id} not found");
     }
 }
 
