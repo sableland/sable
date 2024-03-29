@@ -5,7 +5,7 @@ const { test } = Sable.testing;
 // c
 // 1
 // 2
-test("Timers API", (ctx) => {
+await test("Timers API", (ctx) => {
 	return new Promise((resolve) => {
 		const start = performance.now();
 		const id = setInterval(() => {
@@ -112,5 +112,21 @@ test("Timers API", (ctx) => {
 				console.timeEnd("one");
 			}, 1);
 		}, 10);
+	});
+});
+
+// Test for https://github.com/sableland/sable/issues/53:
+// If after a `setTimeout` callback there are no registered timers, but some are
+// registered in a microtask that will run in the next microtask checkpoint,
+// those timers might never run.
+await test("Timers microtask bug", () => {
+	return new Promise(resolve => {
+
+		setTimeout(() => {
+			queueMicrotask(() => {
+				setTimeout(resolve, 0);
+			});
+		}, 0);
+
 	});
 });

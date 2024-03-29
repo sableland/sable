@@ -57,6 +57,6 @@ declare module "ext:core/ops" {
   export function op_encode(): void;
 
   // timers
-  export function op_timers_sleep(): Promise<number>;
+  export function op_timers_sleep(): Promise<number | null>;
   export function op_create_timer(delay: number, timerId: number): number;
 }

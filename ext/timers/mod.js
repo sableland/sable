@@ -31,7 +31,20 @@ async function runTimerLoop() {
 	while (true) {
 		const timerId = await op_timers_sleep();
 		if (timerId === null) {
-			break;
+			// It's possible that there were no timers when the async op was
+			// resolved, but that some have been created in the microtasks that
+			// have run since then.
+			if (activeTimers.size === 0) {
+				break;
+			} else {
+				continue;
+			}
+		}
+
+		if (!activeTimers.has(timerId)) {
+			// It's possible that this timer has been canceled since the async
+			// op was resolved.
+			continue;
 		}
 
 		const timer = activeTimers.get(timerId);
