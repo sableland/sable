@@ -1,0 +1,15 @@
+[package]
+name = "sable_ext_crypto"
+description = "Sable crypto extension"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+deno_core.workspace = true
+uuid = { version = "1.8.0", features = ["v4"] }
