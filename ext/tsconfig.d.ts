@@ -21,6 +21,9 @@ declare module "ext:core/ops" {
   export function op_battery_discharging_time(): number;
   export function op_battery_level(): number;
 
+  // crypto
+  export function op_crypto_new_uuidv4(): `${string}-${string}-${string}-${string}-${string}`;
+
   // fs
   export function op_read_text_file(path: string): Promise<string>;
   export function op_write_text_file(path: string, data: string): Promise<void>;
