@@ -1,4 +1,7 @@
 export * from "ext:sable/webidl/numbers.js";
+export * from "ext:sable/webidl/strings.ts";
+export * from "ext:sable/webidl/objects.ts";
+export * from "ext:sable/webidl/functions.ts";
 
 /**
  * Defines WebIDL constants on an interface, namespace, etc.
@@ -12,21 +15,21 @@ export * from "ext:sable/webidl/numbers.js";
  * @param {Record<string, any>} constants
  */
 export function defineConstants(targets, constants) {
-	/** @type {PropertyDescriptorMap} */
-	const descriptors = {};
-	for (const [constantName, value] of Object.entries(constants)) {
-		descriptors[constantName] = {
-			writable: false,
-			enumerable: true,
-			configurable: false,
-			value
-		};
-	}
+  /** @type {PropertyDescriptorMap} */
+  const descriptors = {};
+  for (const [constantName, value] of Object.entries(constants)) {
+    descriptors[constantName] = {
+      writable: false,
+      enumerable: true,
+      configurable: false,
+      value,
+    };
+  }
 
-	const targetArray = Array.isArray(targets) ? targets : [targets];
-	for (const target of targetArray) {
-		Object.defineProperties(target, descriptors);
-	}
+  const targetArray = Array.isArray(targets) ? targets : [targets];
+  for (const target of targetArray) {
+    Object.defineProperties(target, descriptors);
+  }
 }
 
 /**
@@ -40,5 +43,5 @@ export function defineConstants(targets, constants) {
  * @param {Record<string, any>} constants
  */
 export function defineInterfaceConstants(target, constants) {
-	defineConstants([target, target.prototype], constants);
+  defineConstants([target, target.prototype], constants);
 }

@@ -1,4 +1,4 @@
-import { defineInterfaceConstants } from "ext:sable/webidl/mod.js";
+import { defineInterfaceConstants } from "ext:sable/webidl/mod.ts";
 
 /**
  * @typedef {{

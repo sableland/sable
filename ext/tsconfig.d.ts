@@ -62,4 +62,27 @@ declare module "ext:core/ops" {
   // timers
   export function op_timers_sleep(): Promise<number | null>;
   export function op_create_timer(delay: number, timerId: number): number;
+
+  // storage
+  export function op_webstorage_length(session: boolean): number;
+  export function op_webstorage_key(
+    index: number,
+    session: boolean,
+  ): string | null;
+  export function op_webstorage_get_item(
+    key: string,
+    session: boolean,
+  ): string | null;
+
+  export function op_webstorage_set_item(
+    key: string,
+    value: string,
+    session: boolean,
+  ): string | null;
+  export function op_webstorage_remove_item(
+    key: string,
+    session: boolean,
+  ): void;
+  export function op_webstorage_clear(session: boolean): string | null;
+  export function op_webstorage_keys(session: boolean): string[];
 }
