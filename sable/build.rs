@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::{env, io::Write};
 
-use deno_ast::{parse_module, EmitOptions, MediaType, ParseParams, SourceTextInfo};
+use deno_ast::{parse_module, EmitOptions, MediaType, ParseParams, TranspileOptions};
 use deno_core::snapshot::{create_snapshot, CreateSnapshotOptions};
 use deno_core::url::Url;
 use deno_core::FastString;
@@ -19,23 +19,26 @@ fn main() {
         if module_name.ends_with(".ts") {
             let parsed = parse_module(ParseParams {
                 specifier: Url::parse(&module_name).expect("Invalid module name"),
-                text_info: SourceTextInfo::from_string(code_string.to_string()),
+                text: code_string.into(),
                 media_type: MediaType::TypeScript,
                 capture_tokens: false,
                 scope_analysis: false,
                 maybe_syntax: None,
             })?;
 
-            let transpiled = parsed.transpile(&EmitOptions {
-                use_decorators_proposal: true,
-                ..Default::default()
-            })?;
+            let transpiled = parsed.transpile(
+                &TranspileOptions {
+                    use_decorators_proposal: true,
+                    ..Default::default()
+                },
+                &EmitOptions::default(),
+            )?;
+
+            let source_bytes = transpiled.into_source();
 
             Ok((
-                transpiled.text.into(),
-                transpiled
-                    .source_map
-                    .map(|str| Cow::Owned(str.into_bytes())),
+                String::from_utf8(source_bytes.source)?.into(),
+                source_bytes.source_map.map(|bytes| Cow::Owned(bytes)),
             ))
         } else {
             Ok((code_string, None))

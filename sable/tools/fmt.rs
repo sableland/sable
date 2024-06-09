@@ -11,16 +11,17 @@ use dprint_plugin_typescript::configuration::{QuoteProps, SortOrder};
 
 use glob::glob;
 
+use std::borrow::Cow;
 use std::ffi::OsStr;
 use std::path::Path;
 
 // TODO(lino-levan): Make typescript/json/markdown global static variables when `LazyCell` is stable.
 // https://doc.rust-lang.org/std/cell/struct.LazyCell.html
 
-fn format_typescript_file(path: &Path, contents: &str) -> Result<Option<String>, Error> {
+fn format_typescript_file(path: &Path, contents: Cow<str>) -> Result<Option<String>, Error> {
     dprint_plugin_typescript::format_text(
         path,
-        contents,
+        contents.into_owned(),
         &dprint_plugin_typescript::configuration::ConfigurationBuilder::new()
             .deno()
             .use_tabs(true)
@@ -34,10 +35,10 @@ fn format_typescript_file(path: &Path, contents: &str) -> Result<Option<String>,
     )
 }
 
-fn format_json_file(path: &Path, contents: &str) -> Result<Option<String>, Error> {
+fn format_json_file(path: &Path, contents: Cow<str>) -> Result<Option<String>, Error> {
     dprint_plugin_json::format_text(
         path,
-        contents,
+        &contents,
         &dprint_plugin_json::configuration::ConfigurationBuilder::new()
             .line_width(80)
             .use_tabs(true)
@@ -47,7 +48,7 @@ fn format_json_file(path: &Path, contents: &str) -> Result<Option<String>, Error
     )
 }
 
-fn format_markdown_file(path: &Path, contents: &str) -> Result<Option<String>, Error> {
+fn format_markdown_file(path: &Path, contents: Cow<str>) -> Result<Option<String>, Error> {
     dprint_plugin_markdown::format_text(
         &contents,
         &dprint_plugin_markdown::configuration::ConfigurationBuilder::new()
@@ -57,11 +58,11 @@ fn format_markdown_file(path: &Path, contents: &str) -> Result<Option<String>, E
             .ignore_end_directive("sable-fmt-ignore-end")
             .ignore_file_directive("sable-fmt-ignore-file")
             .build(),
-        |tag, text, _line_number| format_file(path, tag, text),
+        |tag, text, _line_number| format_file(path, tag, Cow::Borrowed(text)),
     )
 }
 
-fn format_file(path: &Path, ext: &str, contents: &str) -> Result<Option<String>, Error> {
+fn format_file(path: &Path, ext: &str, contents: Cow<str>) -> Result<Option<String>, Error> {
     match ext {
         "js" | "ts" | "jsx" | "tsx" => format_typescript_file(path, contents),
         "json" | "jsonc" => format_json_file(path, contents),
@@ -97,7 +98,7 @@ pub async fn fmt(options: FormatOptions<'_>) -> Result<(), Error> {
         joinset.spawn(async move {
             let contents = fs::read_to_string(&path).await?;
 
-            if let Some(formatted) = format_file(&path, &ext, &contents)? {
+            if let Some(formatted) = format_file(&path, &ext, Cow::Owned(contents))? {
                 println!("Formatted: {}", path.display());
                 if !options.check {
                     atomic_write(&path, formatted).await?;
