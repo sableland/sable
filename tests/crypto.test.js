@@ -1,11 +1,10 @@
 const { test } = Sable.testing;
 
 test("Crypto API - Crypto is unconstructable", (ctx) => {
-  ctx.throws(() => new Crypto(), TypeError);
+	ctx.throws(() => new Crypto(), TypeError);
 });
 
-
 test("Crypto API - randomUUID", (ctx) => {
-  ctx.assert(typeof crypto.randomUUID() === "string");
-	ctx.assert(crypto.randomUUID().length === 36);
+	ctx.equals(typeof crypto.randomUUID(), "string");
+	ctx.equals(crypto.randomUUID().length, 36);
 });

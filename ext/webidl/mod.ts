@@ -1,4 +1,7 @@
+export * from "ext:sable/webidl/functions.ts";
 export * from "ext:sable/webidl/numbers.js";
+export * from "ext:sable/webidl/objects.ts";
+export * from "ext:sable/webidl/strings.ts";
 
 /**
  * Defines WebIDL constants on an interface, namespace, etc.
@@ -19,7 +22,7 @@ export function defineConstants(targets, constants) {
 			writable: false,
 			enumerable: true,
 			configurable: false,
-			value
+			value,
 		};
 	}
 

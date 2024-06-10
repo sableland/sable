@@ -1,5 +1,5 @@
-import { loopAnsi } from "ext:sable/utils/loop_ansi.js";
 import { charWidth } from "ext:sable/utils/char_width.js";
+import { loopAnsi } from "ext:sable/utils/loop_ansi.js";
 
 /**
  * Calculate width of given {input}.\
@@ -15,10 +15,10 @@ import { charWidth } from "ext:sable/utils/char_width.js";
  * ```
  */
 export function textWidth(text) {
-  let width = 0;
-  loopAnsi(text, (char, style) => {
-    if (style) return;
-    width += charWidth(char);
-  });
-  return width;
+	let width = 0;
+	loopAnsi(text, (char, style) => {
+		if (style) return;
+		width += charWidth(char);
+	});
+	return width;
 }

@@ -4,6 +4,7 @@ pub mod extensions {
     pub use sable_ext_fs as fs;
     pub use sable_ext_performance as performance;
     pub use sable_ext_runtime as runtime;
+    pub use sable_ext_storage as storage;
     pub use sable_ext_testing as testing;
     pub use sable_ext_timers as timers;
     pub use sable_ext_web as web;
@@ -33,6 +34,13 @@ pub mod extensions {
             web::op_encoding_normalize_label,
             web::op_encoding_decode_utf8,
             web::op_encoding_decode_single,
+            storage::op_webstorage_length,
+            storage::op_webstorage_get_item,
+            storage::op_webstorage_set_item,
+            storage::op_webstorage_remove_item,
+            storage::op_webstorage_clear,
+            storage::op_webstorage_key,
+            storage::op_webstorage_keys,
         ],
         esm_entry_point = "ext:sable/runtime.js",
         esm = [
@@ -53,15 +61,19 @@ pub mod extensions {
             "crypto/mod.ts",
             "performance/mod.js",
             "timers/mod.js",
-            "webidl/mod.js",
+            "webidl/mod.ts",
             "webidl/numbers.js",
             "webidl/integers.js",
+            "webidl/functions.ts",
+            "webidl/objects.ts",
+            "webidl/strings.ts",
             "utils/ansi.js",
             "utils/char_width.js",
             "utils/escape_control_chars.js",
             "utils/loop_ansi.js",
             "utils/text_width.js",
             "testing/mod.js",
+            "storage/mod.ts"
         ],
         state = |state| {
             // sable_ext_runtime
@@ -76,6 +88,9 @@ pub mod extensions {
 
             // sable_ext_testing
             state.put::<Option<std::rc::Rc<deno_core::OpMetricsSummaryTracker>>>(None);
+
+            // sable_ext_storage
+            state.put::<Option<storage::LocalStoragePath>>(None);
         }
     );
 

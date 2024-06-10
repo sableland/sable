@@ -1,4 +1,9 @@
-import { op_encoding_normalize_label, op_encoding_decode_utf8, op_encoding_decode_single, op_encode } from "ext:core/ops";
+import {
+	op_encode,
+	op_encoding_decode_single,
+	op_encoding_decode_utf8,
+	op_encoding_normalize_label,
+} from "ext:core/ops";
 
 /**
  * @typedef {Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array} TypedArray

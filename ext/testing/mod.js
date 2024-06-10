@@ -1,4 +1,9 @@
-import { op_test_async_ops_sanitization, op_diff_str, op_runtime_state, op_bench_fn } from "ext:core/ops";
+import {
+	op_bench_fn,
+	op_diff_str,
+	op_runtime_state,
+	op_test_async_ops_sanitization,
+} from "ext:core/ops";
 
 import { Printer } from "ext:sable/console/printer.js";
 import { styles } from "ext:sable/utils/ansi.js";

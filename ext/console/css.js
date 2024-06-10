@@ -325,7 +325,7 @@ export function parseCss(str) {
 
 	let property = "";
 	let intermediate = "";
-	for (let i =0; i < str.length;++i) {
+	for (let i = 0; i < str.length; ++i) {
 		const char = str[i];
 		const lastLoop = i === str.length - 1;
 
@@ -333,7 +333,7 @@ export function parseCss(str) {
 			property = intermediate.trim();
 			intermediate = "";
 		} else if (char === ";" || lastLoop) {
-			if (lastLoop && char !== ";")	intermediate += char;
+			if (lastLoop && char !== ";") intermediate += char;
 
 			const value = intermediate.trim();
 			intermediate = "";

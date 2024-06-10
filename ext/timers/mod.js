@@ -1,7 +1,7 @@
 import { op_timers_sleep, op_create_timer, op_close } from "ext:core/ops";
 
 // https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#timers
-import { toLong } from "ext:sable/webidl/mod.js";
+import { toLong } from "ext:sable/webidl/mod.ts";
 
 const activeTimers = new Map();
 
