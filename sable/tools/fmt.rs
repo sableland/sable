@@ -1,4 +1,4 @@
-use deno_core::{anyhow::Error, error::generic_error};
+use deno_core::{anyhow::anyhow, anyhow::Error};
 
 use crate::utils::fs::atomic_write;
 
@@ -96,21 +96,34 @@ pub async fn fmt(options: FormatOptions<'_>) -> Result<(), Error> {
         };
 
         joinset.spawn(async move {
-            let contents = fs::read_to_string(&path).await?;
+            let contents = fs::read_to_string(&path)
+                .await
+                .map_err(|e| anyhow!("Failed formatting {}:\n{:?}", path.display(), e))?;
 
-            if let Some(formatted) = format_file(&path, &ext, Cow::Owned(contents))? {
-                println!("Formatted: {}", path.display());
-                if !options.check {
-                    atomic_write(&path, formatted).await?;
-                    println!("Wrote: {:?}", path);
+            let maybe_formatted = format_file(&path, &ext, Cow::Owned(contents))
+                .map_err(|e| anyhow!("Failed formatting {}\n{:?}", path.display(), e))?;
+
+            if let Some(formatted) = maybe_formatted {
+                if options.check {
+                    println!("Would format: {}", path.display());
+                } else {
+                    atomic_write(&path, formatted).await.map_err(|e| {
+                        anyhow!(
+                            "Failed formatting {}:\nAtomic write failed\n{:?}",
+                            path.display(),
+                            e
+                        )
+                    })?;
+                    println!("Formatted: {}", path.display());
                 }
             }
+
             Ok(())
         });
     }
 
     while let Some(Ok(res)) = joinset.join_next().await {
-        res.map_err(|e| generic_error(format!("Formatter failed: {:?}", e)))?;
+        res?;
     }
 
     Ok(())

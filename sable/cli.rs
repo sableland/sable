@@ -76,9 +76,7 @@ pub async fn parse_cli() -> ExitCode {
     let matches = cli().get_matches();
 
     match matches.subcommand() {
-        Some((subcommand @ "run", sub_matches))
-        | Some((subcommand @ "test", sub_matches))
-        | Some((subcommand @ "bench", sub_matches)) => {
+        Some((subcommand @ ("run" | "test" | "bench"), sub_matches)) => {
             let module_path = sub_matches
                 .get_one::<String>("MODULE_PATH")
                 .expect("Required");
