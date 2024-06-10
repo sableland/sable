@@ -2,87 +2,87 @@
 // Whenever new op is added, it should be added here as well
 
 declare module "ext:core/ops" {
-  // deno_core
-  export function op_print(string: string, stderr?: boolean): void;
-  export function op_get_promise_details(
-    promise: Promise<any>,
-  ): [state: 0 | 1 | 2, result: any];
-  export function op_read(rid: number): Promise<Uint8Array | null>;
-  export function op_write(rid: number, data: Uint8Array): Promise<void>;
-  export function op_close(rid: number): Promise<void>;
-  export function op_encode(input: string): Uint8Array;
+	// deno_core
+	export function op_print(string: string, stderr?: boolean): void;
+	export function op_get_promise_details(
+		promise: Promise<any>,
+	): [state: 0 | 1 | 2, result: any];
+	export function op_read(rid: number): Promise<Uint8Array | null>;
+	export function op_write(rid: number, data: Uint8Array): Promise<void>;
+	export function op_close(rid: number): Promise<void>;
+	export function op_encode(input: string): Uint8Array;
 
-  // sable
-  export function op_runtime_state(): "default" | "test" | "bench";
+	// sable
+	export function op_runtime_state(): "default" | "test" | "bench";
 
-  // battery
-  export function op_battery_charging(): boolean;
-  export function op_battery_charging_time(): number;
-  export function op_battery_discharging_time(): number;
-  export function op_battery_level(): number;
+	// battery
+	export function op_battery_charging(): boolean;
+	export function op_battery_charging_time(): number;
+	export function op_battery_discharging_time(): number;
+	export function op_battery_level(): number;
 
-  // crypto
-  export function op_crypto_new_uuidv4(): `${string}-${string}-${string}-${string}-${string}`;
+	// crypto
+	export function op_crypto_new_uuidv4(): `${string}-${string}-${string}-${string}-${string}`;
 
-  // fs
-  export function op_read_text_file(path: string): Promise<string>;
-  export function op_write_text_file(path: string, data: string): Promise<void>;
-  export function op_read_file(path: string): Promise<Uint8Array>;
-  export function op_write_file(path: string, data: Uint8Array): Promise<void>;
-  export function op_remove_file(path: string): Promise<void>;
-  export function op_remove_dir(
-    path: string,
-    recursive: boolean,
-  ): Promise<void>;
+	// fs
+	export function op_read_text_file(path: string): Promise<string>;
+	export function op_write_text_file(path: string, data: string): Promise<void>;
+	export function op_read_file(path: string): Promise<Uint8Array>;
+	export function op_write_file(path: string, data: Uint8Array): Promise<void>;
+	export function op_remove_file(path: string): Promise<void>;
+	export function op_remove_dir(
+		path: string,
+		recursive: boolean,
+	): Promise<void>;
 
-  // performance
-  export function op_high_res_time(): number;
-  export function op_time_origin(): number;
+	// performance
+	export function op_high_res_time(): number;
+	export function op_time_origin(): number;
 
-  // testing
-  export function op_test_async_ops_sanitization(): boolean;
-  export function op_diff_str(a: string, b: string): string;
-  export function op_bench_fn(callback: () => void): number;
+	// testing
+	export function op_test_async_ops_sanitization(): boolean;
+	export function op_diff_str(a: string, b: string): string;
+	export function op_bench_fn(callback: () => void): number;
 
-  // web
-  type BufferSource = import("ext:sable/web/encoding.js").BufferSource;
-  export function op_encoding_normalize_label(label: string): string;
-  export function op_encoding_decode_utf8(
-    input: BufferSource,
-    ignoreBOM: boolean,
-  ): void;
-  export function op_encoding_decode_single(
-    input: BufferSource,
-    encoding: string,
-    fatal: boolean,
-    ignoreBOM: boolean,
-  ): void;
-  export function op_encode(): void;
+	// web
+	type BufferSource = import("ext:sable/web/encoding.js").BufferSource;
+	export function op_encoding_normalize_label(label: string): string;
+	export function op_encoding_decode_utf8(
+		input: BufferSource,
+		ignoreBOM: boolean,
+	): void;
+	export function op_encoding_decode_single(
+		input: BufferSource,
+		encoding: string,
+		fatal: boolean,
+		ignoreBOM: boolean,
+	): void;
+	export function op_encode(): void;
 
-  // timers
-  export function op_timers_sleep(): Promise<number | null>;
-  export function op_create_timer(delay: number, timerId: number): number;
+	// timers
+	export function op_timers_sleep(): Promise<number | null>;
+	export function op_create_timer(delay: number, timerId: number): number;
 
-  // storage
-  export function op_webstorage_length(session: boolean): number;
-  export function op_webstorage_key(
-    index: number,
-    session: boolean,
-  ): string | null;
-  export function op_webstorage_get_item(
-    key: string,
-    session: boolean,
-  ): string | null;
+	// storage
+	export function op_webstorage_length(session: boolean): number;
+	export function op_webstorage_key(
+		index: number,
+		session: boolean,
+	): string | null;
+	export function op_webstorage_get_item(
+		key: string,
+		session: boolean,
+	): string | null;
 
-  export function op_webstorage_set_item(
-    key: string,
-    value: string,
-    session: boolean,
-  ): string | null;
-  export function op_webstorage_remove_item(
-    key: string,
-    session: boolean,
-  ): void;
-  export function op_webstorage_clear(session: boolean): string | null;
-  export function op_webstorage_keys(session: boolean): string[];
+	export function op_webstorage_set_item(
+		key: string,
+		value: string,
+		session: boolean,
+	): string | null;
+	export function op_webstorage_remove_item(
+		key: string,
+		session: boolean,
+	): void;
+	export function op_webstorage_clear(session: boolean): string | null;
+	export function op_webstorage_keys(session: boolean): string[];
 }

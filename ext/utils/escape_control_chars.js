@@ -23,9 +23,9 @@ const escapeCharMap = new Map([
  * @returns {string} text with control characters escaped
  */
 export function escapeControlChars(text) {
-  let escaped = "";
-  for (const character of text) {
-    escaped += escapeCharMap.get(character) ?? character;
-  }
-  return escaped;
+	let escaped = "";
+	for (const character of text) {
+		escaped += escapeCharMap.get(character) ?? character;
+	}
+	return escaped;
 }

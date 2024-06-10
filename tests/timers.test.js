@@ -120,13 +120,11 @@ await test("Timers API", (ctx) => {
 // registered in a microtask that will run in the next microtask checkpoint,
 // those timers might never run.
 await test("Timers microtask bug", () => {
-	return new Promise(resolve => {
-
+	return new Promise((resolve) => {
 		setTimeout(() => {
 			queueMicrotask(() => {
 				setTimeout(resolve, 0);
 			});
 		}, 0);
-
 	});
 });
