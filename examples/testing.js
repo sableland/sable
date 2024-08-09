@@ -47,46 +47,18 @@ test("maps are not equal", (ctx) => {
 });
 
 test("sets are equal", (ctx) => {
-	const a = new Set([
-		"key",
-		"value",
-		"k2",
-		"v2",
-		"dog",
-		"cat",
-	]);
+	const a = new Set(["key", "value", "k2", "v2", "dog", "cat"]);
 
-	const b = new Set([
-		"key",
-		"value",
-		"k2",
-		"v2",
-		"dog",
-		"cat",
-	]);
+	const b = new Set(["key", "value", "k2", "v2", "dog", "cat"]);
 
 	ctx.notEquals(a, b);
 	ctx.deepEquals(a, b);
 });
 
 test("sets are not equal", (ctx) => {
-	const a = new Set([
-		"key",
-		"alue",
-		"k2",
-		"k0",
-		"dog",
-		"cat",
-	]);
+	const a = new Set(["key", "alue", "k2", "k0", "dog", "cat"]);
 
-	const b = new Set([
-		"key",
-		"value",
-		"k2",
-		"v2",
-		"dog",
-		"wow",
-	]);
+	const b = new Set(["key", "value", "k2", "v2", "dog", "wow"]);
 
 	ctx.notEquals(a, b);
 	ctx.notDeepEquals(a, b);

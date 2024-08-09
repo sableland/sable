@@ -1,6 +1,6 @@
 import isOdd from "https://esm.sh/v135/is-odd@3.0.1/es2022/is-odd.mjs";
 
-console.log(isOdd)
+console.log(isOdd);
 
 let a = 5;
 
@@ -16,8 +16,7 @@ class Extended extends ThisIsClass {}
 const classInstance = new ThisIsClass();
 const class2Instance = new Extended();
 
-function* generator() {
-}
+function* generator() {}
 
 console.log(ThisIsClass, classInstance);
 
@@ -40,14 +39,7 @@ const set = new Set([
 const shortArr = [1, 2, 3, 4];
 const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
-const arrWShit = [
-	{ uno: "dos", tres: "quatro" },
-	2,
-	3,
-	[1, 2, 3],
-	"hi",
-	10,
-];
+const arrWShit = [{ uno: "dos", tres: "quatro" }, 2, 3, [1, 2, 3], "hi", 10];
 
 const map = new Map([
 	["k", "v"],
@@ -98,8 +90,7 @@ console.log("deep obj:", {
 			going: {
 				even: "deeper",
 			},
-			fn() {
-			},
+			fn() {},
 			num: 5,
 		},
 	},
@@ -218,11 +209,14 @@ console.table([
 	["Tyrone", "Jones"],
 	["Janetａｓｆａｓｆ", "Smith 🐶🐶"],
 	["Mar🐩🐩ia", "Cruz"],
-	[{
-		obj: true,
-		a: 1,
-		b: 2,
-	}, 123],
+	[
+		{
+			obj: true,
+			a: 1,
+			b: 2,
+		},
+		123,
+	],
 ]);
 console.groupEnd();
 console.groupEnd();
@@ -262,8 +256,7 @@ console.log({
 		return "this is getter";
 	},
 	set hi(hi) {},
-	set dog(dog) {
-	},
+	set dog(dog) {},
 });
 
 console.log({
@@ -319,5 +312,9 @@ const en = {
 
 console.log(en);
 
-console.log("%cHello %cworld", "color: red", "color: blue; background-color: yellow"); 
-console.log("%o%O%c")
+console.log(
+	"%cHello %cworld",
+	"color: red",
+	"color: blue; background-color: yellow",
+);
+console.log("%o%O%c");
