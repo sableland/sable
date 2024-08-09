@@ -1,17 +1,18 @@
 // This config is used to properly resolve ext:sable/ specifiers
 {
-  "compilerOptions": {
-    "lib": ["ESNext"],
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "moduleDetection": "force",
-    "noEmit": true,
-    "allowJs": true,
-    "checkJs": true,
-    "baseUrl": "./",
-    "paths": {
-      "ext:sable/*": ["./*"]
-    }
-  }
+	"compilerOptions": {
+		"lib": ["ESNext"],
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"moduleDetection": "force",
+		"allowImportingTsExtensions": true,
+		"noEmit": true,
+		"allowJs": true,
+		"checkJs": true,
+		"baseUrl": "./",
+		"paths": {
+			"ext:sable/*": ["./*"]
+		}
+	}
 }

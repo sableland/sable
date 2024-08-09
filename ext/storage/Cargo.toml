@@ -1,0 +1,16 @@
+[package]
+name = "sable_ext_storage"
+description = "Sable Web Storage APIs extension"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+deno_core.workspace = true
+tokio.workspace = true
+rusqlite = { version = "0.31.0", features = ["bundled"] }

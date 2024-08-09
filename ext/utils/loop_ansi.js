@@ -39,24 +39,24 @@
  * @returns {void}
  */
 export function loopAnsi(input, callback) {
-  let ansi = 0;
-  let style = "";
+	let ansi = 0;
+	let style = "";
 
-  for (const char of input) {
-    if (char === "\x1b") {
-      ansi = 1;
-      style += char;
-    } else if (ansi >= 3 && isFinalAnsiByte(char)) {
-      if (callback(char, style + char)) break;
-      style = "";
-      ansi = 0;
-    } else if (ansi > 0) {
-      ansi += 1;
-      style += char;
-    } else {
-      if (callback(char)) break;
-    }
-  }
+	for (const char of input) {
+		if (char === "\x1b") {
+			ansi = 1;
+			style += char;
+		} else if (ansi >= 3 && isFinalAnsiByte(char)) {
+			if (callback(char, style + char)) break;
+			style = "";
+			ansi = 0;
+		} else if (ansi > 0) {
+			ansi += 1;
+			style += char;
+		} else {
+			if (callback(char)) break;
+		}
+	}
 }
 
 /**
@@ -65,8 +65,8 @@ export function loopAnsi(input, callback) {
  * @returns {boolean} true if {character} is final byte of ansi sequence
  */
 export function isFinalAnsiByte(character) {
-  const charCode = character.charCodeAt(0);
-  // final byte is one in range 0x40-0x7E
-  // We don't include 0x70-0x7E range because its considered "private"
-  return charCode >= 0x40 && charCode < 0x70;
+	const charCode = character.charCodeAt(0);
+	// final byte is one in range 0x40-0x7E
+	// We don't include 0x70-0x7E range because its considered "private"
+	return charCode >= 0x40 && charCode < 0x70;
 }
