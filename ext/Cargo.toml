@@ -21,3 +21,4 @@ sable_ext_timers = { path = "./timers/" }
 sable_ext_testing = { path = "./testing/" }
 sable_ext_runtime = { path = "./runtime/" }
 sable_ext_web = { path = "./web/" }
+sable_ext_storage = { path = "./storage/" }
