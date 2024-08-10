@@ -14,6 +14,7 @@ path = "lib.rs"
 deno_core.workspace = true
 sable_ext_battery = { path = "./battery/" }
 sable_ext_crypto = { path = "./crypto/" }
+sable_ext_device = { path = "./device/" }
 sable_ext_fs = { path = "./fs/" }
 sable_ext_performance = { path = "./performance/" }
 sable_ext_timers = { path = "./timers/" }
