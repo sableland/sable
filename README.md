@@ -1,10 +1,10 @@
 # Sable
 
-Sable is a web-standards focused Javascript runtime with as much tooling built-in as
-possible. It is meant to be both a learning project and a sort of spiritual
-sibling to Deno 1.x. Sable is very ambitious and has many goals, but one of the
-non-goals is support for node modules in any way (outside of transpilation by
-CDNs).
+Sable is a web-standards focused Javascript runtime with as much tooling
+built-in as possible. It is meant to be both a learning project and a sort of
+spiritual sibling to Deno 1.x. Sable is very ambitious and has many goals, but
+one of the non-goals is support for node modules in any way (outside of
+transpilation by CDNs).
 
 ## Goals
 
@@ -14,7 +14,8 @@ CDNs).
 
 ## Anti-Goals
 
-- Native support of TypeScript/TSX/JSX (maybe will be possible in the future with service workers)
+- Native support of TypeScript/TSX/JSX (maybe will be possible in the future
+  with service workers)
 - Node/npm support IN ANY SHAPE OR FORM
 - Support for `Deno.*` APIs outside of possible shims
 
@@ -26,7 +27,9 @@ be, a good JS runtime.
 In many regards, this isn't true anymore. Deno supports many features that stray
 away from it's web-focused nature which could be considered as turning it's back
 away from it's original design goals. Some of the recent decisions have been
-controversial in the community and are some things we'd like to avoid implementing e.g.: `npm:`, `node:`, `jsr:` specifiers, `package.json` support and more.
+controversial in the community and are some things we'd like to avoid
+implementing e.g.: `npm:`, `node:`, `jsr:` specifiers, `package.json` support
+and more.
 
 ## Why not Node?
 

@@ -1,6 +1,6 @@
 import isOdd from "https://esm.sh/v135/is-odd@3.0.1/es2022/is-odd.mjs";
 
-console.log(isOdd)
+console.log(isOdd);
 
 let a = 5;
 
@@ -319,5 +319,9 @@ const en = {
 
 console.log(en);
 
-console.log("%cHello %cworld", "color: red", "color: blue; background-color: yellow"); 
-console.log("%o%O%c")
+console.log(
+	"%cHello %cworld",
+	"color: red",
+	"color: blue; background-color: yellow",
+);
+console.log("%o%O%c");

@@ -1,4 +1,4 @@
-import { op_read, op_write, op_close } from "ext:core/ops";
+import { op_close, op_read, op_write } from "ext:core/ops";
 import { Stderr, Stdin, Stdout } from "ext:sable/io/stdio.js";
 
 /**

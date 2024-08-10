@@ -1,4 +1,4 @@
-import { op_print, op_get_promise_details } from "ext:core/ops";
+import { op_get_promise_details, op_print } from "ext:core/ops";
 
 import { styles } from "ext:sable/utils/ansi.js";
 import { escapeControlChars } from "ext:sable/utils/escape_control_chars.js";
