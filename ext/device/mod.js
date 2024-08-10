@@ -4,16 +4,25 @@ import { op_device_mouse } from "ext:core/ops";
 class MouseEvent extends Event {
   constructor(type, options) {
     super(type, options);
-    this.screenX = options.screenX;
-    this.screenY = options.screenY;
-    this.clientX = options.clientX;
-    this.clientY = options.clientY;
+    this.screenX = options.screenX ?? 0;
+    this.screenY = options.screenY ?? 0;
+    this.clientX = options.clientX ?? 0;
+    this.clientY = options.clientY ?? 0;
+    this.ctrlKey = options.ctrlKey ?? false;
+    this.shiftKey = options.shiftKey ?? false;
+    this.altKey = options.altKey ?? false;
+    this.metaKey = options.metaKey ?? false;
+    this.button = options.button ?? 0;
+    this.buttons = options.buttons ?? 0;
   }
 }
 globalThis.MouseEvent = MouseEvent;
 
 let mouseX = 0;
 let mouseY = 0;
+let button1 = false;
+let button2 = false;
+let button3 = false;
 
 let initialized = false;
 
@@ -23,10 +32,15 @@ globalThis.addEventListener = (...args) => {
   if(!initialized) {
     initialized = true;
     setInterval(() => {
-      let buffer = new Uint32Array(2);
+      let buffer = new Uint32Array(5); // [mouseX, mouseY, button1, button2, button3]
       op_device_mouse(buffer);
       const [newX, newY] = buffer;
+      const newButton1 = !!buffer[2];
+      const newButton2 = !!buffer[3];
+      const newButton3 = !!buffer[4];
+      const buttons = buffer[2] | (buffer[3] << 1) | (buffer[4] << 2);
 
+      // handle mouse move
       if (newX !== mouseX || newY !== mouseY) {
         mouseX = newX;
         mouseY = newY;
@@ -37,6 +51,37 @@ globalThis.addEventListener = (...args) => {
           clientY: mouseY,
         }));
       }
+
+      // handle mouse buttons
+      function maybeDispatchMouseEvent(mouse, before, after) {
+        if(before !== after) {
+          if(after) {
+            globalThis.dispatchEvent(new MouseEvent("mousedown", {
+              screenX: mouseX,
+              screenY: mouseY,
+              clientX: mouseX,
+              clientY: mouseY,
+              buttons
+            }));
+          } else {
+            globalThis.dispatchEvent(new MouseEvent("mouseup", {
+              screenX: mouseX,
+              screenY: mouseY,
+              clientX: mouseX,
+              clientY: mouseY,
+              buttons
+            }));
+          }
+        }
+      }
+
+      maybeDispatchMouseEvent(1, button1, newButton1);
+      maybeDispatchMouseEvent(2, button2, newButton2);
+      maybeDispatchMouseEvent(3, button3, newButton3);
+
+      button1 = newButton1;
+      button2 = newButton2;
+      button3 = newButton3;
     }, 1000/60);
   }
 
