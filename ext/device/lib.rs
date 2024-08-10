@@ -1,5 +1,5 @@
-use deno_core::{op2, OpState};
-use device_query::{DeviceQuery, DeviceState, Keycode, MouseState};
+use deno_core::op2;
+use device_query::{DeviceQuery, DeviceState, MouseState};
 
 #[op2(fast)]
 pub fn op_device_mouse(#[buffer] buf: &mut [u32]) -> () {

@@ -12,5 +12,4 @@ path = "lib.rs"
 
 [dependencies]
 deno_core.workspace = true
-uuid = { version = "1.8.0", features = ["v4"] }
 device_query = "2.1.0"
