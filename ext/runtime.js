@@ -10,3 +10,4 @@ import "ext:sable/performance/mod.js";
 import "ext:sable/timers/mod.js";
 import "ext:sable/testing/mod.js";
 import "ext:sable/storage/mod.ts";
+import "ext:sable/device/mod.js";

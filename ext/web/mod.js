@@ -8,3 +8,9 @@ globalThis.EventTarget = EventTarget;
 
 globalThis.TextDecoder = TextDecoder;
 globalThis.TextEncoder = TextEncoder;
+
+// TODO(lino-levan): Make globalThis extend EventTarget
+const globalEventTarget = new EventTarget();
+globalThis.addEventListener = globalEventTarget.addEventListener.bind(globalEventTarget);
+globalThis.removeEventListener = globalEventTarget.removeEventListener.bind(globalEventTarget);
+globalThis.dispatchEvent = globalEventTarget.dispatchEvent.bind(globalEventTarget);

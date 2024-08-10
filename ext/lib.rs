@@ -1,6 +1,7 @@
 pub mod extensions {
     pub use sable_ext_battery as battery;
     pub use sable_ext_crypto as crypto;
+    pub use sable_ext_device as device;
     pub use sable_ext_fs as fs;
     pub use sable_ext_performance as performance;
     pub use sable_ext_runtime as runtime;
@@ -17,6 +18,7 @@ pub mod extensions {
             battery::op_battery_discharging_time,
             battery::op_battery_level,
             crypto::op_crypto_new_uuidv4,
+            device::op_device_mouse,
             runtime::op_runtime_state,
             fs::op_read_file,
             fs::op_read_text_file,
@@ -59,6 +61,7 @@ pub mod extensions {
             "console/css.js",
             "console/table.js",
             "crypto/mod.ts",
+            "device/mod.js",
             "performance/mod.js",
             "timers/mod.js",
             "webidl/mod.ts",

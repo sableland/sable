@@ -1,0 +1,15 @@
+[package]
+name = "sable_ext_device"
+description = "Sable device extension"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+deno_core.workspace = true
+device_query = "2.1.0"
