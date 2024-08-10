@@ -9,10 +9,11 @@ use dprint_plugin_json;
 use dprint_plugin_markdown::configuration::TextWrap;
 use dprint_plugin_typescript::configuration::{QuoteProps, SortOrder};
 
-use glob::glob;
+use wax::Glob;
 
 use std::borrow::Cow;
 use std::ffi::OsStr;
+use std::os::unix::fs::MetadataExt;
 use std::path::Path;
 
 // TODO(lino-levan): Make typescript/json/markdown global static variables when `LazyCell` is stable.
@@ -83,11 +84,26 @@ impl<'a> FormatOptions<'a> {
 }
 
 pub async fn fmt(options: FormatOptions<'_>) -> Result<(), Error> {
-    let paths: Result<Vec<_>, _> = glob(&options.glob)?.into_iter().collect();
+    let glob = Glob::new(&options.glob)?;
 
     let mut joinset: JoinSet<Result<_, Error>> = JoinSet::new();
 
-    for path in paths? {
+    for entry in glob.walk(".").not(["**/.*/**"])? {
+        let path = entry?.into_path();
+
+        // Skip files that are readonly
+        // And retrieve permissions for the file we are going to format
+        // So we keep permissions the same
+        let file_mode = match path.metadata() {
+            Ok(metadata) => {
+                if metadata.permissions().readonly() {
+                    continue;
+                }
+                metadata.mode()
+            }
+            _ => continue,
+        };
+
         let ext = match path.extension().and_then(OsStr::to_str) {
             Some(ext @ ("js" | "ts" | "jsx" | "tsx" | "json" | "jsonc" | "md" | "markdown")) => {
                 ext.to_string()
@@ -101,7 +117,11 @@ pub async fn fmt(options: FormatOptions<'_>) -> Result<(), Error> {
             if let Some(formatted) = format_file(&path, &ext, Cow::Owned(contents))? {
                 println!("Formatted: {}", path.display());
                 if !options.check {
-                    atomic_write(&path, formatted).await?;
+                    atomic_write(&path, formatted, file_mode)
+                        .await
+                        .map_err(|error| {
+                            generic_error(format!("Formatting failed: {:?} ({:?})", error, path))
+                        })?;
                     println!("Wrote: {:?}", path);
                 }
             }
@@ -110,7 +130,7 @@ pub async fn fmt(options: FormatOptions<'_>) -> Result<(), Error> {
     }
 
     while let Some(Ok(res)) = joinset.join_next().await {
-        res.map_err(|e| generic_error(format!("Formatter failed: {:?}", e)))?;
+        res?;
     }
 
     Ok(())

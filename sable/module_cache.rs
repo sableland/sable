@@ -51,7 +51,7 @@ impl ModuleCache {
             ModuleSourceCode::Bytes(bytes) => bytes.as_bytes(),
             ModuleSourceCode::String(string) => string.as_bytes(),
         };
-        atomic_write(&cache_path, bytes).await?;
+        atomic_write(&cache_path, bytes, 0o644).await?;
 
         Ok(())
     }
