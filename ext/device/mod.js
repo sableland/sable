@@ -17,6 +17,9 @@ class MouseEvent extends Event {
   }
 }
 globalThis.MouseEvent = MouseEvent;
+globalThis.onmousemove = null;
+globalThis.onmousedown = null;
+globalThis.onmouseup = null;
 
 let mouseX = 0;
 let mouseY = 0;
@@ -40,37 +43,31 @@ globalThis.addEventListener = (...args) => {
       const newButton3 = !!buffer[4];
       const buttons = buffer[2] | (buffer[3] << 1) | (buffer[4] << 2);
 
+      const eventInit = {
+        screenX: mouseX,
+        screenY: mouseY,
+        clientX: mouseX,
+        clientY: mouseY,
+        buttons
+      };
+
       // handle mouse move
       if (newX !== mouseX || newY !== mouseY) {
         mouseX = newX;
         mouseY = newY;
-        globalThis.dispatchEvent(new MouseEvent("mousemove", {
-          screenX: mouseX,
-          screenY: mouseY,
-          clientX: mouseX,
-          clientY: mouseY,
-        }));
+        globalThis.dispatchEvent(new MouseEvent("mousemove", eventInit));
+        globalThis.onmousemove?.(new MouseEvent("mousemove", eventInit));
       }
 
       // handle mouse buttons
       function maybeDispatchMouseEvent(mouse, before, after) {
         if(before !== after) {
           if(after) {
-            globalThis.dispatchEvent(new MouseEvent("mousedown", {
-              screenX: mouseX,
-              screenY: mouseY,
-              clientX: mouseX,
-              clientY: mouseY,
-              buttons
-            }));
+            globalThis.dispatchEvent(new MouseEvent("mousedown", eventInit));
+            globalThis.onmousedown?.(new MouseEvent("mousedown", eventInit));
           } else {
-            globalThis.dispatchEvent(new MouseEvent("mouseup", {
-              screenX: mouseX,
-              screenY: mouseY,
-              clientX: mouseX,
-              clientY: mouseY,
-              buttons
-            }));
+            globalThis.dispatchEvent(new MouseEvent("mouseup", eventInit));
+            globalThis.onmouseup?.(new MouseEvent("mouseup", eventInit));
           }
         }
       }
