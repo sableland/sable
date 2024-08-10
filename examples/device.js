@@ -1,11 +1,11 @@
 addEventListener("mousemove", (e) => {
-  console.log(e.clientX, e.clientY);
+	console.log(e.clientX, e.clientY);
 });
 
 addEventListener("mousedown", (e) => {
-  console.log("down");
+	console.log("down");
 });
 
 addEventListener("mouseup", (e) => {
-  console.log("up");
+	console.log("up");
 });

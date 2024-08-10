@@ -1,11 +1,11 @@
 import {
-	op_read_text_file,
 	op_read_file,
+	op_read_text_file,
+	op_remove_dir,
+	op_remove_file,
 	op_write_file,
 	op_write_text_file,
-	op_remove_file,
-	op_remove_dir,
-} from "ext:core/ops"
+} from "ext:core/ops";
 
 /**
  * Reads a file asynchronously
